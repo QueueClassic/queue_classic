@@ -19,7 +19,7 @@ def create_table
   test_db.exec(
     "CREATE TABLE items"  +
     "("                   +
-    "item_id  int,"       +
+    "item_id  SERIAL,"    +
     "value    text"       +
     ");"
   )
@@ -31,8 +31,12 @@ end
 
 def test_db
   @testdb ||= PGconn.open(:dbname => 'queue_classic_test')
+  @testdb.exec("SET client_min_messages TO 'warning'")
+  @testdb
 end
 
 def postgres
   @postgres ||= PGconn.open(:dbname => 'postgres')
+  @postgres.exec("SET client_min_messages TO 'warning'")
+  @postgres
 end

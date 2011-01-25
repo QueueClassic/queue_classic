@@ -14,42 +14,47 @@ module QC
 
     def initialize(args={})
       @db_conn  = PGconn.open(:dbname => args[:dbname])
+      execute("SET client_min_messages TO 'warning'")
     end
 
     def <<(value)
-      item = Item.new("value"=>value, "item_id"=>1 )
-      @db_conn.exec(
+      item = Item.new("value"=>value)
+      execute(
         "INSERT INTO items " +
-        "(item_id, value)" +
-        "VALUES (#{quote(item.item_id)},#{quote(item.value)})"
+        "(value)" +
+        "VALUES (#{quote(item.value)})"
       )
     end
 
     def head
-      res = @db_conn.async_exec(
+      res = execute(
         "SELECT * FROM items ORDER BY items ASC LIMIT 1"
       )
-      get_one(res).value
+      get_one(res)
     end
 
     def tail
-      res = @db_conn.async_exec(
+      res = execute(
         "SELECT * FROM items ORDER BY items DESC LIMIT 1"
       )
-      get_one(res).value
+      get_one(res)
     end
 
     def each
-      @db_conn.async_exec(
+      execute(
         "SELECT * FROM items ORDER BY item_id ASC"
       ).each {|r| yield(r["value"]) }
     end
 
     private
 
+      def execute(sql)
+        @db_conn.async_exec(sql)
+      end
+
       def get_one(res)
         if res.cmd_tuples > 0
-          res.map { |r| Item.new(r) }.pop
+          res.map {|r| Item.new(r)}.pop
         end
       end
 
@@ -60,6 +65,10 @@ module QC
           value
         end
       end
+
+      def client_min_messages=(level)
+      end
+
 
   end
 end

@@ -11,14 +11,14 @@ describe QC::DurableArray do
         it "should return that item" do
           item = "string"
           array << item
-          array.head.should == item
+          array.head.value.should == item
         end
       end
       context "when there are 2 items in the database" do
         it "should return the first item" do
           array << "one"
           array << "two"
-          array.head.should == "one"
+          array.head.value.should == "one"
         end
       end
     end
@@ -27,14 +27,14 @@ describe QC::DurableArray do
       context "when there is 1 item in the database" do
         it "should return that item" do
           array << "only one"
-          array.tail.should == "only one"
+          array.tail.value.should == "only one"
         end
       end
       context "when there are 2 items in the database" do
         it "should return the last item inserted" do
           array << "first"
           array << "last"
-          array.tail.should == "last"
+          array.tail.value.should == "last"
         end
       end
     end
@@ -44,7 +44,7 @@ describe QC::DurableArray do
         array << "one"
         array << "two"
         results = []
-        array.each {|v| results << v }
+        array.each {|v| results << v}
         results.should == ["one","two"]
       end
       describe "including enumerable" do
