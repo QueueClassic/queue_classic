@@ -26,6 +26,13 @@ module QC
       )
     end
 
+    def [](index)
+      res = execute(
+        "SELECT * FROM items ORDER BY item_id ASC LIMIT 1 OFFSET #{index}"
+      )
+      get_one(res)
+    end
+
     def head
       res = execute(
         "SELECT * FROM items ORDER BY items ASC LIMIT 1"
@@ -65,10 +72,6 @@ module QC
           value
         end
       end
-
-      def client_min_messages=(level)
-      end
-
 
   end
 end

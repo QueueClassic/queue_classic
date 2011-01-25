@@ -38,6 +38,17 @@ describe QC::DurableArray do
         end
       end
     end
+    describe "[]" do
+      let(:array) { QC::DurableArray.new(:dbname => dbname) }
+      it "should use the index to get the element" do
+        array << "first"
+        array << "second"
+        array << "third"
+        array[0].value.should == "first"
+        array[1].value.should == "second"
+        array[2].value.should == "third"
+      end
+    end
     describe "#each" do
       let(:array) { QC::DurableArray.new(:dbname => dbname) }
       it "should yield the value for each item" do
