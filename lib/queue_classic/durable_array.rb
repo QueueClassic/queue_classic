@@ -1,11 +1,11 @@
 require 'pg'
 
 module QC
-  class Item
-    attr_accessor :item_id, :value
+  class Job
+    attr_accessor :job_id, :details
     def initialize(args={})
-      @item_id  = args["item_id"]
-      @value    = args["value"]
+      @job_id   = args["job_id"]
+      @details  = args["details"]
     end
   end
 
@@ -17,12 +17,12 @@ module QC
       execute("SET client_min_messages TO 'warning'")
     end
 
-    def <<(value)
-      item = Item.new("value"=>value)
+    def <<(details)
+      new_job = Job.new("details"=>details)
       execute(
-        "INSERT INTO items " +
-        "(value)" +
-        "VALUES (#{quote(item.value)})"
+        "INSERT INTO jobs" +
+        "(details)" +
+        "VALUES (#{quote(new_job.details)})"
       )
     end
 
@@ -34,44 +34,44 @@ module QC
       tail
     end
 
-    def delete(item)
+    def delete(job)
       res = execute(
-        "DELETE FROM items WHERE item_id = #{item.item_id}"
+        "DELETE FROM jobs WHERE job_id = #{job.job_id}"
       )
     end
 
-    def find(item)
+    def find(job)
       res = execute(
-        "SELECT * FROM items WHERE item_id = #{item.item_id}"
+        "SELECT * FROM jobs WHERE job_id= #{job.job_id}"
       )
       get_one(res)
     end
 
     def [](index)
       res = execute(
-        "SELECT * FROM items ORDER BY item_id ASC LIMIT 1 OFFSET #{index}"
+        "SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1 OFFSET #{index}"
       )
       get_one(res)
     end
 
     def head
       res = execute(
-        "SELECT * FROM items ORDER BY items ASC LIMIT 1"
+        "SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1"
       )
       get_one(res)
     end
 
     def tail
       res = execute(
-        "SELECT * FROM items ORDER BY items DESC LIMIT 1"
+        "SELECT * FROM jobs ORDER BY job_id DESC LIMIT 1"
       )
       get_one(res)
     end
 
     def each
       execute(
-        "SELECT * FROM items ORDER BY item_id ASC"
-      ).each {|r| yield(r["value"]) }
+        "SELECT * FROM jobs ORDER BY job_id ASC"
+      ).each {|r| yield(r["details"]) }
     end
 
     private
@@ -82,7 +82,7 @@ module QC
 
       def get_one(res)
         if res.cmd_tuples > 0
-          res.map {|r| Item.new(r)}.pop
+          res.map {|r| Job.new(r)}.pop
         end
       end
 

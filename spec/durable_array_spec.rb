@@ -6,34 +6,34 @@ describe QC::DurableArray do
   describe "low level methods" do
     describe "#head" do
       let(:array) { QC::DurableArray.new(:dbname => dbname) }
-      context "when there is 1 items in the database" do
-        it "should return that item" do
-          item = "string"
-          array << item
-          array.head.value.should == item
+      context "when there is 1 jobs in the database" do
+        it "should return that job" do
+          job = "string"
+          array << job
+          array.head.details.should == job
         end
       end
-      context "when there are 2 items in the database" do
-        it "should return the first item" do
+      context "when there are 2 jobs in the database" do
+        it "should return the first job" do
           array << "one"
           array << "two"
-          array.head.value.should == "one"
+          array.head.details.should == "one"
         end
       end
     end
     describe "#tail" do
       let(:array) { QC::DurableArray.new(:dbname => dbname) }
-      context "when there is 1 item in the database" do
-        it "should return that item" do
+      context "when there is 1 job in the database" do
+        it "should return that job" do
           array << "only one"
-          array.tail.value.should == "only one"
+          array.tail.details.should == "only one"
         end
       end
-      context "when there are 2 items in the database" do
-        it "should return the last item inserted" do
+      context "when there are 2 jobs in the database" do
+        it "should return the last job inserted" do
           array << "first"
           array << "last"
-          array.tail.value.should == "last"
+          array.tail.details.should == "last"
         end
       end
     end
@@ -43,23 +43,23 @@ describe QC::DurableArray do
         array << "first"
         array << "second"
         array << "third"
-        array[0].value.should == "first"
-        array[1].value.should == "second"
-        array[2].value.should == "third"
+        array[0].details.should == "first"
+        array[1].details.should == "second"
+        array[2].details.should == "third"
       end
     end
     describe "#delete" do
       let(:array) { QC::DurableArray.new(:dbname => dbname) }
-      it "should delete an item" do
+      it "should delete an job" do
         array << "one"
-        array[0].value.should == "one"
+        array[0].details.should == "one"
         array.delete(array[0])
         array[0].should be_nil
       end
     end
     describe "#each" do
       let(:array) { QC::DurableArray.new(:dbname => dbname) }
-      it "should yield the value for each item" do
+      it "should yield the details for each job" do
         array << "one"
         array << "two"
         results = []

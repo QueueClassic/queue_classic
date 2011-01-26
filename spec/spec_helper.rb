@@ -7,6 +7,7 @@ def clean_database
   drop_table
   create_table
 end
+
 def create_database
   execute "CREATE DATABASE queue_classic_test"
 end
@@ -17,16 +18,16 @@ end
 
 def create_table
   test_db.exec(
-    "CREATE TABLE items"  +
+    "CREATE TABLE jobs"  +
     "("                   +
-    "item_id  SERIAL,"    +
-    "value    text"       +
+    "job_id   SERIAL,"    +
+    "details  text"       +
     ");"
   )
 end
 
 def drop_table
-  test_db.exec("DROP TABLE items")
+  test_db.exec("DROP TABLE jobs")
 end
 
 def test_db
