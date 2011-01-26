@@ -1,12 +1,12 @@
 module QC
   module Api
 
-    def enqueue(job,params)
+    def enqueue(job,params={})
       Queue.enqueue(job,params)
     end
 
-    def dequeue(*args)
-      Queue.dequeue(args)
+    def dequeue
+      Queue.dequeue
     end
 
     def work(job)
