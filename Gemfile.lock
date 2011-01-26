@@ -4,6 +4,7 @@ GEM
     archive-tar-minitar (0.5.2)
     columnize (0.3.2)
     diff-lcs (1.1.2)
+    json (1.5.1)
     linecache19 (0.5.11)
       ruby_core_source (>= 0.1.4)
     pg (0.10.1)
@@ -27,6 +28,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  json
   pg
   rake
   rspec-core
