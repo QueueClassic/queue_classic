@@ -5,8 +5,8 @@ module  QC
       self
     end
 
-    def self.enqueue(job)
-      @@data << job
+    def self.enqueue(job,params)
+      @@data << {:job => job, :params => params}.to_json
     end
 
     def self.dequeue
