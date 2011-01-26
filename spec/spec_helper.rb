@@ -6,6 +6,7 @@ end
 def clean_database
   drop_table
   create_table
+  disconnect
 end
 
 def create_database
@@ -29,15 +30,19 @@ end
 def drop_table
   test_db.exec("DROP TABLE jobs")
 end
+def disconnect
+  test_db.finish
+  postgres.finish
+end
 
 def test_db
-  @testdb ||= PGconn.open(:dbname => 'queue_classic_test')
+  @testdb ||= PGconn.connect(:dbname => 'queue_classic_test')
   @testdb.exec("SET client_min_messages TO 'warning'")
   @testdb
 end
 
 def postgres
-  @postgres ||= PGconn.open(:dbname => 'postgres')
+  @postgres ||= PGconn.connect(:dbname => 'postgres')
   @postgres.exec("SET client_min_messages TO 'warning'")
   @postgres
 end
