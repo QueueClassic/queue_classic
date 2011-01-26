@@ -5,6 +5,10 @@ To place a job onto the queue, you should specify a class and a class method. Th
 
 ` QC.enqueue('Class.method', :arg1 => 'value1', :arg2 => 'value2')`
 
+## Dequeue
+When a worker picks up a job, it is removed from the jobs table and placed into a processing table.
+
+
 ## Worker
 The worker will lookup the method in the class and call it with the supplied arguments.
 Any sort of exception should be rescued in the class method.
