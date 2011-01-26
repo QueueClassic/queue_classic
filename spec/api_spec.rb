@@ -1,6 +1,7 @@
 require 'spec_helper'
 
 describe QC::Api do
+  before(:each) { clean_database }
   describe "#enqueue" do
     it "should take a job" do
       res = QC.enqueue "Notifier.send", {}
@@ -12,7 +13,9 @@ describe QC::Api do
     end
   end
   describe "#dequeue" do
-    it "should remove the job from the jobs table"
-    it "should add the job to the processing table"
+    it "should remove the job from the jobs table" do
+      QC.enqueue "Notifier.send", {"args1" => "test"}
+      QC.dequeue.details.should == {"job" => "Notifier.send", "params"=>{"args1"=>"test"}}
+    end
   end
 end
