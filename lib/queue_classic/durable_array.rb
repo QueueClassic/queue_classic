@@ -13,7 +13,7 @@ module QC
     include Enumerable
 
     def initialize(args={})
-      @db_conn  = PGconn.open(:dbname => args[:dbname])
+      @connection = PGconn.connect(:dbname => args[:dbname])
       execute("SET client_min_messages TO 'warning'")
     end
 
@@ -22,7 +22,7 @@ module QC
       execute(
         "INSERT INTO jobs" +
         "(details)" +
-        "VALUES (#{quote(new_job.details)})"
+        "VALUES (#{quote(new_job.details.to_json)})"
       )
     end
 
@@ -38,6 +38,7 @@ module QC
       res = execute(
         "DELETE FROM jobs WHERE job_id = #{job.job_id}"
       )
+      job
     end
 
     def find(job)
@@ -71,18 +72,23 @@ module QC
     def each
       execute(
         "SELECT * FROM jobs ORDER BY job_id ASC"
-      ).each {|r| yield(r["details"]) }
+      ).each {|r| yield(JSON.parse(r["details"])) }
     end
 
     private
 
       def execute(sql)
-        @db_conn.async_exec(sql)
+        @connection.async_exec(sql)
       end
 
       def get_one(res)
         if res.cmd_tuples > 0
-          res.map {|r| Job.new(r)}.pop
+          res.map do |r|
+            Job.new(
+              "job_id" => r["job_id"],
+              "details"=> JSON.parse( r["details"] )
+            )
+          end.pop
         end
       end
 
