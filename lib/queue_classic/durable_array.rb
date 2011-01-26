@@ -26,6 +26,27 @@ module QC
       )
     end
 
+    def first
+      head
+    end
+
+    def last
+      tail
+    end
+
+    def delete(item)
+      res = execute(
+        "DELETE FROM items WHERE item_id = #{item.item_id}"
+      )
+    end
+
+    def find(item)
+      res = execute(
+        "SELECT * FROM items WHERE item_id = #{item.item_id}"
+      )
+      get_one(res)
+    end
+
     def [](index)
       res = execute(
         "SELECT * FROM items ORDER BY item_id ASC LIMIT 1 OFFSET #{index}"

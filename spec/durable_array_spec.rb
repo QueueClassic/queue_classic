@@ -3,7 +3,6 @@ require 'spec_helper'
 describe QC::DurableArray do
   before(:each) { clean_database }
   let(:dbname) {"queue_classic_test"}
-
   describe "low level methods" do
     describe "#head" do
       let(:array) { QC::DurableArray.new(:dbname => dbname) }
@@ -49,6 +48,15 @@ describe QC::DurableArray do
         array[2].value.should == "third"
       end
     end
+    describe "#delete" do
+      let(:array) { QC::DurableArray.new(:dbname => dbname) }
+      it "should delete an item" do
+        array << "one"
+        array[0].value.should == "one"
+        array.delete(array[0])
+        array[0].should be_nil
+      end
+    end
     describe "#each" do
       let(:array) { QC::DurableArray.new(:dbname => dbname) }
       it "should yield the value for each item" do
@@ -67,5 +75,4 @@ describe QC::DurableArray do
       end
     end
   end
-
 end
