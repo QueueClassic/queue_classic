@@ -6,11 +6,12 @@ module  QC
     end
 
     def self.enqueue(job,params)
-      @@data << {:job => job, :params => params}.to_json
+      @@data << {"job" => job, "params" => params}
     end
 
     def self.dequeue
-      @@data.delete(@@data.first)
+      next_in_queue = @@data.first
+      @@data.delete(next_in_queue)
     end
   end
 end
