@@ -18,56 +18,35 @@ module QC
     end
 
     def <<(details)
-      new_job = Job.new("details"=>details)
       execute(
         "INSERT INTO jobs" +
         "(details)" +
-        "VALUES (#{quote(new_job.details.to_json)})"
+        "VALUES ('#{details.to_json}')"
       )
-    end
-
-    def first
-      head
-    end
-
-    def last
-      tail
     end
 
     def delete(job)
-      res = execute(
-        "DELETE FROM jobs WHERE job_id = #{job.job_id}"
-      )
+      execute("DELETE FROM jobs WHERE job_id = #{job.job_id}")
       job
     end
 
     def find(job)
-      res = execute(
-        "SELECT * FROM jobs WHERE job_id= #{job.job_id}"
-      )
-      get_one(res)
+      find_one { "SELECT * FROM jobs WHERE job_id= #{job.job_id}" }
     end
 
     def [](index)
-      res = execute(
-        "SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1 OFFSET #{index}"
-      )
-      get_one(res)
+      find_one { "SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1 OFFSET #{index}" }
     end
 
     def head
-      res = execute(
-        "SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1"
-      )
-      get_one(res)
+      find_one { "SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1" }
     end
+    alias :first :head
 
     def tail
-      res = execute(
-        "SELECT * FROM jobs ORDER BY job_id DESC LIMIT 1"
-      )
-      get_one(res)
+      find_one { "SELECT * FROM jobs ORDER BY job_id DESC LIMIT 1" }
     end
+    alias :last :tail
 
     def each
       execute(
@@ -81,7 +60,8 @@ module QC
         @connection.async_exec(sql)
       end
 
-      def get_one(res)
+      def find_one
+        res = execute(yield)
         if res.cmd_tuples > 0
           res.map do |r|
             Job.new(
