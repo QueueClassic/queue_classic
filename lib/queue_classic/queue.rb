@@ -1,10 +1,7 @@
 module  QC
   class Queue
     def self.setup(args={})
-      data_store = args[:data_store]
-      raise ArgumentError unless data_store.respond_to?(:<<)
       @@data = args[:data_store] || []
-
       self
     end
 
