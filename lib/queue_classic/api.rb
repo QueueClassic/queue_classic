@@ -9,6 +9,10 @@ module QC
       Queue.dequeue
     end
 
+    def delete(job)
+      Queue.delete(job)
+    end
+
     def work(job)
       klass   = job.klass
       method  = job.method
