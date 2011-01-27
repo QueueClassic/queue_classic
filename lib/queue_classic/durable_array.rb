@@ -2,10 +2,11 @@ require 'pg'
 
 module QC
   class Job
-    attr_accessor :job_id, :details
+    attr_accessor :job_id, :details, :locked_at
     def initialize(args={})
-      @job_id   = args["job_id"]
-      @details  = args["details"]
+      @job_id    = args["job_id"]
+      @details   = args["details"]
+      @locked_at = args["locked_at"]
     end
   end
 
@@ -13,7 +14,7 @@ module QC
     include Enumerable
 
     def initialize(args={})
-      @connection = PGconn.connect(:dbname => args[:dbname])
+      @connection = PGconn.connect(:dbname => "queue_classic_test")
       execute("SET client_min_messages TO 'warning'")
     end
 
@@ -23,6 +24,14 @@ module QC
         "(details)" +
         "VALUES ('#{details.to_json}')"
       )
+    end
+
+    def count
+      execute("SELECT COUNT(*) from jobs")[0]["count"].to_i
+    end
+
+    def lock(job)
+      execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE job_id = #{job.job_id}")
     end
 
     def delete(job)
@@ -49,9 +58,9 @@ module QC
     alias :last :tail
 
     def each
-      execute(
-        "SELECT * FROM jobs ORDER BY job_id ASC"
-      ).each {|r| yield(JSON.parse(r["details"])) }
+      execute("SELECT * FROM jobs ORDER BY job_id ASC").each do |r|
+        yield(JSON.parse(r["details"]))
+      end
     end
 
     private
@@ -65,8 +74,9 @@ module QC
         if res.cmd_tuples > 0
           res.map do |r|
             Job.new(
-              "job_id" => r["job_id"],
-              "details"=> JSON.parse( r["details"] )
+              "job_id"    => r["job_id"],
+              "details"   => JSON.parse( r["details"]),
+              "locked_at" => r["locked_at"]
             )
           end.pop
         end

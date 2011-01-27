@@ -2,7 +2,8 @@ require 'spec_helper'
 
 describe QC::DurableArray do
   before(:each) { clean_database }
-  let(:dbname) {"queue_classic_test"}
+  let(:dbname)    {"queue_classic_test"}
+  let(:job_hash)  {{"job" => "one"}}
 
   describe "JSON" do
     let(:array) { QC::DurableArray.new(:dbname => dbname) }
@@ -13,6 +14,30 @@ describe QC::DurableArray do
   end
 
   describe "low level methods" do
+
+    describe "#count" do
+      let(:array) { QC::DurableArray.new(:dbname => dbname) }
+      context "when there is 1 job in the array" do
+        it "should return 1" do
+          array << job_hash
+          array.count.should == 1
+          array << job_hash
+          array.count.should == 2
+        end
+      end
+    end
+    describe "#lock" do
+      let(:array) { QC::DurableArray.new(:dbname => dbname) }
+
+      it "should set the locked_at column" do
+        array << job_hash
+        job = array.first
+
+        array.lock(job)
+        array.find(job).locked_at.should_not be_nil
+      end
+    end
+
     describe "#head" do
       let(:array) { QC::DurableArray.new(:dbname => dbname) }
       context "when there is 1 jobs in the database" do
