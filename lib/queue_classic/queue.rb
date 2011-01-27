@@ -11,7 +11,8 @@ module  QC
 
     def self.dequeue
       next_in_queue = @@data.first
-      @@data.delete(next_in_queue)
+      @@data.lock(next_in_queue)
+      next_in_queue
     end
   end
 end
