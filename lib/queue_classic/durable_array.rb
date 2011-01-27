@@ -8,6 +8,15 @@ module QC
       @details   = args["details"]
       @locked_at = args["locked_at"]
     end
+
+    def klass
+      Kernel.const_get(details["job"].split(".").first)
+    end
+
+    def method
+      details["job"].split(".").last
+    end
+
   end
 
   class DurableArray
