@@ -11,7 +11,7 @@ class Notifier
 end
 
 describe QC::Worker do
-  describe "#run" do
+  describe "#start" do
     before { clean_database }
 
     it "should work a job" do
@@ -19,7 +19,7 @@ describe QC::Worker do
 
       Notifier.delivered.should be_false
       worker = QC::Worker.new
-      worker.run
+      worker.start
       Notifier.delivered.should be_true
     end
 
