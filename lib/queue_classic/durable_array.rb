@@ -17,6 +17,15 @@ module QC
       details["job"].split(".").last
     end
 
+    def params
+      params = details["params"]
+      if params.length == 1
+        return params[0]
+      else
+        params
+      end
+    end
+
   end
 
   class DurableArray
@@ -25,6 +34,7 @@ module QC
     def initialize(args={})
       @connection = PGconn.connect(:dbname => "queue_classic_test")
       execute("SET client_min_messages TO 'warning'")
+      execute("LISTEN jobs")
     end
 
     def <<(details)
@@ -33,6 +43,7 @@ module QC
         "(details)" +
         "VALUES ('#{details.to_json}')"
       )
+      execute("NOTIFY jobs, 'new-job'")
     end
 
     def count
@@ -49,7 +60,7 @@ module QC
     end
 
     def find(job)
-      find_one { "SELECT * FROM jobs WHERE job_id= #{job.job_id}" }
+      find_one { "SELECT * FROM jobs WHERE job_id = #{job.job_id}" }
     end
 
     def [](index)
@@ -60,6 +71,20 @@ module QC
       find_one { "SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1" }
     end
     alias :first :head
+
+    def b_head
+      job = nil
+      @connection.wait_for_notify do |event,pid,msg|
+        if msg == "new-job"
+          @connection.transaction do
+            job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY job_id ASC LIMIT 1 FOR UPDATE"}
+            return nil unless job
+            locked  = execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE job_id = #{job.job_id} AND locked_at IS NULL")
+          end
+        end
+      end
+      job
+    end
 
     def tail
       find_one { "SELECT * FROM jobs ORDER BY job_id DESC LIMIT 1" }
@@ -88,14 +113,6 @@ module QC
               "locked_at" => r["locked_at"]
             )
           end.pop
-        end
-      end
-
-      def quote(value)
-        if value.kind_of?(String)
-          "'#{value}'"
-        elsif value.kind_of?(Numeric)
-          value
         end
       end
 

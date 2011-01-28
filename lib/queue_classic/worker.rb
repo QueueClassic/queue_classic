@@ -1,20 +1,17 @@
 module QC
   class Worker
-
-    def initialize
-    end
-
-    def run
+    def start
+      worker_id = rand(1000)
+      puts "#{worker_id} ready for work"
       loop do
         job = QC.dequeue
+        # if we are here, dequeue has unblocked
+        # and we may have a job.
         if job
+          puts "#{worker_id} working job"
           QC.work(job)
-          QC.delete(job)
-        else
-          break
         end
       end
     end
-
   end
 end

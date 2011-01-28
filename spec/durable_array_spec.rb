@@ -15,6 +15,18 @@ describe QC::DurableArray do
 
   describe "low level methods" do
 
+    describe "#b_head" do
+      let(:array) { QC::DurableArray.new(:dbname => dbname) }
+      it "should wait for NOTIFY" do
+        worker1 = fork { array.b_head }
+        worker2 = fork { array.b_head }
+
+        array << {"job" => "got it"}
+        Process.wait(worker1)
+        Process.wait(worker2)
+      end
+    end
+
     describe "#count" do
       let(:array) { QC::DurableArray.new(:dbname => dbname) }
       context "when there is 1 job in the array" do

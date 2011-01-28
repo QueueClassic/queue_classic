@@ -10,11 +10,7 @@ module  QC
     end
 
     def self.dequeue
-      next_in_queue = @@data.first
-      if next_in_queue
-        @@data.lock(next_in_queue)
-        next_in_queue
-      end
+      @@data.b_head
     end
 
     def self.delete(job)
