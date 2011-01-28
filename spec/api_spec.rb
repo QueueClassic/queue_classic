@@ -15,7 +15,7 @@ describe QC::Api do
   describe "#dequeue" do
     it "should remove the job from the jobs table" do
       QC.enqueue "Notifier.send", {"args1" => "test"}
-      QC.dequeue.details.should == {"job" => "Notifier.send", "params"=>{"args1"=>"test"}}
+      QC.dequeue.details.should == {"job" => "Notifier.send", "params"=>[{"args1"=>"test"}]}
     end
   end
 end
