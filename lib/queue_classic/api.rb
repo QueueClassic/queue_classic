@@ -1,7 +1,7 @@
 module QC
   module Api
 
-    def enqueue(job,params={})
+    def enqueue(job,*params)
       Queue.enqueue(job,params)
     end
 
@@ -16,7 +16,9 @@ module QC
     def work(job)
       klass   = job.klass
       method  = job.method
-      klass.send(method)
+      params  = job.params
+
+      klass.send(method,params)
     end
 
   end
