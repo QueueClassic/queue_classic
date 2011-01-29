@@ -20,7 +20,8 @@ If you don't want to bother with a Rakefile just create a worker object and star
 ## Enqueue
 To place a job onto the queue, you should specify a class and a class method. The syntax should be:
 
-` QC.enqueue('Class.method', :arg1 => 'value1', :arg2 => 'value2')`
+    QC.enqueue('Class.method', :arg1 => 'value1', :arg2 => 'value2')
+
 The job gets stored in the jobs table with a details field set to: {job: Class.method, params: {arg1: value1, arg2: value2}} (json)
 
 ## Dequeue
