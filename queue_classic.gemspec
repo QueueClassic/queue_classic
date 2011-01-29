@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name          = 'queue_classic'
   s.email         = 'ryan@heroku.com'
-  s.version       = '0.1.0'
+  s.version       = '0.1.1'
   s.date          = '2011-01-28'
   s.description   = "Job Queue for Ruby"
   s.summary       = s.description + "(simple)"
