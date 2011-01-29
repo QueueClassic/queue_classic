@@ -50,10 +50,6 @@ module QC
       execute("SELECT COUNT(*) from jobs")[0]["count"].to_i
     end
 
-    def lock(job)
-      execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE job_id = #{job.job_id}")
-    end
-
     def delete(job)
       execute("DELETE FROM jobs WHERE job_id = #{job.job_id}")
       job
@@ -72,18 +68,23 @@ module QC
     end
     alias :first :head
 
-    def b_head
+    def lock_head
       job = nil
-      @connection.wait_for_notify do |event,pid,msg|
-        if msg == "new-job"
-          @connection.transaction do
-            job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY job_id ASC LIMIT 1 FOR UPDATE"}
-            return nil unless job
-            locked  = execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE job_id = #{job.job_id} AND locked_at IS NULL")
-          end
-        end
+      @connection.transaction do
+        job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY job_id ASC LIMIT 1 FOR UPDATE"}
+        return nil unless job
+        locked  = execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE job_id = #{job.job_id} AND locked_at IS NULL")
       end
       job
+    end
+
+    def b_head
+      if job = lock_head
+        job
+      else
+        @connection.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
+        job
+      end
     end
 
     def tail
@@ -99,22 +100,22 @@ module QC
 
     private
 
-      def execute(sql)
-        @connection.async_exec(sql)
-      end
+    def execute(sql)
+      @connection.async_exec(sql)
+    end
 
-      def find_one
-        res = execute(yield)
-        if res.cmd_tuples > 0
-          res.map do |r|
-            Job.new(
-              "job_id"    => r["job_id"],
-              "details"   => JSON.parse( r["details"]),
-              "locked_at" => r["locked_at"]
-            )
-          end.pop
-        end
+    def find_one
+      res = execute(yield)
+      if res.cmd_tuples > 0
+        res.map do |r|
+          Job.new(
+            "job_id"    => r["job_id"],
+            "details"   => JSON.parse( r["details"]),
+            "locked_at" => r["locked_at"]
+          )
+        end.pop
       end
+    end
 
   end
 end
