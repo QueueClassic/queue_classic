@@ -6,13 +6,15 @@ Queue Classic is an alternative queueing library for Ruby apps (Rails, Sinatra, 
 no ridiculous dependencies. As a matter of fact, Queue Classic only requires the pg and json.
 
 ## Installation
-`gem install queue_classic`
+
+    gem install queue_classic
+
 Add `require 'queue_classic/tasks'` to your Rakefile.
 If you don't want to bother with a Rakefile just create a worker object and start it manually.
-`
-worker = QC::Worker.new
-worker.start
-`
+
+    worker = QC::Worker.new
+    worker.start
+
 
 
 ## Enqueue
