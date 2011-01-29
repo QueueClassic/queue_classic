@@ -45,6 +45,3 @@ and then right before the job quits, touch the emailed_at column.
 Can I use this library with 50 Heroku Workers?
 > Maybe. I haven't tested 50 workers yet. But it is definitely a goal for Queue Classic. I am not sure when,
 but you can count on this library being able to handle all Heroku can throw at it.
-
-Are you a Heroku Engineer?
-> Yes.
