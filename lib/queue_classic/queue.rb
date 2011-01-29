@@ -17,5 +17,9 @@ module  QC
       @@data.delete(job)
     end
 
+    def self.length
+      @@data.count
+    end
+
   end
 end

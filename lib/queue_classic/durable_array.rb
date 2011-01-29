@@ -29,8 +29,6 @@ module QC
   end
 
   class DurableArray
-    include Enumerable
-
     def initialize(args={})
       @connection = PGconn.connect(:dbname => "queue_classic_test")
       execute("SET client_min_messages TO 'warning'")
@@ -56,15 +54,11 @@ module QC
     end
 
     def find(job)
-      find_one { "SELECT * FROM jobs WHERE job_id = #{job.job_id}" }
-    end
-
-    def [](index)
-      find_one { "SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1 OFFSET #{index}" }
+      find_one {"SELECT * FROM jobs WHERE job_id = #{job.job_id}"}
     end
 
     def head
-      find_one { "SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1" }
+      find_one {"SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1"}
     end
     alias :first :head
 
@@ -86,11 +80,6 @@ module QC
         job
       end
     end
-
-    def tail
-      find_one { "SELECT * FROM jobs ORDER BY job_id DESC LIMIT 1" }
-    end
-    alias :last :tail
 
     def each
       execute("SELECT * FROM jobs ORDER BY job_id ASC").each do |r|

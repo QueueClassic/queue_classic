@@ -13,6 +13,10 @@ module QC
       Queue.delete(job)
     end
 
+    def queue_length
+      Queue.length
+    end
+
     def work(job)
       klass   = job.klass
       method  = job.method
