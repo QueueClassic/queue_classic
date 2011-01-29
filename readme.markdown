@@ -1,8 +1,19 @@
 # Queue Classic
-**Alpha 0.1.0**
-Queue Classic 0.1.0 is not ready for production. However, it is under active development and I expect a beta release within the following months.
+**Alpha 0.1.1**
+
+Queue Classic 0.1.1 is not ready for production. However, it is under active development and I expect a beta release within the following months.
 Queue Classic is an alternative queueing library for Ruby apps (Rails, Sinatra, Etc...) It features **async** job polling, database maintained locks and
 no ridiculous dependencies. As a matter of fact, Queue Classic only requires the pg and json.
+
+## Installation
+`gem install queue_classic`
+Add `require 'queue_classic/tasks'` to your Rakefile.
+If you don't want to bother with a Rakefile just create a worker object and start it manually.
+`
+worker = QC::Worker.new
+worker.start
+`
+
 
 ## Enqueue
 To place a job onto the queue, you should specify a class and a class method. The syntax should be:
