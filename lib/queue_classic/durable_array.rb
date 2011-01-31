@@ -1,3 +1,4 @@
+require 'uri'
 require 'pg'
 
 module QC
@@ -30,7 +31,8 @@ module QC
 
   class DurableArray
     def initialize(args={})
-      @connection = PGconn.connect(:dbname => args[:dbname])
+      @db_string  = args[:database]
+      @connection = connection
       execute("SET client_min_messages TO 'warning'")
       execute("LISTEN jobs")
     end
@@ -87,8 +89,6 @@ module QC
       end
     end
 
-    private
-
     def execute(sql)
       @connection.async_exec(sql)
     end
@@ -103,6 +103,20 @@ module QC
             "locked_at" => r["locked_at"]
           )
         end.pop
+      end
+    end
+
+    def connection
+      db_params = URI.parse(@db_string)
+      if db_params.scheme == "postgres"
+        PGconn.connect(
+          :dbname   => db_params.path.gsub("/",""),
+          :user     => db_params.user,
+          :password => db_params.password,
+          :host     => db_params.host
+        )
+      else
+        PGconn.connect(:dbname => @db_string)
       end
     end
 

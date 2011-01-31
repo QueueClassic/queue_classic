@@ -8,7 +8,7 @@ require 'queue_classic/worker'
 require 'queue_classic/queue'
 require 'queue_classic/api'
 
-QC::Queue.setup :data_store => QC::DurableArray.new(:dbname => ENV["DATABASE_URL"])
+QC::Queue.setup :data_store => QC::DurableArray.new(:database => ENV["DATABASE_URL"])
 
 module QC
   extend Api
