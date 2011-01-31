@@ -2,9 +2,9 @@ require 'pg'
 
 module QC
   class Job
-    attr_accessor :job_id, :details, :locked_at
+    attr_accessor :id, :details, :locked_at
     def initialize(args={})
-      @job_id    = args["job_id"]
+      @id        = args["id"]
       @details   = args["details"]
       @locked_at = args["locked_at"]
     end
@@ -49,25 +49,25 @@ module QC
     end
 
     def delete(job)
-      execute("DELETE FROM jobs WHERE job_id = #{job.job_id}")
+      execute("DELETE FROM jobs WHERE id = #{job.id}")
       job
     end
 
     def find(job)
-      find_one {"SELECT * FROM jobs WHERE job_id = #{job.job_id}"}
+      find_one {"SELECT * FROM jobs WHERE id = #{job.id}"}
     end
 
     def head
-      find_one {"SELECT * FROM jobs ORDER BY job_id ASC LIMIT 1"}
+      find_one {"SELECT * FROM jobs ORDER BY id ASC LIMIT 1"}
     end
     alias :first :head
 
     def lock_head
       job = nil
       @connection.transaction do
-        job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY job_id ASC LIMIT 1 FOR UPDATE"}
+        job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
         return nil unless job
-        locked  = execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE job_id = #{job.job_id} AND locked_at IS NULL")
+        locked  = execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
       end
       job
     end
@@ -82,7 +82,7 @@ module QC
     end
 
     def each
-      execute("SELECT * FROM jobs ORDER BY job_id ASC").each do |r|
+      execute("SELECT * FROM jobs ORDER BY id ASC").each do |r|
         yield(JSON.parse(r["details"]))
       end
     end
@@ -98,7 +98,7 @@ module QC
       if res.cmd_tuples > 0
         res.map do |r|
           Job.new(
-            "job_id"    => r["job_id"],
+            "id"        => r["id"],
             "details"   => JSON.parse( r["details"]),
             "locked_at" => r["locked_at"]
           )
