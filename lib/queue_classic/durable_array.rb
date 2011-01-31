@@ -30,7 +30,7 @@ module QC
 
   class DurableArray
     def initialize(args={})
-      @connection = PGconn.connect(:dbname => "queue_classic_test")
+      @connection = PGconn.connect(:dbname => args[:dbname])
       execute("SET client_min_messages TO 'warning'")
       execute("LISTEN jobs")
     end
