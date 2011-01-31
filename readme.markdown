@@ -39,6 +39,7 @@ Once your Database is set, you will need to add a jobs table. If you are using r
       end
     end
 After running this migration, your database should be ready to go. As a sanity check, enqueue a job and then issue a SELECT in the postgres console.
+
 __script/console__
     QC.enqueue "Class.method"
 __Terminal__
@@ -47,28 +48,44 @@ __Terminal__
 You should see the job "Class.method"
 
 ### Rakefile
-Add `require 'queue_classic/tasks'` to your Rakefile.
-If you don't want to bother with a Rakefile just create a worker object and start it manually.
 
-    worker = QC::Worker.new
-    worker.start
+As a convenience, I added a rake task that responds to `rake jobs:work` There are also rake tasks in the `qc` name space.
+To get access to these tasks, Add `require 'queue_classic/tasks'` to your Rakefile.
 
-You will also need a jobs table
+## Fundamentals
 
-## Enqueue
+### Enqueue
+
 To place a job onto the queue, you should specify a class and a class method. The syntax should be:
 
     QC.enqueue('Class.method', :arg1 => 'value1', :arg2 => 'value2')
 
-The job gets stored in the jobs table with a details field set to: {job: Class.method, params: {arg1: value1, arg2: value2}} (json)
+The job gets stored in the jobs table with a details field set to: `{ job: Class.method, params: {arg1: value1, arg2: value2}}` (as JSON)
+Class can be any class and method can be anything that Class will respond to. For example:
 
-## Dequeue
-When you start a worker, it starts a loop that performs a blocking dequeue call. The call to dequeue will return when a job lock attempt was made.
-If your worker got the lock, then you work the job. Otherwise, you return and then continue the iteration in hopes of acquiring a lock.
+    class Invoice < ActiveRecord::Base
+      def self.process(invoice_id)
+        invoice = find(invoice_id)
+        invoice.process!
+      end
 
-## Working the Job
-The worker will lookup the method in the class and call it with the supplied arguments.
-Any sort of exception should be rescued in the class method.
+      def self.process_all
+        Invoice.all do |invoice|
+          QC.enqueue "Invoice.process", invoice.id
+        end
+      end
+    end
+
+
+### Dequeue
+
+Traditionally, a queue's dequeue operation will remove the item from the queue. However, Queue Classic will not delete the item from the queue, it will lock it
+and then the worker will delete the job once it has finished working it. Queue Classic's greatest strength is it's ability to safely lock jobs. Unlike other
+database backed queing libraries, Classic Queue uses the database time to lock. This allows you to be more relaxed about the time synchronization of your worker machines.
+
+Finally, the strongest feature of Queue Classic is it's ability to block on on dequeue. This design removes the need to __ Sleep & SELECT. __ Queue Classic takes advantage
+of the wonderul PUB/SUB featuers built in to Postgres. Basically there is a channel in which the workers LISTEN. When a new job is added to the queue, the queue sends NOTIFY
+messages on the channel. Once a NOTIFY is sent, each worker races to acquire a lock on a job. A job is awareded to the victor while the rest go back to wait for another job.
 
 ## FAQ
 Why does this project seem incomplete? Will you make it production ready?
