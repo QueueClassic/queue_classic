@@ -1,7 +1,7 @@
 # Queue Classic
-__Alpha 0.1.2__
+__Alpha 0.1.3__
 
-_Queue Classic 0.1.2 is not ready for production. However, it is under active development and I expect a beta release within the following months._
+_Queue Classic 0.1.3 is not ready for production. However, it is under active development and I expect a beta release within the following months._
 
 Queue Classic is an alternative queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue Classic features __asynchronous__ job polling, database maintained locks and
 no ridiculous dependencies. As a matter of fact, Queue Classic only requires the __pg__ and __json__.
