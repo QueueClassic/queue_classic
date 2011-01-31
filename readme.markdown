@@ -1,7 +1,7 @@
 # Queue Classic
-__Alpha 0.1.1__
+__Alpha 0.1.2__
 
-_Queue Classic 0.1.1 is not ready for production. However, it is under active development and I expect a beta release within the following months._
+_Queue Classic 0.1.2 is not ready for production. However, it is under active development and I expect a beta release within the following months._
 
 Queue Classic is an alternative queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue Classic features __asynchronous__ job polling, database maintained locks and
 no ridiculous dependencies. As a matter of fact, Queue Classic only requires the __pg__ and __json__.
@@ -88,8 +88,21 @@ of the wonderul PUB/SUB featuers built in to Postgres. Basically there is a chan
 messages on the channel. Once a NOTIFY is sent, each worker races to acquire a lock on a job. A job is awareded to the victor while the rest go back to wait for another job.
 
 ## FAQ
-Why does this project seem incomplete? Will you make it production ready?
-> I started this project on 1/24/2011. Check back soon! Also, feel free to contact me to find out how passionate I am about queueing.
+
+How is this different than DJ?
+> TL;DR = Store job as JSON (better introspection), Queue manages the time for locking jobs (workers can be out of sync.), No magic (less code), Small footprint (ORM Free).
+
+> __Introspection__ I want the data in the queue to be as simple as possible. Since we only store the Class, Method and Args, introspection into the queue is
+quite simpler.
+
+> __Locking__ You might have noticed that DJ's worker calls Time.now(). In a cloud environment, this could allow for workers to be confused about
+the status of a job. Classic Queue locks a job using Postgres' TIMESTAMP function.
+
+> __Magic__ I find disdain for methods on my objects that have nothing to do with the purpose of the object. Methods like "should" and "delay"
+are quite distasteful and obscure what is actually going on. If you use TestUnit for this reason, you might like Queue Classic. Anyway, I think
+the fundamental concept of a message queue is not that difficult to grasp; therefore, I have taken the time to make Queue Classic as transparent as possilbe.
+
+> __Footprint__ You don't need ActiveRecord or any other ORM to find the head or add to the tail. Take a look at the DurableArray class to see the SQL Classic Queue employees.
 
 Why doesn't your queue retry failed jobs?
 > I believe the Class method should handle any sort of exception.  Also, I think
@@ -100,3 +113,6 @@ and then right before the job quits, touch the emailed_at column.
 Can I use this library with 50 Heroku Workers?
 > Maybe. I haven't tested 50 workers yet. But it is definitely a goal for Queue Classic. I am not sure when,
 but you can count on this library being able to handle all Heroku can throw at it.
+
+Why does this project seem incomplete? Will you make it production ready?
+> I started this project on 1/24/2011. Check back soon! Also, feel free to contact me to find out how passionate I am about queueing.
