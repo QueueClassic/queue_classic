@@ -7,37 +7,37 @@ module DatabaseHelpers
   end
 
   def create_database
-    postgres.exec "CREATE DATABASE queue_classic_test"
+    postgres.exec "CREATE DATABASE #{ENV['DATABASE_URL']}"
   end
 
   def drop_database
-    postgres.exec "DROP DATABASE IF EXISTS queue_classic_test"
+    postgres.exec "DROP DATABASE IF EXISTS #{ENV['DATABASE_URL']}"
   end
 
   def create_table
-    test_db.exec(
+    jobs_db.exec(
       "CREATE TABLE jobs"    +
       "("                    +
-      "job_id    SERIAL,"    +
+      "id        SERIAL,"    +
       "details   text,"      +
-      "locked_at timestamp with time zone" +
+      "locked_at timestamp without time zone" +
       ");"
     )
   end
 
   def drop_table
-    test_db.exec("DROP TABLE jobs")
+    jobs_db.exec("DROP TABLE IF EXISTS jobs")
   end
 
   def disconnect
-    test_db.finish
+    jobs_db.finish
     postgres.finish
   end
 
-  def test_db
-    @testdb ||= PGconn.connect(:dbname => 'queue_classic_test')
-    @testdb.exec("SET client_min_messages TO 'warning'")
-    @testdb
+  def jobs_db
+    @jobs_db ||= PGconn.connect(:dbname => ENV["DATABASE_URL"])
+    @jobs_db.exec("SET client_min_messages TO 'warning'")
+    @jobs_db
   end
 
   def postgres
