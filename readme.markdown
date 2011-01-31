@@ -1,21 +1,59 @@
 # Queue Classic
-**Alpha 0.1.1**
+__Alpha 0.1.1__
 
-Queue Classic 0.1.1 is not ready for production. However, it is under active development and I expect a beta release within the following months.
-Queue Classic is an alternative queueing library for Ruby apps (Rails, Sinatra, Etc...) It features **async** job polling, database maintained locks and
-no ridiculous dependencies. As a matter of fact, Queue Classic only requires the pg and json.
+_Queue Classic 0.1.1 is not ready for production. However, it is under active development and I expect a beta release within the following months._
+
+Queue Classic is an alternative queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue Classic features __asynchronous__ job polling, database maintained locks and
+no ridiculous dependencies. As a matter of fact, Queue Classic only requires the __pg__ and __json__.
 
 ## Installation
 
+### TL;DR
+1. gem install queue_classic
+2. add jobs table to your database
+3. QC.enqueue "Class.method", :arg1 => val1
+4. rake qc:work
+
+### Gem
+
     gem install queue_classic
 
+### Database
+
+Queue Classic needs a database, so make sure that DATABASE_URL points to your database. If you are unsure about whether this var is set, run:
+    echo $DATABASE_URL
+in your shell. If you are using Heroku, this var is set and pointing to your primary database.
+
+Once your Database is set, you will need to add a jobs table. If you are using rails, add a migration with the following tables:
+
+    class CreateJobsTable < ActiveRecord::Migration
+      def self.up
+        create_table :jobs do |t|
+          t.text :details
+          t.timestamp :locked_at
+        end
+      end
+
+      def self.down
+        drop_table :jobs
+      end
+    end
+After running this migration, your database should be ready to go. As a sanity check, enqueue a job and then issue a SELECT in the postgres console.
+__script/console__
+    QC.enqueue "Class.method"
+__Terminal__
+    psql you_database_name
+    select * from jobs;
+You should see the job "Class.method"
+
+### Rakefile
 Add `require 'queue_classic/tasks'` to your Rakefile.
 If you don't want to bother with a Rakefile just create a worker object and start it manually.
 
     worker = QC::Worker.new
     worker.start
 
-
+You will also need a jobs table
 
 ## Enqueue
 To place a job onto the queue, you should specify a class and a class method. The syntax should be:
