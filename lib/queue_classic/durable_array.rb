@@ -70,6 +70,7 @@ module QC
       job = nil
       with_log("start lock transaction") do
         @connection.transaction do
+          log("inside transaction")
           if job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
             with_log("lock acquired for #{job.inspect}") do
               locked  = execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
@@ -129,13 +130,17 @@ module QC
     def with_log(msg)
       res = yield
       if QC.logging_enabled?
-        puts "|"
-        puts "| \t" + msg
-        puts "| \t" + res.cmd_status if res.respond_to?(:cmd_status)
-        puts "! \t" + res.result_error_message if res.respond_to?(:result_error_message)
-        puts "|"
+        log(msg)
+        log(res.cmd_status)           if res.respond_to?(:cmd_status)
+        log(res.result_error_message) if res.respond_to?(:result_error_message)
       end
       res
+    end
+
+    def log(msg)
+      puts "|"
+      puts "| \t" + msg
+      puts "|"
     end
 
   end
