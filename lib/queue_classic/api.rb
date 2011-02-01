@@ -28,5 +28,9 @@ module QC
       puts "ArgumentError: #{e.inspect}"
     end
 
+    def logging_enabled?
+      true
+    end
+
   end
 end

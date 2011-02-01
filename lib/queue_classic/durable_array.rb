@@ -34,16 +34,16 @@ module QC
       @db_string  = args[:database]
       @connection = connection
       execute("SET client_min_messages TO 'warning'")
-      execute("LISTEN jobs")
+      with_log("setup PG LISTEN") { execute("LISTEN jobs") }
     end
 
     def <<(details)
-      execute(
-        "INSERT INTO jobs" +
-        "(details)" +
-        "VALUES ('#{details.to_json}')"
-      )
-      execute("NOTIFY jobs, 'new-job'")
+      with_log("insert job into jobs table") do
+        execute("INSERT INTO jobs (details) VALUES ('#{details.to_json}')")
+      end
+      with_log("send notification to jobs channel") do
+        execute("NOTIFY jobs, 'new-job'")
+      end
     end
 
     def count
@@ -51,7 +51,9 @@ module QC
     end
 
     def delete(job)
-      execute("DELETE FROM jobs WHERE id = #{job.id}")
+      with_log("delete job") do
+        execute("DELETE FROM jobs WHERE id = #{job.id}")
+      end
       job
     end
 
@@ -66,10 +68,12 @@ module QC
 
     def lock_head
       job = nil
-      @connection.transaction do
-        job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
-        return nil unless job
-        locked  = execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
+      with_log("start lock transaction") do
+        @connection.transaction do
+          if job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
+            locked  = execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
+          end
+        end
       end
       job
     end
@@ -118,6 +122,18 @@ module QC
       else
         PGconn.connect(:dbname => @db_string)
       end
+    end
+
+    def with_log(msg)
+      res = yield
+      if QC.logging_enabled?
+        puts "|"
+        puts "| \t" + msg
+        puts "| \t" + res.cmd_status if res.respond_to?(:cmd_status)
+        puts "! \t" + res.result_error_message if res.respond_to?(:result_error_message)
+        puts "|"
+      end
+      res
     end
 
   end
