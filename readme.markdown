@@ -93,7 +93,7 @@ How is this different than DJ?
 > TL;DR = Store job as JSON (better introspection), Queue manages the time for locking jobs (workers can be out of sync.), No magic (less code), Small footprint (ORM Free).
 
 > __Introspection__ I want the data in the queue to be as simple as possible. Since we only store the Class, Method and Args, introspection into the queue is
-quite simpler.
+quite simple.
 
 > __Locking__ You might have noticed that DJ's worker calls Time.now(). In a cloud environment, this could allow for workers to be confused about
 the status of a job. Classic Queue locks a job using Postgres' TIMESTAMP function.
