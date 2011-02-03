@@ -1,3 +1,4 @@
+.rvmrc
 run.rb
 server.rb
 lib/notifier.rb
