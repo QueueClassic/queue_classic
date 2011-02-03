@@ -95,7 +95,7 @@ module QC
 
     def find_one
       res = execute(yield)
-      if res.cmd_tuples > 0
+      if res.count > 0
         res.map do |r|
           Job.new(
             "id"        => r["id"],
