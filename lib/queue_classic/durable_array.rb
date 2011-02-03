@@ -38,12 +38,8 @@ module QC
     end
 
     def <<(details)
-      with_log("insert job into jobs table") do
-        execute("INSERT INTO jobs (details) VALUES ('#{details.to_json}')")
-      end
-      with_log("send notification to jobs channel") do
-        execute("NOTIFY jobs, 'new-job'")
-      end
+      execute("INSERT INTO jobs (details) VALUES ('#{details.to_json}')")
+      execute("NOTIFY jobs, 'new-job'")
     end
 
     def count
@@ -51,9 +47,7 @@ module QC
     end
 
     def delete(job)
-      with_log("delete job") do
-        execute("DELETE FROM jobs WHERE id = #{job.id}")
-      end
+      with_log("deleting job #{job.id}") { execute("DELETE FROM jobs WHERE id = #{job.id}") }
       job
     end
 
@@ -70,10 +64,9 @@ module QC
       job = nil
       with_log("start lock transaction") do
         @connection.transaction do
-          log("inside transaction")
           if job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
             with_log("lock acquired for #{job.inspect}") do
-              locked  = execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
+              execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
             end
           end
         end
@@ -138,9 +131,7 @@ module QC
     end
 
     def log(msg)
-      puts "|"
       puts "| \t" + msg
-      puts "|"
     end
 
   end
