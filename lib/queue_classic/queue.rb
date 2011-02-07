@@ -12,7 +12,7 @@ module  QC
     end
 
     def dequeue
-      @data.b_head
+      @data.first
     end
 
     def delete(job)

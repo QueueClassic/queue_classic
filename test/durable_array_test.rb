@@ -21,22 +21,22 @@ class DurableArrayTest < MiniTest::Unit::TestCase
     assert_equal 2, array.count
   end
 
-  def test_head_returns_first_job
+  def test_first_returns_fsrst_job
     clean_database
     array = QC::DurableArray.new(:database => "queue_classic_test")
 
     job = {"job" => "one"}
     array << job
-    assert_equal job, array.head.details
+    assert_equal job, array.first.details
   end
 
-  def test_head_returns_first_job_when_many_are_in_array
+  def test_first_returns_first_job_when_many_are_in_array
     clean_database
     array = QC::DurableArray.new(:database => "queue_classic_test")
 
     array << {"job" => "one"}
     array << {"job" => "two"}
-    assert_equal({"job" => "one"}, array.head.details)
+    assert_equal({"job" => "one"}, array.first.details)
   end
 
   def test_delete_removes_job_from_array

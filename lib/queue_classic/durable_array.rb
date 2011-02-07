@@ -58,7 +58,6 @@ module QC
     def head
       find_one {"SELECT * FROM jobs ORDER BY id ASC LIMIT 1"}
     end
-    alias :first :head
 
     def lock_head
       job = nil
@@ -74,7 +73,7 @@ module QC
       job
     end
 
-    def b_head
+    def first
       if job = lock_head
         job
       else
