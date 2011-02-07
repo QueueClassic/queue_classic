@@ -1,25 +1,26 @@
+require 'singleton'
+
 module  QC
   class Queue
-    def self.setup(args={})
-      @@data = args[:data_store] || []
-      self
+    include Singleton
+    def setup(args={})
+      @data = args[:data_store]
     end
 
-    def self.enqueue(job,params)
-      @@data << {"job" => job, "params" => params}
+    def enqueue(job,params)
+      @data << {"job" => job, "params" => params}
     end
 
-    def self.dequeue
-      @@data.b_head
+    def dequeue
+      @data.b_head
     end
 
-    def self.delete(job)
-      @@data.delete(job)
+    def delete(job)
+      @data.delete(job)
     end
 
-    def self.length
-      @@data.count
+    def length
+      @data.count
     end
-
   end
 end

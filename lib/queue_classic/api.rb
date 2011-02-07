@@ -1,20 +1,24 @@
 module QC
   module Api
 
+    def queue
+      @queue ||= Queue.instance
+    end
+
     def enqueue(job,*params)
-      Queue.enqueue(job,params)
+      queue.enqueue(job,params)
     end
 
     def dequeue
-      Queue.dequeue
+      queue.dequeue
     end
 
     def delete(job)
-      Queue.delete(job)
+      queue.delete(job)
     end
 
     def queue_length
-      Queue.length
+      queue.length
     end
 
     def work(job)
@@ -29,7 +33,7 @@ module QC
     end
 
     def logging_enabled?
-      true
+      ENV["LOGGING"]
     end
 
   end

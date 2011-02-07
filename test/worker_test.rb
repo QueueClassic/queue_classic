@@ -9,6 +9,7 @@ class WorkerTest < MiniTest::Unit::TestCase
   include DatabaseHelpers
 
   def test_working_a_job
+    set_data_store
     clean_database
 
     QC.enqueue "TestNotifier.deliver", {}
