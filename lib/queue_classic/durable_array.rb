@@ -55,10 +55,6 @@ module QC
       find_one {"SELECT * FROM jobs WHERE id = #{job.id}"}
     end
 
-    def head
-      find_one {"SELECT * FROM jobs ORDER BY id ASC LIMIT 1"}
-    end
-
     def lock_head
       job = nil
       with_log("start lock transaction") do

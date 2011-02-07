@@ -3,12 +3,12 @@ require File.expand_path("../helper.rb", __FILE__)
 class DurableArrayTest < MiniTest::Unit::TestCase
   include DatabaseHelpers
 
-  def test_head_decodes_json
+  def test_first_decodes_json
     clean_database
     array = QC::DurableArray.new(:database => "queue_classic_test")
 
     array << {"test" => "ok"}
-    assert_equal({"test" => "ok"}, array.head.details)
+    assert_equal({"test" => "ok"}, array.first.details)
   end
 
   def test_count_returns_number_of_rows
@@ -44,9 +44,11 @@ class DurableArrayTest < MiniTest::Unit::TestCase
     array = QC::DurableArray.new(:database => "queue_classic_test")
 
     array << {"job" => "one"}
-    assert_equal( {"job" => "one"}, array.head.details)
-    array.delete(array.head)
-    assert_nil array.head
+    job = array.first
+
+    assert_equal( {"job" => "one"}, job.details)
+    array.delete(job)
+    assert_nil array.first
   end
 
   def test_delete_returns_job_after_delete
@@ -54,10 +56,12 @@ class DurableArrayTest < MiniTest::Unit::TestCase
     array = QC::DurableArray.new(:database => "queue_classic_test")
 
     array << {"job" => "one"}
-    assert_equal({"job" => "one"}, array.head.details)
+    job = array.first
 
-    res = array.delete(array.head)
-    assert_nil(array.head)
+    assert_equal({"job" => "one"}, job.details)
+
+    res = array.delete(job)
+    assert_nil(array.first)
     assert_equal({"job" => "one"}, res.details)
   end
 
