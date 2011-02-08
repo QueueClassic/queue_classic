@@ -23,6 +23,7 @@ module DatabaseHelpers
       "locked_at timestamp without time zone" +
       ");"
     )
+    jobs_db.exec("CREATE INDEX jobs_id_idx ON jobs (id)")
   end
 
   def drop_table
