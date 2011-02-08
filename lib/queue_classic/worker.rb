@@ -6,7 +6,6 @@ module QC
     end
 
     def start
-      puts "#{@worker_id} ready for work"
       loop { work }
     end
 
@@ -15,7 +14,6 @@ module QC
       # if we are here, dequeue has unblocked
       # and we may have a job.
       if job
-        puts "#{@worker_id} working job"
         QC.work(job)
       end
 
