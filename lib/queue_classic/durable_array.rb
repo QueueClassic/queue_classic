@@ -1,5 +1,6 @@
 module QC
   class DurableArray
+
     def initialize(args={})
       @db_string  = args[:database]
       @connection = connection
@@ -27,13 +28,9 @@ module QC
 
     def lock_head
       job = nil
-      with_log("start lock transaction") do
-        @connection.transaction do
-          if job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
-            with_log("lock acquired for #{job.inspect}") do
-              execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
-            end
-          end
+      @connection.transaction do
+        if job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
+          execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
         end
       end
       job
