@@ -14,6 +14,11 @@ no ridiculous dependencies. As a matter of fact, Queue Classic only requires the
 3. QC.enqueue "Class.method", :arg1 => val1
 4. rake qc:work
 
+### Dependencies
+
+  Postgres version 9
+  Ruby (gems: pg, json)
+
 ### Gem
 
     gem install queue_classic
@@ -86,6 +91,15 @@ database backed queing libraries, Classic Queue uses the database time to lock. 
 Finally, the strongest feature of Queue Classic is it's ability to block on on dequeue. This design removes the need to __ Sleep & SELECT. __ Queue Classic takes advantage
 of the wonderul PUB/SUB featuers built in to Postgres. Basically there is a channel in which the workers LISTEN. When a new job is added to the queue, the queue sends NOTIFY
 messages on the channel. Once a NOTIFY is sent, each worker races to acquire a lock on a job. A job is awareded to the victor while the rest go back to wait for another job.
+
+## Performance
+
+    ruby benchmark.rb
+    #                user     system      total        real
+    #            0.950000   0.620000   1.570000 (  9.479941)
+
+Hardware: Mac Book Pro 2.8 GHz Intel Core i7. SSD. 4 GB memory.
+Software: Ruby 1.9.2-p0, PostgreSQL 9.0.2
 
 ## FAQ
 
