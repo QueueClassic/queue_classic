@@ -37,6 +37,7 @@ Once your Database is set, you will need to add a jobs table. If you are using r
         create_table :jobs do |t|
           t.text :details
           t.timestamp :locked_at
+          t.index :id
         end
       end
 
@@ -45,6 +46,9 @@ Once your Database is set, you will need to add a jobs table. If you are using r
       end
     end
 After running this migration, your database should be ready to go. As a sanity check, enqueue a job and then issue a SELECT in the postgres console.
+
+Be sure and add the index to the id column. This will help out the worker if the queue should ever reach an obscene length. It made a huge difference
+when running the benchmark.
 
 __script/console__
     QC.enqueue "Class.method"
@@ -94,6 +98,7 @@ of the wonderul PUB/SUB featuers built in to Postgres. Basically there is a chan
 messages on the channel. Once a NOTIFY is sent, each worker races to acquire a lock on a job. A job is awareded to the victor while the rest go back to wait for another job.
 
 ## Performance
+I am pleased at the performance of Queue Classic. It ran 3x faster than the some of the most popular Relational Database backed queues. (I have yet to benchmark redis backed queues)
 
     ruby benchmark.rb
                     user     system      total        real
