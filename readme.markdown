@@ -17,6 +17,7 @@ no ridiculous dependencies. As a matter of fact, Queue Classic only requires the
 ### Dependencies
 
   Postgres version 9
+
   Ruby (gems: pg, json)
 
 ### Gem
@@ -95,10 +96,11 @@ messages on the channel. Once a NOTIFY is sent, each worker races to acquire a l
 ## Performance
 
     ruby benchmark.rb
-    #                user     system      total        real
-    #            0.950000   0.620000   1.570000 (  9.479941)
+                    user     system      total        real
+                0.950000   0.620000   1.570000 (  9.479941)
 
 Hardware: Mac Book Pro 2.8 GHz Intel Core i7. SSD. 4 GB memory.
+
 Software: Ruby 1.9.2-p0, PostgreSQL 9.0.2
 
 ## FAQ
