@@ -1,7 +1,9 @@
 # Queue Classic
-__Alpha 0.1.6__
+__Beta 0.2.0__
 
-_Queue Classic 0.1.6 is not ready for production. However, it is under active development and I expect a beta release within the following months._
+__Queue Classic 0.2.0 is in Beta.__ I have been using this library with 30-50 Heroku workers and have had great results. However, your mileage may vary.
+
+I am using this in production applications and plan to maintain and support this library for a long time.
 
 Queue Classic is an alternative queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue Classic features __asynchronous__ job polling, database maintained locks and
 no ridiculous dependencies. As a matter of fact, Queue Classic only requires the __pg__ and __json__.
@@ -148,7 +150,7 @@ creating jobs for the emailing of newsletters; put a emailed_at column on your n
 and then right before the job quits, touch the emailed_at column.
 
 Can I use this library with 50 Heroku Workers?
-> <strike>Maybe. I haven't tested 50 workers yet.</strike> Yes.
+> Yes.
 
 Why does this project seem incomplete? Will you make it production ready?
 > I started this project on 1/24/2011. Check back soon! Also, feel free to contact me to find out how passionate I am about queueing.
