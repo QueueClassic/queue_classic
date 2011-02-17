@@ -1,10 +1,6 @@
 module QC
   class Worker
 
-    def initialize
-      @worker_id = rand(1000)
-    end
-
     def start
       loop { work }
     end
