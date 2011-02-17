@@ -1,0 +1,8 @@
+0.2.0
+Beta Release
+	Added method for handling failed jobs
+	Benchmarks
+	Removed logging
+	Moved the Job class into it's own file
+
+0.1.6
