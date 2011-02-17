@@ -10,13 +10,24 @@ module QC
     end
 
     def work
-      job = QC.dequeue
-      # if we are here, dequeue has unblocked
-      # and we may have a job.
-      if job
-        QC.work(job)
+      if job = QC.dequeue #blocks until we have a job
+        begin
+          QC.work(job)
+        rescue Object => e
+          handle_failure(job,e)
+        ensure
+          QC.delete(job)
+        end
       end
+    end
 
+    #override this method to do whatever you want
+    def handle_failure(job,e)
+      puts "!"
+      puts "! \t FAIL"
+      puts "! \t \t #{job.inspect}"
+      puts "! \t \t #{e.inspect}"
+      puts "!"
     end
 
   end

@@ -97,6 +97,22 @@ Finally, the strongest feature of Queue Classic is it's ability to block on on d
 of the wonderul PUB/SUB featuers built in to Postgres. Basically there is a channel in which the workers LISTEN. When a new job is added to the queue, the queue sends NOTIFY
 messages on the channel. Once a NOTIFY is sent, each worker races to acquire a lock on a job. A job is awareded to the victor while the rest go back to wait for another job.
 
+### The Worker
+
+The worker calls dequeue and then calls the enqueued method with the supplied arguments. Once the method terminates, the job is deleted from the queue. In the case that your method
+does not terminate, or the worker unexpectingly dies, Queue Classic will do following: It will ensure that the job is deleted from the queue and it will call a method (which is certainly over
+rideable) that handles the failure. You can do whatever you want in the handle_failure method, log to Get Exceptional, enqueue the job again, log to stderror.
+
+    class MyWorker < QC::Worker
+      def handle_failure(job,exception)
+        puts job.inspect
+        puts exception.inspect
+      end
+    end
+
+    worker = MyWorker.new
+    worker.start
+
 ## Performance
 I am pleased at the performance of Queue Classic. It ran 3x faster than the some of the most popular Relational Database backed queues. (I have yet to benchmark redis backed queues)
 
@@ -132,8 +148,7 @@ creating jobs for the emailing of newsletters; put a emailed_at column on your n
 and then right before the job quits, touch the emailed_at column.
 
 Can I use this library with 50 Heroku Workers?
-> Maybe. I haven't tested 50 workers yet. But it is definitely a goal for Queue Classic. I am not sure when,
-but you can count on this library being able to handle all Heroku can throw at it.
+> <strike>Maybe. I haven't tested 50 workers yet.</strike> Yes.
 
 Why does this project seem incomplete? Will you make it production ready?
 > I started this project on 1/24/2011. Check back soon! Also, feel free to contact me to find out how passionate I am about queueing.

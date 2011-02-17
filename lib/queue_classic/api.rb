@@ -27,9 +27,6 @@ module QC
       params  = job.params
 
       klass.send(method,params)
-      delete(job)
-    rescue ArgumentError => e
-      puts "ArgumentError: #{e.inspect}"
     end
 
     def logging_enabled?
