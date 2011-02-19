@@ -30,7 +30,11 @@ module QC
       method  = job.method
       params  = job.params
 
-      klass.send(method,params)
+      if params.class == Array
+        klass.send(method,*params)
+      else
+        klass.send(method,params)
+      end
     end
 
     def logging_enabled?
