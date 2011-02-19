@@ -73,7 +73,7 @@ class DurableArrayTest < MiniTest::Unit::TestCase
     array << {"job" => "one"}
     array << {"job" => "two"}
     results = []
-    array.each {|v| results << v}
+    array.each {|v| results << v.details}
     assert_equal([{"job" => "one"},{"job" => "two"}], results)
   end
 

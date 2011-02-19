@@ -4,7 +4,7 @@ module QC
 
     def initialize(args={})
       @id        = args["id"]
-      @details   = args["details"]
+      @details   = JSON.parse(args["details"])
       @locked_at = args["locked_at"]
     end
 

@@ -49,7 +49,7 @@ module QC
 
     def each
       execute("SELECT * FROM jobs ORDER BY id ASC").each do |r|
-        yield(JSON.parse(r["details"]))
+        yield Job.new(r)
       end
     end
 
@@ -66,7 +66,7 @@ module QC
         res.map do |r|
           Job.new(
             "id"        => r["id"],
-            "details"   => JSON.parse( r["details"]),
+            "details"   => r["details"],
             "locked_at" => r["locked_at"]
           )
         end.pop
