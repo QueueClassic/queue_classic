@@ -3,9 +3,6 @@ module QC
 
     def initialize(args={})
       @db_string  = args[:database]
-      @connection = connection
-      execute("SET client_min_messages TO 'warning'")
-      with_log("setup PG LISTEN") { execute("LISTEN jobs") }
     end
 
     def <<(details)
@@ -18,7 +15,7 @@ module QC
     end
 
     def delete(job)
-      with_log("deleting job #{job.id}") { execute("DELETE FROM jobs WHERE id = #{job.id}") }
+      execute("DELETE FROM jobs WHERE id = #{job.id}")
       job
     end
 
@@ -28,19 +25,24 @@ module QC
 
     def lock_head
       job = nil
-      @connection.transaction do
+      conn = connection
+      conn.transaction do
         if job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
-          execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
+          conn.exec("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
         end
       end
+      conn.close
       job
     end
 
     def first
+      conn = connection
+      conn.exec("LISTEN jobs")
       if job = lock_head
         job
       else
-        @connection.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
+        conn.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
+        conn.close
         job
       end
     end
@@ -52,7 +54,10 @@ module QC
     end
 
     def execute(sql)
-      @connection.async_exec(sql)
+      conn = connection
+      res = conn.exec(sql)
+      conn.finish
+      res
     end
 
     def find_one
@@ -80,20 +85,6 @@ module QC
       else
         PGconn.connect(:dbname => @db_string)
       end
-    end
-
-    def with_log(msg)
-      res = yield
-      if QC.logging_enabled?
-        log(msg)
-        log(res.cmd_status)           if res.respond_to?(:cmd_status)
-        log(res.result_error_message) if res.respond_to?(:result_error_message)
-      end
-      res
-    end
-
-    def log(msg)
-      puts "| \t" + msg
     end
 
   end

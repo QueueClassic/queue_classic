@@ -47,8 +47,10 @@ class DurableArrayTest < MiniTest::Unit::TestCase
     job = array.first
 
     assert_equal( {"job" => "one"}, job.details)
+
+    assert_equal(1,array.count)
     array.delete(job)
-    assert_nil array.first
+    assert_equal(0,array.count)
   end
 
   def test_delete_returns_job_after_delete
@@ -61,7 +63,6 @@ class DurableArrayTest < MiniTest::Unit::TestCase
     assert_equal({"job" => "one"}, job.details)
 
     res = array.delete(job)
-    assert_nil(array.first)
     assert_equal({"job" => "one"}, res.details)
   end
 
