@@ -19,6 +19,10 @@ module  QC
       @data.delete(job)
     end
 
+    def delete_all
+      @data.each {|j| delete(j) }
+    end
+
     def length
       @data.count
     end

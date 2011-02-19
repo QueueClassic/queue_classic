@@ -17,6 +17,10 @@ module QC
       queue.delete(job)
     end
 
+    def delete_all
+      queue.delete_all
+    end
+
     def queue_length
       queue.length
     end

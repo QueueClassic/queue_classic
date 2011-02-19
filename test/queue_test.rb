@@ -19,4 +19,15 @@ class QueueTest < MiniTest::Unit::TestCase
     assert_equal 1, QC::Queue.instance.length
   end
 
+  def test_queue_delete_all
+    QC::Queue.instance.setup :data_store => []
+
+    QC::Queue.instance.enqueue "job","params"
+    QC::Queue.instance.enqueue "job","params"
+
+    assert_equal 2, QC::Queue.instance.length
+    QC::Queue.instance.delete_all
+    assert_equal 0, QC::Queue.instance.length
+  end
+
 end
