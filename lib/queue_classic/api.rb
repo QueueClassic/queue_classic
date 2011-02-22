@@ -6,7 +6,11 @@ module QC
     end
 
     def enqueue(job,*params)
-      queue.enqueue(job,params)
+      if job.respond_to?(:details) and job.respond_to?(:params)
+        queue.enqueue(job.signature, (job.params || []))
+      else
+        queue.enqueue(job,params)
+      end
     end
 
     def dequeue
