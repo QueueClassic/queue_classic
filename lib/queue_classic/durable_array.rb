@@ -57,13 +57,7 @@ module QC
     def find_one
       res = execute(yield)
       if res.count > 0
-        res.map do |r|
-          Job.new(
-            "id"        => r["id"],
-            "details"   => r["details"],
-            "locked_at" => r["locked_at"]
-          )
-        end.pop
+        res.map {|r| Job.new(r)}.pop
       end
     end
 
