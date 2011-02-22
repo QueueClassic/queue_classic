@@ -4,7 +4,6 @@ module QC
     def initialize(args={})
       @db_string  = args[:database]
       @connection = connection
-      execute("LISTEN jobs")
     end
 
     def <<(details)
@@ -39,6 +38,7 @@ module QC
       if job = lock_head
         job
       else
+        execute("LISTEN jobs")
         @connection.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
         job
       end
