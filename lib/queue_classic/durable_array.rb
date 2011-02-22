@@ -3,7 +3,6 @@ module QC
 
     def initialize(args={})
       @db_string  = args[:database]
-      @connection = connection
     end
 
     def <<(details)
@@ -26,9 +25,9 @@ module QC
 
     def lock_head
       job = nil
-      @connection.transaction do
+      connection.transaction do
         if job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
-          @connection.exec("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
+          execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
         end
       end
       job
@@ -39,7 +38,7 @@ module QC
         job
       else
         execute("LISTEN jobs")
-        @connection.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
+        connection.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
         job
       end
     end
@@ -51,7 +50,7 @@ module QC
     end
 
     def execute(sql)
-      @connection.exec(sql)
+      connection.exec(sql)
     end
 
     def find_one
@@ -63,7 +62,7 @@ module QC
 
     def connection
       db_params = URI.parse(@db_string)
-      if db_params.scheme == "postgres"
+      @connection ||= if db_params.scheme == "postgres"
         PGconn.connect(
           :dbname   => db_params.path.gsub("/",""),
           :user     => db_params.user,
