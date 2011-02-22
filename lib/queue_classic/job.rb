@@ -9,14 +9,19 @@ module QC
     end
 
     def klass
-      Kernel.const_get(details["job"].split(".").first)
+      eval(details["job"].split(".").first)
     end
 
     def method
       details["job"].split(".").last
     end
 
+    def signature
+      details["job"]
+    end
+
     def params
+      return [] unless details["params"]
       params = details["params"]
       if params.length == 1
         return params[0]
