@@ -3,6 +3,8 @@ module QC
 
     def initialize(args={})
       @db_string  = args[:database]
+      @connection = connection
+      execute("LISTEN jobs")
     end
 
     def <<(details)
@@ -25,24 +27,19 @@ module QC
 
     def lock_head
       job = nil
-      conn = connection
-      conn.transaction do
+      @connection.transaction do
         if job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
-          conn.exec("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
+          @connection.exec("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
         end
       end
-      conn.close
       job
     end
 
     def first
-      conn = connection
-      conn.exec("LISTEN jobs")
       if job = lock_head
         job
       else
-        conn.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
-        conn.close
+        @connection.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
         job
       end
     end
@@ -54,10 +51,7 @@ module QC
     end
 
     def execute(sql)
-      conn = connection
-      res = conn.exec(sql)
-      conn.finish
-      res
+      @connection.exec(sql)
     end
 
     def find_one
