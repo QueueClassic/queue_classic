@@ -1,8 +1,15 @@
-0.2.0
-Beta Release
-	Added method for handling failed jobs
-	Benchmarks
-	Removed logging
-	Moved the Job class into it's own file
+Version 0.2.1
+- Added method for handling errors.
+- Added ability to enqueue a Job instance. Makes retrying jobs easier.
+- Added delete_all.
+- Fixed connection algorithm. 1 connection per process.
+- Fixed API for enqueue. Now accepting 1 arg or many args.
+
+Version 0.2.0
+- Beta Release
+- Added method for handling failed jobs
+- Added Benchmarks
+- Removed logging
+- Moved the Job class into it's own file
 
 0.1.6
