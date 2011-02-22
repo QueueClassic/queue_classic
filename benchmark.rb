@@ -18,9 +18,12 @@ end
 
 Benchmark.bm(10) do |x|
   n = 10_000
-  n.times { QC.enqueue("String.length", "foo") }
 
-  x.report do
+  x.report "enqueue" do
+    n.times { QC.enqueue("String.length", "foo") }
+  end
+
+  x.report "work" do
     worker = QC::Worker.new
     n.times { worker.work }
   end
