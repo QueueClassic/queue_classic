@@ -136,7 +136,9 @@ If you are using Queue Classic with Rails, You should:
 1. Remove require 'queue_classic/tasks' from Rakefile
 2. Create new file in lib/tasks. Call it queue_classic.rb (name is arbitrary)
 3. Insert something like the following:
-    
+
+#### lib/tasks/queue_classic.rb
+
     require 'queue_classic'
 
     class MyWorker < QC::Worker
@@ -163,15 +165,12 @@ If you are using Queue Classic with Rails, You should:
         QC.enqueue(job)
 
       end
-
     end
 
     namespace :jobs do
-
       task :work  => :environment do
         MyWorker.new.start
       end
-
     end
 
 ## Performance
