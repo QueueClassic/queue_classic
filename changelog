@@ -1,3 +1,6 @@
+Version 0.2.2
+- Fixed problems with enqueueing a list of parameters.
+
 Version 0.2.1
 - Added method for handling errors.
 - Added ability to enqueue a Job instance. Makes retrying jobs easier.
