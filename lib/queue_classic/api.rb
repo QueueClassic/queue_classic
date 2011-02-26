@@ -26,6 +26,10 @@ module QC
       queue.delete_all
     end
 
+    def query(q)
+      queue.query(q)
+    end
+
     def queue_length
       queue.length
     end

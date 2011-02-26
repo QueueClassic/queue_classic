@@ -15,6 +15,10 @@ module  QC
       @data.first
     end
 
+    def query(signature)
+      @data.search_details_column(signature)
+    end
+
     def delete(job)
       @data.delete(job)
     end

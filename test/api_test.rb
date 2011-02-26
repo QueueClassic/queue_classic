@@ -35,6 +35,8 @@ context "QC::Api" do
     assert_equal({"job" => "Notifier.send", "params" => ["1"]}, job.details)
   end
 
+  test "query finds job with matching signature" do
+    end
 
 end
 

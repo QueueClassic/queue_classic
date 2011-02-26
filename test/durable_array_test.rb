@@ -92,4 +92,22 @@ class DurableArrayTest < MiniTest::Unit::TestCase
     assert_equal "queue_classic_test", array.connection.db
   end
 
+  def test_search
+    clean_database
+    array = QC::DurableArray.new(:database => "queue_classic_test")
+
+    array << {"job" => "A.signature"}
+    jobs = array.search_details_column("A.signature")
+    assert_equal "A.signature", jobs.first.signature
+  end
+
+  def test_seach_of_non_existant_signature
+    clean_database
+    array = QC::DurableArray.new(:database => "queue_classic_test")
+
+    array << {"job" => "A.signature"}
+    jobs = array.search_details_column("B.signature")
+    assert_equal [], jobs
+  end
+
 end

@@ -23,6 +23,10 @@ module QC
       find_one {"SELECT * FROM jobs WHERE id = #{job.id}"}
     end
 
+    def search_details_column(q)
+      find_many { "SELECT * FROM jobs WHERE details LIKE '%#{q}%'" }
+    end
+
     def lock_head
       job = nil
       connection.transaction do
@@ -53,11 +57,12 @@ module QC
       connection.exec(sql)
     end
 
-    def find_one
-      res = execute(yield)
-      if res.count > 0
-        res.map {|r| Job.new(r)}.pop
-      end
+    def find_one(&blk)
+      find_many(&blk).pop
+    end
+
+    def find_many
+      execute(yield).map {|r| Job.new(r)}
     end
 
     def connection

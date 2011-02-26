@@ -1,25 +1,24 @@
 require File.expand_path("../helper.rb", __FILE__)
 
-class QueueTest < MiniTest::Unit::TestCase
-  include DatabaseHelpers
+context "QC::Queue" do
 
-  def test_queue_is_singleton
+  test "queue is a singleton" do
     assert_equal QC::Queue, QC::Queue.instance.class
   end
 
-  def test_queue_setup
+  test "queue takes a data_store" do
     QC::Queue.instance.setup :data_store => []
     assert_equal [], QC::Queue.instance.instance_variable_get(:@data)
   end
 
-  def test_queue_length
+  test "queue repsonds to length" do
     QC::Queue.instance.setup :data_store => []
     QC::Queue.instance.enqueue "job","params"
 
     assert_equal 1, QC::Queue.instance.length
   end
 
-  def test_queue_delete_all
+  test "can delete all" do
     QC::Queue.instance.setup :data_store => []
 
     QC::Queue.instance.enqueue "job","params"
@@ -28,6 +27,17 @@ class QueueTest < MiniTest::Unit::TestCase
     assert_equal 2, QC::Queue.instance.length
     QC::Queue.instance.delete_all
     assert_equal 0, QC::Queue.instance.length
+  end
+
+  test "query finds jobs with matching signature" do
+    QC::Queue.instance.setup(
+      :data_store => QC::DurableArray.new(:database => ENV["DATABASE_URL"])
+    )
+
+    QC::Queue.instance.enqueue "Notifier.send", "params"
+
+    jobs = QC::Queue.instance.query("Notifier.send")
+    assert_equal "Notifier.send", jobs.first.signature
   end
 
 end
