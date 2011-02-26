@@ -26,6 +26,15 @@ context "QC::Api" do
     assert_equal({"job" => "Notifier.send", "params" => []}, job.details)
   end
 
+  test "enqueue takes a job and maintain params" do
+    h = {"id" => 1, "details" => {"job" => 'Notifier.send', "params" => ["1"]}.to_json, "locked_at" => nil}
+    job = QC::Job.new(h)
+    QC.enqueue(job)
+
+    job = QC.dequeue
+    assert_equal({"job" => "Notifier.send", "params" => ["1"]}, job.details)
+  end
+
 
 end
 

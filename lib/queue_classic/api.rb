@@ -7,7 +7,8 @@ module QC
 
     def enqueue(job,*params)
       if job.respond_to?(:details) and job.respond_to?(:params)
-        queue.enqueue(job.signature, (job.params || []))
+        p = *job.params
+        queue.enqueue(job.signature, p)
       else
         queue.enqueue(job,params)
       end
