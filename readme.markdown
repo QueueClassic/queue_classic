@@ -70,9 +70,9 @@ To get access to these tasks, Add `require 'queue_classic/tasks'` to your Rakefi
 
 To place a job onto the queue, you should specify a class and a class method. There are a few ways to enqueue:
 
-    QC.enqueue('Class.method', :arg1 => 'value1', :arg2 => 'value2')
+##### One Aproach
 
-Requires:
+    QC.enqueue('Class.method', :arg1 => 'value1', :arg2 => 'value2')
 
     class Class
       def self.method(args)
@@ -80,9 +80,9 @@ Requires:
       end
     end
 
-    QC.enqueue('Class.method', 'value1', 'value2')
+##### Another Aproach
 
-Requires:
+    QC.enqueue('Class.method', 'value1', 'value2')
 
     class Class
       def self.method(arg1,arg2)
