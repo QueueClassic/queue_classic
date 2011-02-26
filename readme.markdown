@@ -136,9 +136,8 @@ If you are using Queue Classic with Rails, You should:
 1. Remove require 'queue_classic/tasks' from Rakefile
 2. Create new file in lib/tasks. Call it queue_classic.rb (name is arbitrary)
 3. Insert something like the following:
-
+    
     require 'queue_classic'
-
     class MyWorker < QC::Worker
       def handle_failure(job,exception)
         # You can do many things inside of this method. Here are a few examples:
