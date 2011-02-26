@@ -138,7 +138,9 @@ If you are using Queue Classic with Rails, You should:
 3. Insert something like the following:
     
     require 'queue_classic'
+
     class MyWorker < QC::Worker
+
       def handle_failure(job,exception)
         # You can do many things inside of this method. Here are a few examples:
 
@@ -161,12 +163,15 @@ If you are using Queue Classic with Rails, You should:
         QC.enqueue(job)
 
       end
+
     end
 
     namespace :jobs do
+
       task :work  => :environment do
         MyWorker.new.start
       end
+
     end
 
 ## Performance
