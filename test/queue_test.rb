@@ -33,10 +33,12 @@ context "QC::Queue" do
     QC::Queue.instance.setup(
       :data_store => QC::DurableArray.new(:database => ENV["DATABASE_URL"])
     )
+    QC::Queue.instance.delete_all
 
     QC::Queue.instance.enqueue "Notifier.send", "params"
 
     jobs = QC::Queue.instance.query("Notifier.send")
+    assert_equal 1, jobs.length
     assert_equal "Notifier.send", jobs.first.signature
   end
 
