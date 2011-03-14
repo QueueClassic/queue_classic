@@ -7,8 +7,11 @@ Priority
     * yield job
 
 
-Not Sure
+Backlog
 =======
 
-1. Add support for mutliple queues
-2. Prepared statements for queries
+1. Prepared statements for queries
+2. Add support for mutliple queues
+3. Python bindings
+4. Bash bindings
+5. Stored procedures
