@@ -2,8 +2,9 @@ Priority
 =======
 
 1. Add method in queue to query jobs by signature
-  * provide count
-  * yield job
+    
+    * provide count
+    * yield job
 
 
 Not Sure
