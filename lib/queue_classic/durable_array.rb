@@ -1,8 +1,8 @@
 module QC
   class DurableArray
 
-    def initialize(args={})
-      @db_string  = args[:database]
+    def initialize(database_url)
+      @database_url = database_url
     end
 
     def <<(details)
@@ -66,17 +66,13 @@ module QC
     end
 
     def connection
-      db_params = URI.parse(@db_string)
-      @connection ||= if db_params.scheme == "postgres"
-        PGconn.connect(
-          :dbname   => db_params.path.gsub("/",""),
-          :user     => db_params.user,
-          :password => db_params.password,
-          :host     => db_params.host
-        )
-      else
-        PGconn.connect(:dbname => @db_string)
-      end
+      db_params = URI.parse(@database_url)
+      @connection ||= PGconn.connect(
+        :dbname   => db_params.path.gsub("/",""),
+        :user     => db_params.user,
+        :password => db_params.password,
+        :host     => db_params.host
+      )
     end
 
   end
