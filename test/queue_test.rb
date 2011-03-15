@@ -31,7 +31,7 @@ context "QC::Queue" do
 
   test "query finds jobs with matching signature" do
     QC::Queue.instance.setup(
-      :data_store => QC::DurableArray.new(:database => ENV["DATABASE_URL"])
+      :data_store => QC::DurableArray.new(ENV["DATABASE_URL"])
     )
     QC::Queue.instance.delete_all
 

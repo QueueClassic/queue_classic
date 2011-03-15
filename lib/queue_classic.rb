@@ -14,4 +14,4 @@ module QC
   extend Api
 end
 
-QC::Queue.instance.setup :data_store => QC::DurableArray.new(:database => ENV["DATABASE_URL"])
+QC::Queue.instance.setup :data_store => QC::DurableArray.new(ENV["DATABASE_URL"])

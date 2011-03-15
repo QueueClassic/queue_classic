@@ -1,7 +1,7 @@
 $: << File.expand_path("lib")
 $: << File.expand_path("test")
 
-ENV["DATABASE_URL"] = 'queue_classic_test'
+ENV["DATABASE_URL"] = 'postgres://ryandotsmith:@localhost/queue_classic_test'
 
 require 'queue_classic'
 require 'database_helpers'
@@ -12,7 +12,7 @@ MiniTest::Unit.autorun
 def set_data_store(store=nil)
   QC::Queue.instance.setup(
     :data_store => (
-      store || QC::DurableArray.new(:database => ENV["DATABASE_URL"])
+      store || QC::DurableArray.new(ENV["DATABASE_URL"])
     )
   )
 end

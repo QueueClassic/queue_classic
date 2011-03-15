@@ -190,6 +190,12 @@ It is fast because:
 * I do not create many Ruby Objects
 * I do not call very many methods
 
+## Contribute
+
+* Write Tests (run turn test/ in dir before commit)
+* Fork / Pull Request
+* Add yourself to the contributors file
+
 ## FAQ
 
 How is this different than DJ?

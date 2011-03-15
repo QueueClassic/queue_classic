@@ -1,112 +1,81 @@
 require File.expand_path("../helper.rb", __FILE__)
 
-class DurableArrayTest < MiniTest::Unit::TestCase
-  include DatabaseHelpers
+context "QC::DurableArray" do
 
-  def test_first_decodes_json
+  setup do
     clean_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
-
-    array << {"test" => "ok"}
-    assert_equal({"test" => "ok"}, array.first.details)
+    @array = QC::DurableArray.new(ENV["DATABASE_URL"])
   end
 
-  def test_count_returns_number_of_rows
-    clean_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
-
-    array << {"test" => "ok"}
-    assert_equal 1, array.count
-    array << {"test" => "ok"}
-    assert_equal 2, array.count
+  test "decode json into hash" do
+    @array << {"test" => "ok"}
+    assert_equal({"test" => "ok"}, @array.first.details)
   end
 
-  def test_first_returns_fsrst_job
-    clean_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
+  test "count returns number of rows" do
+    @array << {"test" => "ok"}
+    assert_equal 1, @array.count
+    @array << {"test" => "ok"}
+    assert_equal 2, @array.count
+  end
 
+  test "first returns first job" do
     job = {"job" => "one"}
-    array << job
-    assert_equal job, array.first.details
+    @array << job
+    assert_equal job, @array.first.details
   end
 
-  def test_first_returns_first_job_when_many_are_in_array
-    clean_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
-
-    array << {"job" => "one"}
-    array << {"job" => "two"}
-    assert_equal({"job" => "one"}, array.first.details)
+  test "first returns first job when many are in the array" do
+    @array << {"job" => "one"}
+    @array << {"job" => "two"}
+    assert_equal({"job" => "one"}, @array.first.details)
   end
 
-  def test_delete_removes_job_from_array
-    clean_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
-
-    array << {"job" => "one"}
-    job = array.first
+  test "delete removes job from the array" do
+    @array << {"job" => "one"}
+    job = @array.first
 
     assert_equal( {"job" => "one"}, job.details)
 
-    assert_equal(1,array.count)
-    array.delete(job)
-    assert_equal(0,array.count)
+    assert_equal(1,@array.count)
+    @array.delete(job)
+    assert_equal(0,@array.count)
   end
 
-  def test_delete_returns_job_after_delete
-    clean_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
-
-    array << {"job" => "one"}
-    job = array.first
+  test "delete returns job after delete" do
+    @array << {"job" => "one"}
+    job = @array.first
 
     assert_equal({"job" => "one"}, job.details)
 
-    res = array.delete(job)
+    res = @array.delete(job)
     assert_equal({"job" => "one"}, res.details)
   end
 
-  def test_each_yields_the_details_for_each_job
-    clean_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
-
-    array << {"job" => "one"}
-    array << {"job" => "two"}
+  test "each yields the details for each job" do
+    @array << {"job" => "one"}
+    @array << {"job" => "two"}
     results = []
-    array.each {|v| results << v.details}
+    @array.each {|v| results << v.details}
     assert_equal([{"job" => "one"},{"job" => "two"}], results)
   end
 
-  def test_connection_builds_db_connection_for_uri
-    array = QC::DurableArray.new(:database => "postgres://ryandotsmith:@localhost/queue_classic_test")
-    assert_equal "ryandotsmith", array.connection.user
-    assert_equal "localhost", array.connection.host
-    assert_equal "queue_classic_test", array.connection.db
+  test "connection build db connection from uri" do
+    a = QC::DurableArray.new("postgres://ryandotsmith:@localhost/queue_classic_test")
+    assert_equal "ryandotsmith", a.connection.user
+    assert_equal "localhost", a.connection.host
+    assert_equal "queue_classic_test", a.connection.db
   end
 
-  def test_connection_builds_db_connection_for_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
-
-    # FIXME not everyone will have a postgres user named: ryandotsmith
-    assert_equal "ryandotsmith", array.connection.user
-    assert_equal "queue_classic_test", array.connection.db
-  end
-
-  def test_search
-    clean_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
-
-    array << {"job" => "A.signature"}
-    jobs = array.search_details_column("A.signature")
+  test "seach" do
+    @array << {"job" => "A.signature"}
+    jobs = @array.search_details_column("A.signature")
     assert_equal "A.signature", jobs.first.signature
   end
 
-  def test_seach_of_non_existant_signature
-    clean_database
-    array = QC::DurableArray.new(:database => "queue_classic_test")
-
-    array << {"job" => "A.signature"}
-    jobs = array.search_details_column("B.signature")
+  test "seach when data will not match" do
+    @array << {"job" => "A.signature"}
+    jobs = @array.search_details_column("B.signature")
     assert_equal [], jobs
   end
 
