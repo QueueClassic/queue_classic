@@ -7,11 +7,11 @@ module DatabaseHelpers
   end
 
   def create_database
-    postgres.exec "CREATE DATABASE #{ENV['DATABASE_URL']}"
+    postgres.exec "CREATE DATABASE #{database_name}"
   end
 
   def drop_database
-    postgres.exec "DROP DATABASE IF EXISTS #{ENV['DATABASE_URL']}"
+    postgres.exec "DROP DATABASE IF EXISTS #{database_name}"
   end
 
   def create_table
@@ -36,7 +36,7 @@ module DatabaseHelpers
   end
 
   def jobs_db
-    @jobs_db ||= PGconn.connect(:dbname => ENV["DATABASE_URL"])
+    @jobs_db ||= PGconn.connect(:dbname => database_name)
     @jobs_db.exec("SET client_min_messages TO 'warning'")
     @jobs_db
   end
@@ -46,4 +46,13 @@ module DatabaseHelpers
     @postgres.exec("SET client_min_messages TO 'warning'")
     @postgres
   end
+
+  def database_name
+    db_params.path.gsub("/","")
+  end
+
+  def db_params
+    URI.parse(ENV["DATABASE_URL"])
+  end
+
 end
