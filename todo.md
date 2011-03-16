@@ -1,11 +1,7 @@
 Priority
 =======
 
-1. Add method in queue to query jobs by signature
-    
-    * provide count
-    * yield job
-
+1. A Worker implemented in C that can process unix exec()
 
 Backlog
 =======
@@ -15,3 +11,10 @@ Backlog
 3. Python bindings
 4. Bash bindings
 5. Stored procedures
+
+Done
+====
+
+Add method in queue to query jobs by signature    
+    * provide count
+    * yield job
