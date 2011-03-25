@@ -3,6 +3,7 @@ module DatabaseHelpers
   def clean_database
     drop_table
     create_table
+    load_functions
     disconnect
   end
 
@@ -26,8 +27,23 @@ module DatabaseHelpers
     jobs_db.exec("CREATE INDEX jobs_id_idx ON jobs (id)")
   end
 
+  def load_functions
+    jobs_db.exec(<<-END
+      CREATE OR REPLACE FUNCTION lock_head() RETURNS jobs AS $$
+        UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP)
+          WHERE id = (
+            SELECT id FROM jobs
+            WHERE locked_at IS NULL
+            ORDER BY id ASC LIMIT 1
+          )
+          RETURNING *;
+        $$ LANGUAGE SQL;
+    END
+    )
+  end
+
   def drop_table
-    jobs_db.exec("DROP TABLE IF EXISTS jobs")
+    jobs_db.exec("DROP TABLE IF EXISTS jobs CASCADE")
   end
 
   def disconnect

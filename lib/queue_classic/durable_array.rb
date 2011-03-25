@@ -28,13 +28,7 @@ module QC
     end
 
     def lock_head
-      job = nil
-      connection.transaction do
-        if job = find_one {"SELECT * FROM jobs WHERE locked_at IS NULL ORDER BY id ASC LIMIT 1 FOR UPDATE"}
-          execute("UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP) WHERE id = #{job.id} AND locked_at IS NULL")
-        end
-      end
-      job
+      find_one { "SELECT * FROM lock_head() LIMIT 1" }
     end
 
     def first
