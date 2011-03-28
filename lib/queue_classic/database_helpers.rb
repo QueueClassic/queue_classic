@@ -52,7 +52,7 @@ module DatabaseHelpers
   end
 
   def jobs_db
-    connection.exec("SET client_min_messages TO 'warning'")
+    connection
   end
 
   def postgres
