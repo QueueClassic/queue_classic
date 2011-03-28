@@ -52,9 +52,7 @@ module DatabaseHelpers
   end
 
   def jobs_db
-    @jobs_db ||= PGconn.connect(:dbname => database_name)
-    @jobs_db.exec("SET client_min_messages TO 'warning'")
-    @jobs_db
+    connection.exec("SET client_min_messages TO 'warning'")
   end
 
   def postgres
@@ -69,6 +67,15 @@ module DatabaseHelpers
 
   def db_params
     URI.parse(ENV["DATABASE_URL"])
+  end
+
+  def connection
+    @connection ||= PGconn.connect(
+      :dbname   => db_params.path.gsub("/",""),
+      :user     => db_params.user,
+      :password => db_params.password,
+      :host     => db_params.host
+    )
   end
 
 end
