@@ -1,10 +1,11 @@
 module DatabaseHelpers
 
-  def clean_database
-    drop_table
-    create_table
-    load_functions
-    disconnect
+  def init_db
+    database  = QC::Database.new(ENV["DATABASE_URL"])
+    database.silence_warnings
+    database.drop_table
+    database.init_db
+    database
   end
 
   def create_database
@@ -15,46 +16,8 @@ module DatabaseHelpers
     postgres.exec "DROP DATABASE IF EXISTS #{database_name}"
   end
 
-  def create_table
-    jobs_db.exec(
-      "CREATE TABLE jobs"    +
-      "("                    +
-      "id        SERIAL,"    +
-      "details   text,"      +
-      "locked_at timestamp without time zone" +
-      ");"
-    )
-    jobs_db.exec("CREATE INDEX jobs_id_idx ON jobs (id)")
-  end
-
-  def load_functions
-    jobs_db.exec(<<-END
-      CREATE OR REPLACE FUNCTION lock_head() RETURNS jobs AS $$
-        UPDATE jobs SET locked_at = (CURRENT_TIMESTAMP)
-          WHERE id = (
-            SELECT id FROM jobs
-            WHERE locked_at IS NULL
-            ORDER BY id ASC LIMIT 1
-          )
-          RETURNING *;
-        $$ LANGUAGE SQL;
-    END
-    )
-  end
-
-  def drop_table
-    jobs_db.exec("DROP TABLE IF EXISTS jobs CASCADE")
-  end
-
   def disconnect
-    jobs_db.finish
     postgres.finish
-  end
-
-  def jobs_db
-    @jobs_db ||= PGconn.connect(:dbname => database_name)
-    @jobs_db.exec("SET client_min_messages TO 'warning'")
-    @jobs_db
   end
 
   def postgres

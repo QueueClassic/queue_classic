@@ -21,9 +21,9 @@ class TestWorker < QC::Worker
 end
 
 context "QC::Worker" do
+
   setup do
-    set_data_store
-    clean_database
+    QC.delete_all
     @worker = TestWorker.new
   end
 

@@ -9,14 +9,6 @@ require 'database_helpers'
 require 'minitest/unit'
 MiniTest::Unit.autorun
 
-def set_data_store(store=nil)
-  QC::Queue.instance.setup(
-    :data_store => (
-      store || QC::DurableArray.new(ENV["DATABASE_URL"])
-    )
-  )
-end
-
 def context(*args, &block)
   return super unless (name = args.first) && block
   klass = Class.new(MiniTest::Unit::TestCase) do

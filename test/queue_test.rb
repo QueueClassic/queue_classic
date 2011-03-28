@@ -2,25 +2,24 @@ require File.expand_path("../helper.rb", __FILE__)
 
 context "QC::Queue" do
 
+  setup do
+    QC::Queue.instance.delete_all
+  end
+
   test "queue is a singleton" do
     assert_equal QC::Queue, QC::Queue.instance.class
   end
 
   test "queue takes a data_store" do
-    QC::Queue.instance.setup :data_store => []
-    assert_equal [], QC::Queue.instance.instance_variable_get(:@data)
+    assert_equal QC::DurableArray, QC::Queue.instance.instance_variable_get(:@data).class
   end
 
   test "queue repsonds to length" do
-    QC::Queue.instance.setup :data_store => []
     QC::Queue.instance.enqueue "job","params"
-
     assert_equal 1, QC::Queue.instance.length
   end
 
   test "can delete all" do
-    QC::Queue.instance.setup :data_store => []
-
     QC::Queue.instance.enqueue "job","params"
     QC::Queue.instance.enqueue "job","params"
 
@@ -30,11 +29,6 @@ context "QC::Queue" do
   end
 
   test "query finds jobs with matching signature" do
-    QC::Queue.instance.setup(
-      :data_store => QC::DurableArray.new(ENV["DATABASE_URL"])
-    )
-    QC::Queue.instance.delete_all
-
     QC::Queue.instance.enqueue "Notifier.send", "params"
 
     jobs = QC::Queue.instance.query("Notifier.send")

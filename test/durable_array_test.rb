@@ -3,8 +3,12 @@ require File.expand_path("../helper.rb", __FILE__)
 context "QC::DurableArray" do
 
   setup do
-    clean_database
-    @array = QC::DurableArray.new(ENV["DATABASE_URL"])
+    @database = init_db
+    @array = QC::DurableArray.new(@database)
+  end
+
+  teardown do
+    @database.disconnect
   end
 
   test "decode json into hash" do
@@ -29,6 +33,10 @@ context "QC::DurableArray" do
     @array << {"job" => "one"}
     @array << {"job" => "two"}
     assert_equal({"job" => "one"}, @array.first.details)
+  end
+
+  test "find_many returns empty array when nothing is found" do
+    assert_equal([], @array.find_many {"select * from lock_head();"})
   end
 
   test "delete removes job from the array" do
@@ -61,7 +69,7 @@ context "QC::DurableArray" do
   end
 
   test "connection build db connection from uri" do
-    a = QC::DurableArray.new("postgres://ryandotsmith:@localhost/queue_classic_test")
+    a = QC::Database.new("postgres://ryandotsmith:@localhost/queue_classic_test")
     assert_equal "ryandotsmith", a.connection.user
     assert_equal "localhost", a.connection.host
     assert_equal "queue_classic_test", a.connection.db
@@ -78,5 +86,4 @@ context "QC::DurableArray" do
     jobs = @array.search_details_column("B.signature")
     assert_equal [], jobs
   end
-
 end
