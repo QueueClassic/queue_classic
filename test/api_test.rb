@@ -1,7 +1,7 @@
 require File.expand_path("../helper.rb", __FILE__)
 
 context "QC::Api" do
-  setup { clean_database }
+  setup { QC.delete_all }
 
   test "enqueue takes a job without params" do
     QC.enqueue "Notifier.send"
@@ -34,9 +34,6 @@ context "QC::Api" do
     job = QC.dequeue
     assert_equal({"job" => "Notifier.send", "params" => ["1"]}, job.details)
   end
-
-  test "query finds job with matching signature" do
-    end
 
 end
 

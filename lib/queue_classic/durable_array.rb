@@ -1,8 +1,8 @@
 module QC
   class DurableArray
 
-    def initialize(database_url)
-      @database_url = database_url
+    def initialize(database)
+      @database = database
     end
 
     def <<(details)
@@ -36,7 +36,7 @@ module QC
         job
       else
         execute("LISTEN jobs")
-        connection.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
+        @database.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
         job
       end
     end
@@ -47,10 +47,6 @@ module QC
       end
     end
 
-    def execute(sql)
-      connection.exec(sql)
-    end
-
     def find_one(&blk)
       find_many(&blk).pop
     end
@@ -59,14 +55,8 @@ module QC
       execute(yield).map {|r| Job.new(r)}
     end
 
-    def connection
-      db_params = URI.parse(@database_url)
-      @connection ||= PGconn.connect(
-        :dbname   => db_params.path.gsub("/",""),
-        :user     => db_params.user,
-        :password => db_params.password,
-        :host     => db_params.host
-      )
+    def execute(sql)
+      @database.execute(sql)
     end
 
   end
