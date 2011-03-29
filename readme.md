@@ -221,7 +221,7 @@ and then right before the job quits, touch the emailed_at column. That being sai
 want in handle_failure. I will not decide what is best for your application.
 
 Can I use this library with 50 Heroku Workers?
-> Yes.
+> Yes. Why not 100? Make sure your database can handle the connections. Each workers will consume a database connection.
 
 Is Queue Classic ready for production? Can I do it live?!?
 > I started this project on 1/24/2011. I have been using this in production for some high-traffic apps at Heroku since 2/24/2011.
