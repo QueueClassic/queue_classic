@@ -3,7 +3,9 @@ require File.expand_path("../helper.rb", __FILE__)
 context "QC::DurableArray" do
 
   setup do
-    @database = init_db
+    @database = QC::Database.new(ENV["DATABASE_URL"])
+    @database.drop_table
+    @database.init_db
     @array = QC::DurableArray.new(@database)
   end
 
