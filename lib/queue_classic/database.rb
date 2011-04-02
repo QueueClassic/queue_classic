@@ -52,12 +52,24 @@ module QC
         CREATE OR REPLACE FUNCTION lock_head() RETURNS SETOF jobs AS $$
         DECLARE
           unlocked integer;
+          relative_top integer;
+          job_count integer;
           job jobs%rowtype;
+
         BEGIN
+          SELECT TRUNC(random() * 9 + 1) INTO relative_top;
+          SELECT count(*) from jobs INTO job_count;
+
+          IF job_count < 10 THEN
+            relative_top = 0;
+          END IF;
+
           SELECT id INTO unlocked
             FROM jobs
             WHERE locked_at IS NULL
-            ORDER BY id ASC LIMIT 1
+            ORDER BY id ASC
+            LIMIT 1
+            OFFSET relative_top
             FOR UPDATE;
           RETURN QUERY UPDATE jobs
             SET locked_at = (CURRENT_TIMESTAMP)
