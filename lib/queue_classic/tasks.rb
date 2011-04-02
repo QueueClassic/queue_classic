@@ -10,4 +10,9 @@ namespace :qc do
   task :jobs do
     QC.queue_length
   end
+  task :init_db do
+    array = QC::Queue.instance.data_store
+    database = array.database
+    database.init_db
+  end
 end
