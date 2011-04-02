@@ -1,20 +1,20 @@
 $: << File.expand_path("lib")
 $: << File.expand_path("test")
 
-ENV["DATABASE_URL"] = 'queue_classic_test'
+ENV["DATABASE_URL"] ||= 'postgres://ryandotsmith:@localhost/queue_classic_test'
 
 require 'queue_classic'
-require 'database_helpers'
-
 require 'benchmark'
-include DatabaseHelpers
-clean_database
 
 class String
   def self.length(string)
     string.length
   end
 end
+
+array = QC::Queue.instance.data_store
+database = array.database
+database.init_db
 
 Benchmark.bm(10) do |x|
   n = 10_000
