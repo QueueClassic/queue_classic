@@ -46,9 +46,5 @@ module QC
       end
     end
 
-    def logging_enabled?
-      ENV["LOGGING"]
-    end
-
   end
 end
