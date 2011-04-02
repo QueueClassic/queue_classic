@@ -11,7 +11,7 @@ context "QC::Queue" do
   end
 
   test "queue takes a data_store" do
-    assert_equal QC::DurableArray, QC::Queue.instance.instance_variable_get(:@data).class
+    assert_equal QC::DurableArray, QC::Queue.instance.data_store.class
   end
 
   test "queue repsonds to length" do

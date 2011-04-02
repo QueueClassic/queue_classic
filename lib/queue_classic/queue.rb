@@ -3,32 +3,34 @@ require 'singleton'
 module  QC
   class Queue
     include Singleton
+
+    attr_reader :data_store
     def setup(args={})
-      @data = args[:data_store]
+      @data_store = args[:data_store]
     end
 
     def enqueue(job,params)
-      @data << {"job" => job, "params" => params}
+      @data_store << {"job" => job, "params" => params}
     end
 
     def dequeue
-      @data.first
+      @data_store.first
     end
 
     def query(signature)
-      @data.search_details_column(signature)
+      @data_store.search_details_column(signature)
     end
 
     def delete(job)
-      @data.delete(job)
+      @data_store.delete(job)
     end
 
     def delete_all
-      @data.each {|j| delete(j) }
+      @data_store.each {|j| delete(j) }
     end
 
     def length
-      @data.count
+      @data_store.count
     end
   end
 end
