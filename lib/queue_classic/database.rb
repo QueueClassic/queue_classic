@@ -10,12 +10,19 @@ module QC
     end
 
     def connection
-      @connection ||= PGconn.connect(
-        :dbname   => @db_params.path.gsub("/",""),
-        :user     => @db_params.user,
-        :password => @db_params.password,
-        :host     => @db_params.host
-      )
+      if defined? @connection
+        @connection
+      else
+        @connection = PGconn.connect(
+          :dbname   => @db_params.path.gsub("/",""),
+          :user     => @db_params.user,
+          :password => @db_params.password,
+          :host     => @db_params.host
+        )
+        @connection.exec("LISTEN jobs")
+        silence_warnings unless ENV["LOGGING_ENABLED"]
+        @connection
+      end
     end
 
     def disconnect
@@ -23,6 +30,7 @@ module QC
     end
 
     def init_db
+      drop_table
       create_table
       load_functions
     end
