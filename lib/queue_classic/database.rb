@@ -1,8 +1,9 @@
 module QC
   class Database
 
-    def initialize(url)
+    def initialize(url,opts={})
       @db_params = URI.parse(url)
+      @top_boundry = opts[:top_boundry] || 9
     end
 
     def execute(sql)
@@ -65,7 +66,7 @@ module QC
           job jobs%rowtype;
 
         BEGIN
-          SELECT TRUNC(random() * 9 + 1) INTO relative_top;
+          SELECT TRUNC(random() * #{@top_boundry} + 1) INTO relative_top;
           SELECT count(*) from jobs INTO job_count;
 
           IF job_count < 10 THEN
