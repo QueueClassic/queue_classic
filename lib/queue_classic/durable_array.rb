@@ -1,6 +1,8 @@
 module QC
   class DurableArray
 
+    attr_reader :database
+
     def initialize(database)
       @database = database
     end
@@ -28,15 +30,14 @@ module QC
     end
 
     def lock_head
-      find_one { "SELECT * FROM lock_head() LIMIT 1" }
+      find_one { "SELECT * FROM lock_head()" }
     end
 
     def first
       if job = lock_head
         job
       else
-        execute("LISTEN jobs")
-        @database.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
+        @database.connection.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
         job
       end
     end
