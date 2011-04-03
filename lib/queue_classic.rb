@@ -15,7 +15,7 @@ module QC
   extend Api
 end
 
-connection    = QC::Database.new(ENV["DATABASE_URL"],ENV["TOP_BOUND"])
+connection    = QC::Database.new(ENV["DATABASE_URL"],:top_boundry => ENV["TOP_BOUND"])
 durable_array = QC::DurableArray.new(connection)
 
 QC::Queue.instance.setup(:data_store => durable_array)

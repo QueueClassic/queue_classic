@@ -6,14 +6,37 @@ module QC
       @top_boundry = opts[:top_boundry] || 9
     end
 
+    def init_db
+      drop_table
+      create_table
+      load_functions
+    end
+
+    def waiting_conns
+      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}' AND waiting = 't'")
+    end
+
+    def all_conns
+      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}'")
+    end
+
+    def silence_warnings
+      execute("SET client_min_messages TO 'warning'")
+    end
+
     def execute(sql)
       connection.exec(sql)
+    end
+
+    def disconnect
+      connection.finish
     end
 
     def connection
       if defined? @connection
         @connection
       else
+        @name = @db_params.path.gsub("/","")
         @connection = PGconn.connect(
           :dbname   => @db_params.path.gsub("/",""),
           :user     => @db_params.user,
@@ -24,20 +47,6 @@ module QC
         silence_warnings unless ENV["LOGGING_ENABLED"]
         @connection
       end
-    end
-
-    def disconnect
-      connection.finish
-    end
-
-    def init_db
-      drop_table
-      create_table
-      load_functions
-    end
-
-    def silence_warnings
-      execute("SET client_min_messages TO 'warning'")
     end
 
     def drop_table
