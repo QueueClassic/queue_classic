@@ -88,7 +88,7 @@ module QC
             ORDER BY id ASC
             LIMIT 1
             OFFSET relative_top
-            FOR UPDATE;
+            FOR UPDATE NOWAIT;
           RETURN QUERY UPDATE jobs
             SET locked_at = (CURRENT_TIMESTAMP)
             WHERE id = unlocked AND locked_at IS NULL
