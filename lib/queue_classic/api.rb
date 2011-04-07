@@ -34,10 +34,6 @@ module QC
       queue.length
     end
 
-    def connection_status
-      {:total => database.all_conns.count, :waiting => database.waiting_conns.count}
-    end
-
     def database
       array.database
     end

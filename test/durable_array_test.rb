@@ -4,6 +4,7 @@ context "QC::DurableArray" do
 
   setup do
     @database = QC::Database.new(ENV["DATABASE_URL"])
+    @database.execute("SET client_min_messages TO 'warning'")
     @database.drop_table
     @database.init_db
     @array = QC::DurableArray.new(@database)

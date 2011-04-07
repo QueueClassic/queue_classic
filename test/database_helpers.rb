@@ -2,7 +2,7 @@ module DatabaseHelpers
 
   def init_db
     database  = QC::Database.new(ENV["DATABASE_URL"])
-    database.silence_warnings
+    database.execute("SET client_min_messages TO 'notice'")
     database.drop_table
     database.init_db
     database

@@ -12,18 +12,6 @@ module QC
       load_functions
     end
 
-    def waiting_conns
-      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}' AND waiting = 't'")
-    end
-
-    def all_conns
-      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}'")
-    end
-
-    def silence_warnings
-      execute("SET client_min_messages TO 'warning'")
-    end
-
     def execute(sql)
       connection.exec(sql)
     end
@@ -44,7 +32,6 @@ module QC
           :host     => @db_params.host
         )
         @connection.exec("LISTEN jobs")
-        silence_warnings unless ENV["LOGGING_ENABLED"]
         @connection
       end
     end
