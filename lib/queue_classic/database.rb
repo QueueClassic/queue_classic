@@ -53,10 +53,8 @@ module QC
       execute("CREATE INDEX jobs_id_idx ON jobs (id)")
     end
 
-    def load_functions
-      @plan ||= :fifo
-
-      case @plan
+    def load_functions(plan=:fifo)
+      case plan
       when :random_offset
         execute(<<-EOD
           CREATE OR REPLACE FUNCTION lock_head() RETURNS SETOF jobs AS $$
