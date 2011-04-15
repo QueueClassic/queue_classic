@@ -14,6 +14,7 @@ end
 
 array = QC::Queue.instance.data_store
 database = array.database
+database.plan = :random_offset
 database.init_db
 
 Benchmark.bm(10) do |x|
