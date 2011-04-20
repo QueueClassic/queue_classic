@@ -190,6 +190,17 @@ It is fast because:
 * I do not create many Ruby Objects
 * I do not call very many methods
 
+## Development
+
+To fetch the code and run the tests:
+
+    gem install turn
+    git clone https://github.com/ryandotsmith/queue_classic.git
+    cd queue_classic
+    bundle
+    createdb queue_classic_test
+    DB_USER=USERNAME turn test
+
 ## Contribute
 
 * Write Tests (run turn test/ in dir before commit)

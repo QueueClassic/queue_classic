@@ -72,8 +72,8 @@ context "QC::DurableArray" do
   end
 
   test "connection build db connection from uri" do
-    a = QC::Database.new("postgres://ryandotsmith:@localhost/queue_classic_test")
-    assert_equal "ryandotsmith", a.connection.user
+    a = QC::Database.new("postgres://#{ENV['DB_USER']}:@localhost/queue_classic_test")
+    assert_equal ENV['DB_USER'], a.connection.user
     assert_equal "localhost", a.connection.host
     assert_equal "queue_classic_test", a.connection.db
   end

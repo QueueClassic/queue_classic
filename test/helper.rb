@@ -1,7 +1,8 @@
 $: << File.expand_path("lib")
 $: << File.expand_path("test")
 
-ENV["DATABASE_URL"] = 'postgres://ryandotsmith:@localhost/queue_classic_test'
+ENV['DB_USER'] ||= 'ryandotsmith'
+ENV["DATABASE_URL"] ||= "postgres://#{ENV['DB_USER']}:@localhost/queue_classic_test"
 
 require 'queue_classic'
 require 'database_helpers'
