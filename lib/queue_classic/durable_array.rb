@@ -37,7 +37,7 @@ module QC
       if job = lock_head
         job
       else
-        @database.connection.wait_for_notify {|e,p,msg| job = lock_head if msg == "new-job" }
+        @database.connection.wait_for_notify(1) {|e,p,msg| job = lock_head if msg == "new-job" }
         job
       end
     end

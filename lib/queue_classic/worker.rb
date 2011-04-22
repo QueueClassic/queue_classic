@@ -1,8 +1,31 @@
 module QC
   class Worker
 
+    def initialize
+      @running = true
+      handle_signals
+    end
+
+    def handle_signals
+      %W( INT TRAP).each do |sig|
+        trap(sig) do
+          if running?
+            @running = false
+          else
+            raise Interrupt
+          end
+        end
+      end
+    end
+
+    def running?
+      @running
+    end
+
     def start
-      loop { work }
+      while running? do
+        work
+      end
     end
 
     def work
