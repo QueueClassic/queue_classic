@@ -4,6 +4,7 @@ Version 0.2.3
 - Added requirement for DB connection. MUST BE URI i.e. DATABASE_URL=postgres://user:pass@localhost/db_name
 - Added rake qc:init_db. This task will drop jobs table, create jobs table, load lock_head() function.
 - Added a bit of randomness to the lock_head() function. Helps you scale to a hilarious number of workers.
+- Added support for trapping INT and TERM signals in the worker. ^C to stop after finished and ^C^C to kill.
 
 Version 0.2.2
 - Fixed problems with enqueueing a list of parameters.

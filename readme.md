@@ -113,22 +113,32 @@ Here is a more concrete example of a job implementation using a Rails ActiveReco
 
 Traditionally, a queue's dequeue operation will remove the item from the queue. However, Queue Classic will not delete the item from the queue right away; instead, the workers will lock
 the job and then the worker will delete the job once it has finished working it. Queue Classic's greatest strength is it's ability to safely lock jobs. Unlike other
-database backed queing libraries, Queue Classic uses the database time to lock. This allows you to be more relaxed about the time synchronization amongst your worker machines.
+database backed queueing libraries, Queue Classic uses the database time to lock. This allows you to be more relaxed about the time synchronization amongst your worker machines.
 
-Queue Classic takes advantage of Postgres' PUB/SUB featuers to dequeue a job. Basically there is a channel in which the workers LISTEN. When a new job is added to the queue, the queue sends NOTIFY
-messages on the channel. Once a NOTIFY is sent, each worker races to acquire a lock on a job. A job is awareded to the victor while the rest go back to wait for another job. This eliminates
+Queue Classic takes advantage of Postgres' PUB/SUB features to dequeue a job. Basically there is a channel in which the workers LISTEN. When a new job is added to the queue, the queue sends NOTIFY
+messages on the channel. Once a NOTIFY is sent, each worker races to acquire a lock on a job. A job is awarded to the victor while the rest go back to wait for another job. This eliminates
 the need to Sleep & Select.
 
 ### The Worker
 
-The worker calls dequeue and then calls the enqueued method with the supplied arguments. Once the method terminates, the job is deleted from the queue. In the case that your method
-does not terminate, or the worker unexpectingly dies, Queue Classic will do following:
+**Un-handled Exceptions**
+The worker calls dequeue and then calls the enqueued method with the supplied arguments.
+Once the method terminates, the job is deleted from the queue. In the case that your method
+does not terminate, or the worker expectingly dies, Queue Classic will do following:
 
 * Rescue the Exception %
 * Call handle_failure(job,exception)
 * Delete the job
 
 % - To my knowledge, the only thing that can usurp ensure is a segfault.
+
+**Stopping a worker**
+
+    If the worker is in the middle of working a job:
+      ^C => Kill the worker after job is finished.
+      ^C^C => Kill the worker immediately.
+    If the worker is idle
+      ^C => Kills the worker.
 
 By default, handle_failure will puts the job and the exception. This is not very good and you should override this method. It is simple to do so.
 If you are using Queue Classic with Rails, You should:
@@ -199,6 +209,7 @@ It is fast because:
 ## FAQ
 
 How is this different than DJ?
+
 > TL;DR = Store job as JSON (better introspection), Queue manages the time for locking jobs (workers can be out of sync.), No magic (less code), Small footprint (ORM Free).
 
 > __Introspection__ I want the data in the queue to be as simple as possible. Since we only store the Class, Method and Args, introspection into the queue is
@@ -209,11 +220,12 @@ the status of a job. Classic Queue locks a job using Postgres' TIMESTAMP functio
 
 > __Magic__ I find disdain for methods on my objects that have nothing to do with the purpose of the object. Methods like "should" and "delay"
 are quite distasteful and obscure what is actually going on. If you use TestUnit for this reason, you might like Queue Classic. Anyway, I think
-the fundamental concept of a message queue is not that difficult to grasp; therefore, I have taken the time to make Queue Classic as transparent as possilbe.
+the fundamental concept of a message queue is not that difficult to grasp; therefore, I have taken the time to make Queue Classic as transparent as possible.
 
 > __Footprint__ You don't need ActiveRecord or any other ORM to find the head or add to the tail. Take a look at the DurableArray class to see the SQL Classic Queue employees.
 
 Why doesn't your queue retry failed jobs?
+
 > I believe the Class method should handle any sort of exception.  Also, I think
 that the model you are working on should know about it's state. For instance, if you are
 creating jobs for the emailing of newsletters; put a emailed_at column on your newsletter model
@@ -221,7 +233,9 @@ and then right before the job quits, touch the emailed_at column. That being sai
 want in handle_failure. I will not decide what is best for your application.
 
 Can I use this library with 50 Heroku Workers?
+
 > Yes. Why not 100? Make sure your database can handle the connections. Each workers will consume a database connection.
 
 Is Queue Classic ready for production? Can I do it live?!?
+
 > I started this project on 1/24/2011. I have been using this in production for some high-traffic apps at Heroku since 2/24/2011.
