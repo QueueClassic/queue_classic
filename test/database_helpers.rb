@@ -1,11 +1,11 @@
 module DatabaseHelpers
 
-  def init_db
-    database  = QC::Database.new(ENV["DATABASE_URL"])
+  def init_db(table_name=nil)
+    database  = QC::Database.new(table_name)
     database.silence_warnings
-    database.drop_table
     database.init_db
-    database
+    database.disconnect
+    true
   end
 
   def create_database

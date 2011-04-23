@@ -7,7 +7,7 @@ module QC
     end
 
     def handle_signals
-      %W( INT TRAP).each do |sig|
+      %W(INT TRAP).each do |sig|
         trap(sig) do
           if running?
             @running = false
@@ -29,13 +29,13 @@ module QC
     end
 
     def work
-      if job = QC.dequeue #blocks until we have a job
+      if job = QC::Queue.dequeue #blocks until we have a job
         begin
           job.work
         rescue Object => e
           handle_failure(job,e)
         ensure
-          QC.delete(job)
+          QC::Queue.delete(job)
         end
       end
     end

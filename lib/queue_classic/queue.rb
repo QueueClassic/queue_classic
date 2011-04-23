@@ -1,36 +1,68 @@
-require 'singleton'
+module QC
+  module AbstractQueue
 
-module  QC
-  class Queue
-    include Singleton
-
-    attr_reader :data_store
-    def setup(args={})
-      @data_store = args[:data_store]
-    end
-
-    def enqueue(job,params)
-      @data_store << {"job" => job, "params" => params}
+    def enqueue(job,*params)
+      if job.respond_to?(:details) and job.respond_to?(:params)
+        job = job.signature
+        params = *job.params
+      end
+      array << {"job" => job, "params" => params}
     end
 
     def dequeue
-      @data_store.first
+      array.first
     end
 
     def query(signature)
-      @data_store.search_details_column(signature)
+      array.search_details_column(signature)
     end
 
     def delete(job)
-      @data_store.delete(job)
+      array.delete(job)
     end
 
     def delete_all
-      @data_store.each {|j| delete(j) }
+      array.each {|j| delete(j) }
     end
 
     def length
-      @data_store.count
+      array.count
     end
+
+  end
+end
+
+module  QC
+  class Queue
+
+    include AbstractQueue
+    extend AbstractQueue
+
+    def self.array
+      if defined? @@aray
+        @@array
+      else
+        @@database = Database.new
+        @@array = DurableArray.new(@@database)
+      end
+    end
+
+    def self.disconnect
+      @@database.disconnect
+    end
+
+    def initialize(queue_name)
+      @database = Database.new(queue_name)
+      @array = DurableArray.new(@database)
+    end
+
+    def array
+      @array
+    end
+
+    def disconnect
+      @database.disconnect
+    end
+
   end
 end

@@ -1,36 +1,35 @@
 module QC
   class DurableArray
 
-    attr_reader :database
-
     def initialize(database)
       @database = database
+      @table_name = @database.table_name
     end
 
     def <<(details)
-      execute("INSERT INTO jobs (details) VALUES ('#{details.to_json}')")
-      execute("NOTIFY jobs, 'new-job'")
+      execute("INSERT INTO #{@table_name} (details) VALUES ('#{details.to_json}')")
+      execute("NOTIFY queue_classic_jobs, 'new-job'")
     end
 
     def count
-      execute("SELECT COUNT(*) from jobs")[0]["count"].to_i
+      execute("SELECT COUNT(*) FROM #{@table_name}")[0]["count"].to_i
     end
 
     def delete(job)
-      execute("DELETE FROM jobs WHERE id = #{job.id}")
+      execute("DELETE FROM #{@table_name} WHERE id = #{job.id}")
       job
     end
 
     def find(job)
-      find_one {"SELECT * FROM jobs WHERE id = #{job.id}"}
+      find_one {"SELECT * FROM #{@table_name} WHERE id = #{job.id}"}
     end
 
     def search_details_column(q)
-      find_many { "SELECT * FROM jobs WHERE details LIKE '%#{q}%'" }
+      find_many { "SELECT * FROM #{@table_name} WHERE details LIKE '%#{q}%'" }
     end
 
     def lock_head
-      find_one { "SELECT * FROM lock_head()" }
+      find_one { "SELECT * FROM lock_head_on_#{@table_name}()" }
     end
 
     def first
@@ -43,7 +42,7 @@ module QC
     end
 
     def each
-      execute("SELECT * FROM jobs ORDER BY id ASC").each do |r|
+      execute("SELECT * FROM #{@table_name} ORDER BY id ASC").each do |r|
         yield Job.new(r)
       end
     end

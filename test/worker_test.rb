@@ -6,7 +6,7 @@ class TestNotifier
 end
 
 # This not only allows me to test what happens
-# when a failure occures but it also demonstrates
+# when a failure occurs but it also demonstrates
 # how to override the worker to handle failures the way
 # you want.
 class TestWorker < QC::Worker
@@ -20,24 +20,26 @@ class TestWorker < QC::Worker
   end
 end
 
-context "QC::Worker" do
+context "Worker" do
 
   setup do
-    QC.delete_all
+    QC::Queue.delete_all
     @worker = TestWorker.new
   end
 
-  test "working a job" do
-    QC.enqueue "TestNotifier.deliver", {}
+  teardown { QC::Queue.disconnect }
 
-    assert_equal(1, QC.queue_length)
+  test "working a job" do
+    QC::Queue.enqueue "TestNotifier.deliver", {}
+
+    assert_equal(1, QC::Queue.length)
     @worker.work
-    assert_equal(0, QC.queue_length)
+    assert_equal(0, QC::Queue.length)
     assert_equal(0, @worker.failed_count)
   end
 
   test "resuce failed job" do
-    QC.enqueue "TestNotifier.no_method", {}
+    QC::Queue.enqueue "TestNotifier.no_method", {}
 
     @worker.work
     assert_equal 1, @worker.failed_count

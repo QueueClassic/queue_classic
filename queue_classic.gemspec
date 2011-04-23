@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.description   = "Queue Classic is an alternative queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue Classic features asynchronous job polling, database maintained locks and no ridiculous dependencies. As a matter of fact, Queue Classic only requires the pg and json."
   s.summary       = s.description + "(simple)"
   s.authors       = ["Ryan Smith"]
-  s.homepage      = "http://github.com/ryandotsmith/Queue-Classic"
+  s.homepage      = "http://github.com/ryandotsmith/queue_classic"
 
   s.files       = %w[readme.md] + Dir["{lib,test}/**/*.rb"]
   s.test_files  = Dir["test/**/test_*.rb"]

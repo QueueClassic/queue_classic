@@ -3,7 +3,7 @@ require File.expand_path("../helper.rb", __FILE__)
 context "QC::DurableArray" do
 
   setup do
-    @database = QC::Database.new(ENV["DATABASE_URL"])
+    @database = QC::Database.new
     @database.drop_table
     @database.init_db
     @array = QC::DurableArray.new(@database)
@@ -38,7 +38,7 @@ context "QC::DurableArray" do
   end
 
   test "find_many returns empty array when nothing is found" do
-    assert_equal([], @array.find_many {"select * from lock_head();"})
+    assert_equal([], @array.find_many {"select * from queue_classic_jobs"})
   end
 
   test "delete removes job from the array" do

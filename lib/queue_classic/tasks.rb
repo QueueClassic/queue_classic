@@ -3,16 +3,16 @@ namespace :jobs do
     QC::Worker.new.start
   end
 end
+
 namespace :qc do
-  task :work do
+  task :work  => :environment do
     QC::Worker.new.start
   end
-  task :jobs do
+  task :jobs => :environment do
     QC.queue_length
   end
-  task :init_db do
-    array = QC::Queue.instance.data_store
-    database = array.database
-    database.init_db
+  task :create_queue, :name :needs => :environment do |t,args|
+    name = args[:name].to_sym
+    QC::Database.create_queue(name)
   end
 end
