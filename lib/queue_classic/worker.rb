@@ -31,7 +31,7 @@ module QC
     def work
       if job = QC.dequeue #blocks until we have a job
         begin
-          QC.work(job)
+          job.work
         rescue Object => e
           handle_failure(job,e)
         ensure

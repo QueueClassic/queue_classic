@@ -30,5 +30,13 @@ module QC
       end
     end
 
+    def work
+      if params.class == Array
+        klass.send(method,*params)
+      else
+        klass.send(method,params)
+      end
+    end
+
   end
 end

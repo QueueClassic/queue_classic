@@ -46,17 +46,5 @@ module QC
       queue.data_store
     end
 
-    def work(job)
-      klass   = job.klass
-      method  = job.method
-      params  = job.params
-
-      if params.class == Array
-        klass.send(method,*params)
-      else
-        klass.send(method,params)
-      end
-    end
-
   end
 end
