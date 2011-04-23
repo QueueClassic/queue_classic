@@ -1,12 +1,14 @@
 # Queue Classic
 __Beta 0.2.3__
 
-__Queue Classic 0.2.3 is in Beta.__ I have been using this library with 30-50 Heroku workers and have had great results.
+__Queue Classic 0.2.3 is in Beta.__ I have been using this library with 30-150 Heroku workers and have had great results.
 
 I am using this in production applications and plan to maintain and support this library for a long time.
 
-Queue Classic is an alternative queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue Classic features a blocking dequeue, database maintained locks and
+Queue Classic is a queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue Classic features a blocking dequeue, database maintained locks and
 no ridiculous dependencies. As a matter of fact, Queue Classic only requires the __pg__ and __json__.
+
+[Discussion Group](http://groups.google.com/group/queue_classic)
 
 ## Installation
 
