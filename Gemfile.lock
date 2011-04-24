@@ -1,0 +1,19 @@
+GEM
+  specs:
+    couchrest (1.0.2)
+      json (~> 1.5.1)
+      mime-types (~> 1.15)
+      rest-client (~> 1.6.1)
+    json (1.5.1)
+    mime-types (1.16)
+    pg (0.11.0)
+    rest-client (1.6.1)
+      mime-types (>= 1.16)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  couchrest (>= 1.0.2)
+  json (>= 0.10.1)
+  pg (>= 0.11)
