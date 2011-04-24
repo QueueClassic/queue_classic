@@ -29,7 +29,7 @@ module QC
     end
 
     def lock_head
-      find_one { "SELECT * FROM lock_head_on_#{@table_name}()" }
+      find_one { "SELECT * FROM lock_head('#{@table_name}')" }
     end
 
     def first

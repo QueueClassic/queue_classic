@@ -7,6 +7,7 @@ module QC
     def self.create_queue(name)
       db = new(:name => name)
       db.init_db
+      db.disconnect
       true
     end
 
@@ -72,32 +73,42 @@ module QC
 
     def load_functions
       execute(<<-EOD)
-        CREATE OR REPLACE FUNCTION lock_head_on_#{@table_name}() RETURNS SETOF #{@table_name} AS $$
+        -- We are declaring the return type to be queue_classic_jobs.
+        -- This is ok since I am assuming that all of the users added queues will
+        -- have identical columns to queue_classic_jobs.
+        -- When QC supports queues with columns other than the default, we will have to change this.
+
+        CREATE OR REPLACE FUNCTION lock_head(tname varchar) RETURNS SETOF queue_classic_jobs AS $$
         DECLARE
           unlocked integer;
           relative_top integer;
           job_count integer;
-          job #{@table_name}%rowtype;
-
         BEGIN
           SELECT TRUNC(random() * #{@top_boundry} + 1) INTO relative_top;
-          SELECT count(*) from #{@table_name} INTO job_count;
+          EXECUTE 'SELECT count(*) FROM' || tname || '' INTO job_count;
 
           IF job_count < 10 THEN
             relative_top = 0;
           END IF;
 
-          SELECT id INTO unlocked
-            FROM #{@table_name}
-            WHERE locked_at IS NULL
-            ORDER BY id ASC
-            LIMIT 1
-            OFFSET relative_top
-            FOR UPDATE NOWAIT;
-          RETURN QUERY UPDATE #{@table_name}
-            SET locked_at = (CURRENT_TIMESTAMP)
-            WHERE id = unlocked AND locked_at IS NULL
-            RETURNING *;
+          EXECUTE 'SELECT id FROM '
+            || tname::regclass
+            || ' WHERE locked_at IS NULL'
+            || ' ORDER BY id ASC'
+            || ' LIMIT 1'
+            || ' OFFSET ' || relative_top
+            || ' FOR UPDATE NOWAIT'
+          INTO unlocked;
+
+          RETURN QUERY EXECUTE 'UPDATE '
+            || tname::regclass
+            || ' SET locked_at = (CURRENT_TIMESTAMP)'
+            || ' WHERE id = $1'
+            || ' AND locked_at is NULL'
+            || ' RETURNING *'
+          USING unlocked;
+
+          RETURN;
         END;
         $$ LANGUAGE plpgsql;
       EOD
