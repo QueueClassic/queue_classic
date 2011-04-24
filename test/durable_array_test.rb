@@ -1,6 +1,6 @@
 require File.expand_path("../helper.rb", __FILE__)
 
-context "QC::DurableArray" do
+context "DurableArray" do
 
   setup do
     @database = QC::Database.new
@@ -75,6 +75,7 @@ context "QC::DurableArray" do
     assert_equal "ryandotsmith", a.connection.user
     assert_equal "localhost", a.connection.host
     assert_equal "queue_classic_test", a.connection.db
+    a.disconnect
   end
 
   test "seach" do

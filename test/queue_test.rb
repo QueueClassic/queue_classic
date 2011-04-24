@@ -1,6 +1,6 @@
 require File.expand_path("../helper.rb", __FILE__)
 
-context "Class Methods" do
+context "Queue" do
 
   setup { init_db }
   teardown { QC::Queue.disconnect }

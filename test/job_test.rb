@@ -1,6 +1,6 @@
 require File.expand_path("../helper.rb", __FILE__)
 
-context "QC::Job" do
+context "Job" do
 
   test "initialize takes details as JSON" do
     job = QC::Job.new(
