@@ -10,7 +10,7 @@ module QC
 
     def <<(details)
       execute("INSERT INTO jobs (details) VALUES ('#{details.to_json}')")
-      execute("NOTIFY jobs, 'new-job'")
+      execute("NOTIFY jobs")
     end
 
     def count
@@ -98,3 +98,4 @@ module QC
 
   end
 end
+

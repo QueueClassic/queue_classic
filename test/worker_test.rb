@@ -21,3 +21,4 @@ class WorkerTest < MiniTest::Unit::TestCase
   end
 
 end
+

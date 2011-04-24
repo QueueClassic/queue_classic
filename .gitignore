@@ -3,3 +3,5 @@ run.rb
 server.rb
 lib/notifier.rb
 *.gem
+*.lock
+
