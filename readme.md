@@ -13,10 +13,11 @@ no ridiculous dependencies. As a matter of fact, Queue Classic only requires the
 ## Installation
 
 ### TL;DR
+
 1. gem install queue_classic
-2. add jobs table to your database
+2. add queue_classic_jobs table to your database
 3. QC.enqueue "Class.method", :arg1 => val1
-4. rake qc:work
+4. rake jobs:work
 
 ### Dependencies
 
@@ -38,15 +39,15 @@ Once your Database is set, you will need to add a jobs table. If you are using r
 
     class CreateJobsTable < ActiveRecord::Migration
       def self.up
-        create_table :jobs do |t|
+        create_table :queue_classic_jobs do |t|
           t.text :details
           t.timestamp :locked_at
-          t.index :id
         end
+        add_index :queue_classic_jobs, :id
       end
 
       def self.down
-        drop_table :jobs
+        drop_table :queue_classic_jobs
       end
     end
 After running this migration, your database should be ready to go. As a sanity check, enqueue a job and then issue a SELECT in the postgres console.
@@ -58,13 +59,18 @@ __script/console__
     QC.enqueue "Class.method"
 __Terminal__
     psql you_database_name
-    select * from jobs;
+    select * from queue_classic_jobs;
+
 You should see the job "Class.method"
 
 ### Rakefile
 
 As a convenience, I added a rake task that responds to `rake jobs:work` There are also rake tasks in the `qc` name space.
-To get access to these tasks, Add `require 'queue_classic/tasks'` to your Rakefile.
+To get access to these tasks, Add the following to your Rakefile
+
+    require 'queue_classic'
+    require 'queue_classic/tasks'
+
 
 ## Fundamentals
 
@@ -113,17 +119,24 @@ Here is a more concrete example of a job implementation using a Rails ActiveReco
 
 ### Dequeue
 
-Traditionally, a queue's dequeue operation will remove the item from the queue. However, Queue Classic will not delete the item from the queue right away; instead, the workers will lock
-the job and then the worker will delete the job once it has finished working it. Queue Classic's greatest strength is it's ability to safely lock jobs. Unlike other
-database backed queueing libraries, Queue Classic uses the database time to lock. This allows you to be more relaxed about the time synchronization amongst your worker machines.
+Traditionally, a queue's dequeue operation will remove the item from the queue.
+However, Queue Classic will not delete the item from the queue right away; instead,
+the workers will lock the job and then the worker will delete the job once it has
+finished working it. Queue Classic's greatest strength is it's ability to safely
+lock jobs. Unlike other database backed queueing libraries, Queue Classic uses
+the database time to lock. This allows you to be more relaxed about the time
+synchronization amongst your worker machines.
 
-Queue Classic takes advantage of Postgres' PUB/SUB features to dequeue a job. Basically there is a channel in which the workers LISTEN. When a new job is added to the queue, the queue sends NOTIFY
-messages on the channel. Once a NOTIFY is sent, each worker races to acquire a lock on a job. A job is awarded to the victor while the rest go back to wait for another job. This eliminates
-the need to Sleep & Select.
+Queue Classic takes advantage of Postgres' PUB/SUB features to dequeue a job.
+Basically there is a channel in which the workers LISTEN. When a new job is added
+to the queue, the queue sends NOTIFY messages on the channel. Once a NOTIFY is sent,
+each worker races to acquire a lock on a job. A job is awarded to the victor while
+the rest go back to wait for another job. This eliminates the need to Sleep & Select.
 
 ### The Worker
 
 **Un-handled Exceptions**
+
 The worker calls dequeue and then calls the enqueued method with the supplied arguments.
 Once the method terminates, the job is deleted from the queue. In the case that your method
 does not terminate, or the worker expectingly dies, Queue Classic will do following:
@@ -147,7 +160,7 @@ If you are using Queue Classic with Rails, You should:
 
 1. Remove require 'queue_classic/tasks' from Rakefile
 2. Create new file in lib/tasks. Call it queue_classic.rb (name is arbitrary)
-3. Insert something like the following:
+3. Insert something similar to the following:
 
 #### lib/tasks/queue_classic.rb
 
@@ -208,23 +221,35 @@ It is fast because:
 * Fork / Pull Request
 * Add yourself to the contributors file
 
+Notes on getting tests running:
+
+1. Ensure postgres (>9) is running.
+2. $ createdb queue_classic_test
+3. $ export DATABASE_URL='postgres://username:password@localhost/queue_classic_test'
+4. turn test/
+
 ## FAQ
 
 How is this different than DJ?
 
-> TL;DR = Store job as JSON (better introspection), Queue manages the time for locking jobs (workers can be out of sync.), No magic (less code), Small footprint (ORM Free).
+> __TL;DR__ QC stores job as JSON (better introspection). Postgres manages the time for locking jobs (workers can be out of sync.), No magic (less code), Small footprint (ORM Free).
 
-> __Introspection__ I want the data in the queue to be as simple as possible. Since we only store the Class, Method and Args, introspection into the queue is
-quite simple.
+> __Introspection__ I want the data in the queue to be as simple as possible.
+Since we only store the Class, Method and Args, introspection into the queue is quite simple.
 
-> __Locking__ You might have noticed that DJ's worker calls Time.now(). In a cloud environment, this could allow for workers to be confused about
-the status of a job. Classic Queue locks a job using Postgres' TIMESTAMP function.
+> __Locking__ You might have noticed that DJ's worker calls Time.now().
+In a cloud environment, this could allow for workers to be confused about the status
+of a job. Classic Queue locks a job using Postgres' TIMESTAMP function.
 
-> __Magic__ I find disdain for methods on my objects that have nothing to do with the purpose of the object. Methods like "should" and "delay"
-are quite distasteful and obscure what is actually going on. If you use TestUnit for this reason, you might like Queue Classic. Anyway, I think
-the fundamental concept of a message queue is not that difficult to grasp; therefore, I have taken the time to make Queue Classic as transparent as possible.
+> __Magic__ I find disdain for methods on my objects that have nothing to do
+with the purpose of the object. Methods like "should" and "delay" are quite distasteful
+and obscure what is actually going on. If you use TestUnit for this reason,
+you might like Queue Classic. Anyway, I think the fundamental concept of a message
+queue is not that difficult to grasp; therefore, I have taken the time to make
+Queue Classic as transparent as possible.
 
-> __Footprint__ You don't need ActiveRecord or any other ORM to find the head or add to the tail. Take a look at the DurableArray class to see the SQL Classic Queue employees.
+> __Footprint__ You don't need ActiveRecord or any other ORM to find the head or
+add to the tail. Take a look at the DurableArray class to see the SQL Queue Classic employees.
 
 Why doesn't your queue retry failed jobs?
 
@@ -238,6 +263,6 @@ Can I use this library with 50 Heroku Workers?
 
 > Yes. Why not 100? Make sure your database can handle the connections. Each workers will consume a database connection.
 
-Is Queue Classic ready for production? Can I do it live?!?
+Is Queue Classic ready for production?
 
 > I started this project on 1/24/2011. I have been using this in production for some high-traffic apps at Heroku since 2/24/2011.
