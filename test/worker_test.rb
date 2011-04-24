@@ -23,7 +23,7 @@ end
 context "Worker" do
 
   setup do
-    QC::Queue.delete_all
+    init_db
     @worker = TestWorker.new
   end
 
