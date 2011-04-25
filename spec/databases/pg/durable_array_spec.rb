@@ -9,7 +9,12 @@ describe QC::DurableArray do
     @password = "1234"
     @host = "localhost"
     @database = database_name
-    QC::Queue.instance.setup :data_store => QC::DurableArray.new(:database => @database)
+    pg_prepare_database(@database)
+    QC::Queue.instance.setup :data_store => array
+  end
+
+  after(:all) do
+    array.connection.finish
   end
 
   before( :each ) do

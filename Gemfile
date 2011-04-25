@@ -1,5 +1,6 @@
+source :rubygems
 gem 'pg', ">=0.11"
-gem 'json', ">=0.10.1"
+gem 'json', ">=1.5.1"
 gem 'couchrest', '1.0.2'
 
 group :development do

@@ -3,7 +3,7 @@ module QC
 
     def initialize(args={})
       @db_string  = args[:database]
-      @connection = connection
+      connection
       execute("SET client_min_messages TO 'warning'")
       with_log("setup PG LISTEN") { execute("LISTEN jobs") }
     end
@@ -71,14 +71,14 @@ module QC
     def connection
       db_params = URI.parse(@db_string)
       if db_params.scheme == "postgres"
-        PGconn.connect(
+        @connection ||= PGconn.connect(
           :dbname   => db_params.path.gsub("/",""),
           :user     => db_params.user,
           :password => db_params.password,
           :host     => db_params.host
         )
       else
-        PGconn.connect(:dbname => @db_string)
+        @connection ||= PGconn.connect(:dbname => @db_string)
       end
     end
 
