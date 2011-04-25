@@ -9,7 +9,7 @@ require 'queue_classic/worker'
 require 'queue_classic/queue'
 require 'queue_classic/api'
 require 'queue_classic/job'
-
+require 'queue_classic/errors'
 
 module QC
   extend Api

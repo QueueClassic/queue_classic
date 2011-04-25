@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe QC::DurableArray do
 
-  let(:array) { QC::DurableArray.new(:database => @database) }
+  let(:array) { QC::DurableArray.new(:adapter => 'postgres', :database => @database) }
 
   before(:all) do
     @user = "pmiranda"

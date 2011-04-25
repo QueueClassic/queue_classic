@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe QC::Worker do
 
-  let(:array) { QC::DurableArray.new(:database => @database) }
+  let(:array) { QC::DurableArray.new(:adapter => 'postgres', :database => @database) }
   let(:worker) { QC::Worker.new }
 
   before(:all) do
