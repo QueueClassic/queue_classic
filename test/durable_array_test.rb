@@ -8,7 +8,7 @@ class DurableArrayTest < MiniTest::Unit::TestCase
     @password = "1234"
     @host = "localhost"
     @database = "queue_classic_test"
-    @array = QC::DurableArray.new(:database => @database)
+    @array = QC::DurableArray.new(:adapter => "postgres", :database => @database)
     clean_database
   end
 

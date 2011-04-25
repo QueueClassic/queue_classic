@@ -36,14 +36,15 @@ module DatabaseHelpers
   end
 
   def jobs_db
-    @jobs_db ||= PGconn.connect(:dbname => ENV["DATABASE_URL"])
+    @jobs_db ||= PGconn.connect(:adapter => ENV["DATABASE_ADAPTER"],:dbname => ENV["DATABASE_URL"])
     @jobs_db.exec("SET client_min_messages TO 'warning'")
     @jobs_db
   end
 
   def postgres
-    @postgres ||= PGconn.connect(:dbname => 'postgres')
+    @postgres ||= PGconn.connect(:adapter => ENV["DATABASE_ADAPTER"], :dbname => 'postgres')
     @postgres.exec("SET client_min_messages TO 'warning'")
     @postgres
   end
 end
+
