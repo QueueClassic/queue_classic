@@ -1,5 +1,9 @@
 require 'queue_classic/init'
 
+def database_name
+  "queue_classic_test"
+end
+
 def pg_clean_database(database)
   pg_jobs_db(database).exec("TRUNCATE TABLE jobs")
 end

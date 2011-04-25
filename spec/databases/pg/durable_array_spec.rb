@@ -8,7 +8,7 @@ describe QC::DurableArray do
     @user = "pmiranda"
     @password = "1234"
     @host = "localhost"
-    @database = "queue_classic_test"
+    @database = database_name
     QC::Queue.instance.setup :data_store => QC::DurableArray.new(:database => @database)
   end
 
