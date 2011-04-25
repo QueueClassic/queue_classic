@@ -44,7 +44,7 @@ module QC
     def get_handler(args)
       if args.key?(:adapter)
         begin
-          require "queue_classic/handlers/#{args[:adapter]}_handler"
+          require "queue_classic/adapters/#{args[:adapter]}_adapter"
         rescue
           "Please install the #{args[:adapter]} adapter gem"
         end
