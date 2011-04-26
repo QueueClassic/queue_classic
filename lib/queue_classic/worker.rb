@@ -29,13 +29,13 @@ module QC
     end
 
     def work
-      if job = QC::Queue.dequeue #blocks until we have a job
+      if job = QC.dequeue #blocks until we have a job
         begin
           job.work
         rescue Object => e
           handle_failure(job,e)
         ensure
-          QC::Queue.delete(job)
+          QC.delete(job)
         end
       end
     end
