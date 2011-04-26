@@ -39,7 +39,7 @@ module  QC
     extend AbstractQueue
 
     def self.array
-      if defined? @@aray
+      if defined? @@array
         @@array
       else
         @@database = Database.new
