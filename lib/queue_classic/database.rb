@@ -26,11 +26,11 @@ module QC
     end
 
     def waiting_conns
-      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}' AND waiting = 't'")
+      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}' AND waiting = 't' AND application_name = 'queue_classic'")
     end
 
     def all_conns
-      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}'")
+      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}' AND application_name = 'queue_classic'")
     end
 
     def silence_warnings
@@ -57,6 +57,7 @@ module QC
           :host     => @db_params.host
         )
         @connection.exec("LISTEN queue_classic_jobs")
+        @connection.exec("SET application_name = 'queue_classic'")
         silence_warnings unless ENV["LOGGING_ENABLED"]
         @connection
       end
