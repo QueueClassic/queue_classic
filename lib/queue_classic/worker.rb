@@ -6,6 +6,10 @@ module QC
       handle_signals
     end
 
+    def running?
+      @running
+    end
+
     def handle_signals
       %W(INT TRAP).each do |sig|
         trap(sig) do
@@ -16,10 +20,6 @@ module QC
           end
         end
       end
-    end
-
-    def running?
-      @running
     end
 
     def start
