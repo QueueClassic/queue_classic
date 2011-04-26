@@ -27,8 +27,6 @@ context "Worker" do
     @worker = TestWorker.new
   end
 
-  teardown { QC::Queue.disconnect }
-
   test "working a job" do
     QC::Queue.enqueue "TestNotifier.deliver", {}
 

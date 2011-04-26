@@ -3,7 +3,6 @@ require File.expand_path("../helper.rb", __FILE__)
 context "Queue" do
 
   setup { init_db }
-  teardown { QC::Queue.disconnect }
 
   test "Queue class responds to enqueue" do
     QC::Queue.enqueue("Klass.method")
