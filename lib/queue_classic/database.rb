@@ -91,14 +91,23 @@ module QC
             relative_top = 0;
           END IF;
 
-          EXECUTE 'SELECT id FROM '
-            || tname::regclass
-            || ' WHERE locked_at IS NULL'
-            || ' ORDER BY id ASC'
-            || ' LIMIT 1'
-            || ' OFFSET ' || relative_top
-            || ' FOR UPDATE NOWAIT'
-          INTO unlocked;
+          LOOP
+            BEGIN
+              EXECUTE 'SELECT id FROM '
+                || tname::regclass
+                || ' WHERE locked_at IS NULL'
+                || ' ORDER BY id ASC'
+                || ' LIMIT 1'
+                || ' OFFSET ' || relative_top
+                || ' FOR UPDATE NOWAIT'
+              INTO unlocked;
+              EXIT;
+            EXCEPTION
+              WHEN lock_not_available THEN
+                -- do nothing. loop again and hope we get a lock
+            END;
+          END LOOP;
+
 
           RETURN QUERY EXECUTE 'UPDATE '
             || tname::regclass
