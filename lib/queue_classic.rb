@@ -9,3 +9,9 @@ require 'queue_classic/database'
 require 'queue_classic/worker'
 require 'queue_classic/queue'
 require 'queue_classic/job'
+
+module QC
+  def self.method_missing(sym, *args, &block)
+    Queue.send(sym, *args, &block)
+  end
+end
