@@ -23,8 +23,7 @@ namespace :qc do
   end
 
   task :create_queue, :name, :needs => :environment do |t,args|
-    name = args[:name].to_sym
-    QC::Database.create_queue(name)
+    QC::Database.create_queue(args[:name])
   end
 
 end

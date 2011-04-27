@@ -5,8 +5,8 @@ module QC
     DEFAULT_QUEUE_NAME = "queue_classic_jobs"
 
     def self.create_queue(name)
-      db = new(:name => name)
-      db.init_db
+      db = new(name)
+      db.create_table
       db.disconnect
       true
     end
