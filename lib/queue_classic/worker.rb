@@ -3,6 +3,7 @@ module QC
 
     def initialize
       @running = true
+      @queue = QC::Queue.new(ENV["QUEUE"])
       handle_signals
     end
 
@@ -29,13 +30,13 @@ module QC
     end
 
     def work
-      if job = QC.dequeue #blocks until we have a job
+      if job = @queue.dequeue #blocks until we have a job
         begin
           job.work
         rescue Object => e
           handle_failure(job,e)
         ensure
-          QC.delete(job)
+          @queue.delete(job)
         end
       end
     end
