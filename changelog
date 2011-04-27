@@ -1,4 +1,4 @@
-Version 0.2.3
+Version 0.3.1
 - Added query interface for introspection success
 - Moved the locking of jobs into the DB as a PG function. SELECT lock_head()
 - Added requirement for DB connection. MUST BE URI i.e. DATABASE_URL=postgres://user:pass@localhost/db_name
@@ -7,6 +7,7 @@ Version 0.2.3
 - Added support for trapping INT and TERM signals in the worker. ^C to stop after finished and ^C^C to kill.
 - Renamed the jobs table to queue_classic_jobs
 - Renamed the jobs channel to queue_classic_jobs
+- Added support for multiple queues
 
 Version 0.2.2
 - Fixed problems with enqueueing a list of parameters.

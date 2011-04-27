@@ -1,7 +1,7 @@
 # Queue Classic
-__Beta 0.3.0__
+__Beta 0.3.1__
 
-__Queue Classic 0.3.0 is in Beta.__ I have been using this library with 30-150 Heroku workers and have had great results.
+__Queue Classic 0.3.1 is in Beta.__ I have been using this library with 30-150 Heroku workers and have had great results.
 
 I am using this in production applications and plan to maintain and support this library for a long time.
 
