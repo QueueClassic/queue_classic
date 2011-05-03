@@ -8,7 +8,7 @@ I am using this in production applications with 100s of Heroku workers. I plan t
 
 [wiki](https://github.com/ryandotsmith/queue_classic/wiki "wiki")
 
-[discussion group](http://groups.google.com/group/queue_classic "discussion group")
+[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
 
 
 ## Installation
