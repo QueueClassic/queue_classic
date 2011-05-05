@@ -85,9 +85,12 @@ module QC
           relative_top integer;
           job_count integer;
         BEGIN
+          -- The purpose is to release contention for the first spot in the table.
+          -- The select count(*) is going to slow down dequeue performance but allow
+          -- for more workers. Would love to see some optimization here...
+
           SELECT TRUNC(random() * #{@top_boundry} + 1) INTO relative_top;
           EXECUTE 'SELECT count(*) FROM' || tname || '' INTO job_count;
-
           IF job_count < 10 THEN
             relative_top = 0;
           END IF;
@@ -108,7 +111,6 @@ module QC
                 -- do nothing. loop again and hope we get a lock
             END;
           END LOOP;
-
 
           RETURN QUERY EXECUTE 'UPDATE '
             || tname::regclass
