@@ -70,15 +70,6 @@ context "DurableArray" do
     assert_equal([{"job" => "one"},{"job" => "two"}], results)
   end
 
-  test "connection build db connection from uri" do
-    user = `whoami`.strip
-    a = QC::Database.new("postgres://#{user}:@localhost/queue_classic_test")
-    assert_equal user, a.connection.user
-    assert_equal "localhost", a.connection.host
-    assert_equal "queue_classic_test", a.connection.db
-    a.disconnect
-  end
-
   test "seach" do
     @array << {"job" => "A.signature"}
     jobs = @array.search_details_column("A.signature")
