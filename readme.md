@@ -5,6 +5,9 @@ Queue Classic is a queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue
 
 I am using this in production applications with 100s of Heroku workers. I plan to maintain and support this library for a long time.
 
+## Documentation 
+
+###[Usage](https://github.com/ryandotsmith/queue_classic/wiki/Usage)
 
 [wiki](https://github.com/ryandotsmith/queue_classic/wiki "wiki")
 
@@ -27,5 +30,13 @@ I am using this in production applications with 100s of Heroku workers. I plan t
 
 ### Upgrade from 0.2 to 0.3
 
+The big change in 0.3 is that the default queue is no longer named jobs, it is named queue_classic_jobs. Renaming the table is the only change that needs to be made.
+
     $ psql your_database
     your_database=# ALTER TABLE jobs RENAME TO queue_classic_jobs;
+
+## Developer's Installation
+
+* Install dependencies: pg, json (see gemspec)
+* createdb queue_classic_test
+* rake will run the tests (or turn test/)
