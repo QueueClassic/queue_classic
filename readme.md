@@ -9,9 +9,11 @@ I am using this in production applications with 100s of Heroku workers. I plan t
 
 ###[Usage](https://github.com/ryandotsmith/queue_classic/wiki/Usage)
 
-[wiki](https://github.com/ryandotsmith/queue_classic/wiki "wiki")
+###[Example Rails App](https://github.com/ryandotsmith/queue_classic_example)
 
-[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
+###[wiki](https://github.com/ryandotsmith/queue_classic/wiki "wiki")
+
+###[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
 
 
 ## Installation
