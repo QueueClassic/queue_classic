@@ -11,7 +11,7 @@ I am using this in production applications with 100s of Heroku workers. I plan t
 
 ###[Example Rails App](https://github.com/ryandotsmith/queue_classic_example)
 
-###[wiki](https://github.com/ryandotsmith/queue_classic/wiki "wiki")
+###[Wiki](https://github.com/ryandotsmith/queue_classic/wiki "wiki")
 
 ###[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
 
@@ -37,8 +37,9 @@ The big change in 0.3 is that the default queue is no longer named jobs, it is n
     $ psql your_database
     your_database=# ALTER TABLE jobs RENAME TO queue_classic_jobs;
 
-## Developer's Installation
+## Running Tests
 
 * Install dependencies: pg, json (see gemspec)
 * createdb queue_classic_test
+* export DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
 * rake will run the tests (or turn test/)
