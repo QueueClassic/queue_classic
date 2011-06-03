@@ -1,0 +1,54 @@
+<h1>Queue Classic</h1>
+
+<p><strong>0.3.1</strong> (beta)</p>
+
+<p>Queue Classic is a postgres-backed queueing library that is focused on
+concurrent job locking, minimizing database load &amp; providing a simple &amp;
+intuitive user experience.</p>
+
+<p>Queue Classic Features:</p>
+
+<ul>
+<li>Support for multiple queues with heterogeneous workers</li>
+<li>Utilization of  Postgres' PUB/SUB</li>
+<li>JSON encoding for jobs</li>
+<li>Postgres' rock-solid locking mechanism</li>
+<li>Long term support</li>
+</ul>
+
+<h2>Quick Start</h2>
+
+<p>See doc/installation.md for Rails instructions</p>
+
+<pre><code>$ gem install queue_classic
+psql=# CREATE TABLE queue_classic_jobs (id serial, details text, locked_at timestamp);
+psql=# CREATE INDEX queue_classic_jobs_id_idx ON queue_classic_jobs (id);
+$ rake qc:load_functions
+irb: QC.enqueue &quot;Class.method&quot;, &quot;arg&quot;
+$ rake jobs:work
+</code></pre>
+
+<h2>Hacking on Queue Classic</h2>
+
+<h3>Dependencies</h3>
+
+<ul>
+<li>Postgres version 9</li>
+<li>Ruby</li>
+<li>Gems: pg, json</li>
+</ul>
+
+<h3>Running Tests</h3>
+
+<ul>
+<li>Install dependencies: pg, json (see gemspec)</li>
+<li>createdb queue<em>classic</em>test</li>
+<li>export DATABASE<em>URL=&quot;postgres://username:pass@localhost/queue</em>classic_test&quot;</li>
+<li>rake will run the tests (or turn test/)</li>
+</ul>
+
+<h2>Other Resources</h2>
+
+<h3><a href="https://github.com/ryandotsmith/queue_classic_example">Example Rails App</a></h3>
+
+<h3><a href="http://groups.google.com/group/queue_classic" title="discussion group">Discussion Group</a></h3>

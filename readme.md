@@ -39,6 +39,11 @@ See doc/installation.md for Rails instructions
 * export DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
 * rake will run the tests (or turn test/)
 
+### Building Documentation
+
+If you are adding new features, please document them in the doc directory. Also,
+once you have the markdown in place, please run: ruby doc/build.rb to make HTML
+for the docs.
 
 ## Other Resources
 

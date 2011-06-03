@@ -1,0 +1,117 @@
+<h3>Single Queue</h3>
+
+<p>You should already have created a table named queue<em>classic</em>jobs. This is the default queue. You can use the queueing methods on the QC module to interact with the default queue.</p>
+
+<pre><code class="ruby">
+  QC.enqueue(&quot;Class.method&quot;,&quot;arg1&quot;,&quot;arg2&quot;)
+  QC.dequeue
+  QC.length
+  QC.query(&quot;Class.method&quot;)
+  QC.delete_all
+  QC.connection_status
+
+</code></pre>
+
+<p>It should be noted that the following is true</p>
+
+<pre><code class="ruby">
+  QC.enqueue = QC::Queue.enqueue = QC::Queue.new(&quot;queue_classic_jobs&quot;).enqueue
+
+</code></pre>
+
+<h3>Multiple Queues</h3>
+
+<p>If you want to create a new queue, you will need to create a new table. There is a rake task to help you with this:</p>
+
+<pre><code class="bash">
+  rake qc:create_queue[&quot;priority_queue&quot;]
+
+</code></pre>
+
+<p>This will have created a table named &quot;priority_queue.&quot; Next, you will need to create an instance of QC::Queue and tell it to bind to your newly created queue.</p>
+
+<pre><code class="ruby">
+  @queue = QC::Queue.new(&quot;priority_queue&quot;)
+  @queue.enqueue(&quot;Class.method&quot;,&quot;arg1&quot;)
+
+</code></pre>
+
+<p>Any method available to the default queue (i.e. QC.enqueue) is available to @queue. In fact, both the class and instances of the class get their queueing methods from the same module, the AbstractQueue module. Look it up in lib/queue_classic/queue.rb for the particulars.</p>
+
+<p>Now, just instruct your worker to attach to your newly created queue.</p>
+
+<pre><code class="bash">
+  QUEUE=&quot;priority_queue&quot; rake jobs:work
+
+</code></pre>
+
+<h3>Worker</h3>
+
+<p>The worker is an instance of the QC::Worker class. The worker will begin working when you call <strong>start()</strong> on the worker object. <strong>start()</strong> will dequeue and work until you kill the process. If the job raises an exception, Queue Classic will ensure that handle_failure(job,exception) gets called. You may want to subclass QueueClassic's worker to define your own failure strategy.</p>
+
+<p>By default, handle_failure will print the job and the exception. Of course, you can override this behavior. In Rails you can do the following:</p>
+
+<ol>
+<li>Remove require 'queue_classic/tasks' from Rakefile</li>
+<li>Create new file in lib/tasks. Call it queue_classic.rb</li>
+<li>Insert something the following</li>
+</ol>
+
+<pre><code class="ruby">
+    require 'queue_classic'
+    class MyWorker &lt; QC::Worker
+
+      def handle_failure(job,exception)
+        # You can do many things inside of this method. Here are a few examples:
+
+        # Log to Exceptional
+        Exceptional.handle(exception, &quot;Background Job Failed&quot; + job.inspect)
+
+        # Log to Hoptoad
+        HoptoadNotifier.notify(
+            :error_class   =&gt; &quot;Background Job&quot;,
+            :error_message =&gt; &quot;Special Error: #{e.message}&quot;,
+            :parameters    =&gt; job.details
+        )
+
+        # Log to STDOUT (Heroku Logplex listens to stdout)
+        puts job.inspect
+        puts exception.inspect
+        puts exception.backtrace
+
+        # Retry the job
+        @queue.enqueue(job)
+
+      end
+    end
+
+    namespace :jobs do
+      task :work  =&gt; :environment do
+        MyWorker.new.start
+      end
+    end
+
+</code></pre>
+
+<p><strong>Un-handled Exceptions</strong></p>
+
+<p>The worker calls dequeue and then calls the enqueued method with the supplied arguments.
+Once the method terminates, the job is deleted from the queue. In the case that your method
+does not terminate, or the worker expectingly dies, Queue Classic will do following:</p>
+
+<ul>
+<li>Rescue the Exception using Ruby's <strong>ensure</strong> block %</li>
+<li>Call handle_failure(job,exception)</li>
+<li>Delete the job</li>
+</ul>
+
+<p>% - To my knowledge, the only thing that can usurp ensure is a segfault.</p>
+
+<p><strong>Stopping a worker</strong></p>
+
+<pre><code>If the worker is in the middle of working a job:
+  ^C =&gt; Kill the worker after job is finished.
+  ^C^C =&gt; Kill the worker immediately.
+If the worker is idle
+  ^C =&gt; Kills the worker.
+</code></pre>

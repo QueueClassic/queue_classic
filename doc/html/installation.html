@@ -1,0 +1,52 @@
+<p><strong>Rails Compatibility: 2.X and 3.X</strong></p>
+
+<h3>Gemfile</h3>
+
+<pre><code class="ruby">
+  gem &quot;queue_classic&quot;
+
+</code></pre>
+
+<h3>Rakefile</h3>
+
+<pre><code class="ruby">
+  require 'queue_classic'
+  require 'queue_classic/tasks'
+
+</code></pre>
+
+<h3>config/initializers/queue_classic.rb</h3>
+
+<pre><code class="ruby">
+  # Optional if you have this set in your shell environment or use Heroku.
+  ENV[&quot;DATABASE_URL&quot;] = &quot;postgres://username:password@localhost/database_name&quot;
+
+</code></pre>
+
+<h3>Database Migration</h3>
+
+<pre><code class="ruby">
+class CreateJobsTable &lt; ActiveRecord::Migration
+
+  def self.up
+    create_table :queue_classic_jobs do |t|
+      t.text :details
+      t.timestamp :locked_at
+    end
+    add_index :queue_classic_jobs, :id
+  end
+
+  def self.down
+    drop_table :queue_classic_jobs
+  end
+
+end
+
+</code></pre>
+
+<h3>Load PL/pgSQL Functions</h3>
+
+<pre><code class="bash">
+  rake qc:load_functions
+
+</code></pre>
