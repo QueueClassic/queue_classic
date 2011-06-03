@@ -1,22 +1,21 @@
 # Queue Classic
 __0.3.1__ (beta)
 
-Queue Classic is a queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue Classic features a blocking dequeue, database maintained locks and no ridiculous dependencies.
+Queue Classic is a postgres-backed queueing library that is focused on
+concurrent job locking, minimizing database load & providing a simple &
+intuitive user experience.
 
-I am using this in production applications with 100s of Heroku workers. I plan to maintain and support this library for a long time.
+Queue Classic Features:
 
-## Documentation 
+* Support for multiple queues with heterogeneous workers
+* Utilization of  Postgres' PUB/SUB
+* JSON encoding for jobs
+* Postgres' rock-solid locking mechanism
+* Long term support
 
-###[Usage](https://github.com/ryandotsmith/queue_classic/wiki/Usage)
+## Quick Start
 
-###[Example Rails App](https://github.com/ryandotsmith/queue_classic_example)
-
-###[Wiki](https://github.com/ryandotsmith/queue_classic/wiki "wiki")
-
-###[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
-
-
-## Installation
+See doc/installation.md for Rails instructions
 
     $ gem install queue_classic
     psql=# CREATE TABLE queue_classic_jobs (id serial, details text, locked_at timestamp);
@@ -25,21 +24,24 @@ I am using this in production applications with 100s of Heroku workers. I plan t
     irb: QC.enqueue "Class.method", "arg"
     $ rake jobs:work
 
+## Hacking on Queue Classic
+
 ### Dependencies
 
-  Postgres version 9
-  Ruby. Gems: pg, json
+* Postgres version 9
+* Ruby
+* Gems: pg, json
 
-### Upgrade from 0.2 to 0.3
-
-The big change in 0.3 is that the default queue is no longer named jobs, it is named queue_classic_jobs. Renaming the table is the only change that needs to be made.
-
-    $ psql your_database
-    your_database=# ALTER TABLE jobs RENAME TO queue_classic_jobs;
-
-## Running Tests
+### Running Tests
 
 * Install dependencies: pg, json (see gemspec)
 * createdb queue_classic_test
 * export DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
 * rake will run the tests (or turn test/)
+
+
+## Other Resources
+
+###[Example Rails App](https://github.com/ryandotsmith/queue_classic_example)
+
+###[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
