@@ -1,6 +1,11 @@
 <h3>0.2.X to 0.3.X</h3>
 
-<p>The big change in 0.3 is that the default queue is no longer named jobs,
+<ul>
+<li>Deprecated QC.queue_length in favor of QC.length</li>
+<li>Locking functions need to be loaded into database via <code>$ rake qc:load_functions</code></li>
+</ul>
+
+<p>Also, the default queue is no longer named jobs,
 it is named queue<em>classic</em>jobs. Renaming the table is the only change that needs to be made.</p>
 
 <pre><code>$ psql your_database
