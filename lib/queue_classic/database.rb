@@ -51,11 +51,13 @@ module QC
       else
         @name = @db_params.path.gsub("/","")
         @connection = PGconn.connect(
-          :dbname   => @db_params.path.gsub("/",""),
-          :user     => @db_params.user,
-          :password => @db_params.password,
-          :host     => @db_params.host
-        )
+          @db_params.host,
+          @db_params.port || 5432,
+          nil, '',
+          @name,
+          @db_params.user,
+          @db_params.password
+        )    
         @connection.exec("LISTEN queue_classic_jobs")
         @connection.exec("SET application_name = 'queue_classic'")
         silence_warnings unless ENV["LOGGING_ENABLED"]
