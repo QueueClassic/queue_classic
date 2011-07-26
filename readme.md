@@ -47,6 +47,8 @@ for the docs.
 
 ## Other Resources
 
+###[Documentation](https://github.com/ryandotsmith/queue_classic/tree/master/doc)
+
 ###[Example Rails App](https://github.com/ryandotsmith/queue_classic_example)
 
 ###[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
