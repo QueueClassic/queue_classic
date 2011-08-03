@@ -1,6 +1,8 @@
 $: << File.expand_path("lib")
 $: << File.expand_path("test")
 
+ENV['DATABASE_URL'] ||= 'postgres:///queue_classic_test'
+
 require 'queue_classic'
 require 'database_helpers'
 

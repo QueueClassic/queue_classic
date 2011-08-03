@@ -42,4 +42,10 @@ context "Worker" do
     @worker.work
     assert_equal 1, @worker.failed_count
   end
+
+  test "only makes one connection" do
+    QC.enqueue "TestNotifier.deliver", {}
+    @worker.work
+    assert_equal 1, QC.connection_status[:total]
+  end
 end

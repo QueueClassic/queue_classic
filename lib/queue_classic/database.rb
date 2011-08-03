@@ -1,5 +1,6 @@
 module QC
   class Database
+    @@connection = nil
 
     MAX_TOP_BOUND = 9
     DEFAULT_QUEUE_NAME = "queue_classic_jobs"
@@ -43,26 +44,25 @@ module QC
 
     def disconnect
       connection.finish
+      @@connection = nil
     end
 
     def connection
-      if defined? @connection
-        @connection
-      else
+      unless @@connection
         @name = @db_params.path.gsub("/","")
-        @connection = PGconn.connect(
+        @@connection = PGconn.connect(
           @db_params.host,
           @db_params.port || 5432,
           nil, '',
           @name,
           @db_params.user,
           @db_params.password
-        )    
-        @connection.exec("LISTEN queue_classic_jobs")
-        @connection.exec("SET application_name = 'queue_classic'")
+        )
+        @@connection.exec("LISTEN queue_classic_jobs")
+        @@connection.exec("SET application_name = 'queue_classic'")
         silence_warnings unless ENV["LOGGING_ENABLED"]
-        @connection
       end
+      @@connection
     end
 
     def drop_table
