@@ -1,5 +1,5 @@
 # Queue Classic
-__0.3.1__ (beta)
+__0.3.2__ (beta)
 
 Queue Classic is a postgres-backed queueing library that is focused on
 concurrent job locking, minimizing database load & providing a simple &

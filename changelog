@@ -1,3 +1,8 @@
+Version 0.3.2
+- Fixed bug which caused workers to consume 2 connections. Now they only consume 1
+- Added a rake file for tests
+- Added support for postgres:///db_name DATABASE_URLs
+
 Version 0.3.1
 - Added query interface for introspection success
 - Moved the locking of jobs into the DB as a PG function. SELECT lock_head()

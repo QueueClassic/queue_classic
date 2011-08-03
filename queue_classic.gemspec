@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name          = 'queue_classic'
   s.email         = 'ryan@heroku.com'
-  s.version       = '0.3.1'
-  s.date          = '2011-04-26'
+  s.version       = '0.3.2'
+  s.date          = '2011-08-03'
   s.description   = "Queue Classic (beta) is a queueing library for Ruby apps (Rails, Sinatra, Etc...) Queue Classic features asynchronous job polling, database maintained locks and no ridiculous dependencies. As a matter of fact, Queue Classic only requires the pg and json."
   s.summary       = s.description + "(simple)"
   s.authors       = ["Ryan Smith"]
