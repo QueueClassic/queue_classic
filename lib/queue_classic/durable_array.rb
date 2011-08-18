@@ -8,9 +8,6 @@ module QC
 
     def <<(details)
       execute("INSERT INTO #{@table_name} (details) VALUES ('#{details.to_json}')")
-      if USE_PUB_SUB
-        execute("NOTIFY queue_classic_jobs, 'new-job'")
-      end
     end
 
     def count
@@ -30,25 +27,8 @@ module QC
       find_many { "SELECT * FROM #{@table_name} WHERE details LIKE '%#{q}%'" }
     end
 
-    def lock_head
-      find_one { "SELECT * FROM lock_head('#{@table_name}')" }
-    end
-
     def first
-      if USE_PUB_SUB
-        if job = lock_head
-          job
-        else
-          @database.connection.wait_for_notify(1) {|e,p,msg| job = lock_head if msg == "new-job" }
-          job
-        end
-      else
-        job = nil
-        until job
-          sleep(1) unless job = lock_head
-        end
-        job
-      end
+      find_one { "SELECT * FROM lock_head('#{@table_name}')" }
     end
 
     def each

@@ -30,7 +30,7 @@ module QC
     end
 
     def work
-      if job = @queue.dequeue #blocks until we have a job
+      if job = lock_job
         begin
           job.work
         rescue Object => e
@@ -39,6 +39,24 @@ module QC
           @queue.delete(job)
         end
       end
+    end
+
+    # blocks until we have a job
+    def lock_job
+      attempts = 0
+      job = nil
+      until job
+        job = @queue.dequeue
+        if job.nil?
+          attempts += 1
+          if tries < MAX_LOCK_ATTEMPTS
+            sleep(2**attempts)
+            next
+          end
+        else
+        end
+      end
+      job
     end
 
     #override this method to do whatever you want
