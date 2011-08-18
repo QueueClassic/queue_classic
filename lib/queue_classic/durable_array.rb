@@ -4,11 +4,14 @@ module QC
     def initialize(database)
       @database = database
       @table_name = @database.table_name
+      @listening = false
     end
 
     def <<(details)
       execute("INSERT INTO #{@table_name} (details) VALUES ('#{details.to_json}')")
-      execute("NOTIFY queue_classic_jobs, 'new-job'")
+      if @listening
+        execute("NOTIFY queue_classic_jobs, 'new-job'")
+      end
     end
 
     def count
@@ -34,8 +37,12 @@ module QC
 
     def first
       if job = lock_head
+        @database.connection.exec("UNLISTEN queue_classic_jobs")
+        @listening = false
         job
       else
+        @database.connection.exec("LISTEN queue_classic_jobs")
+        @listening = true
         @database.connection.wait_for_notify(1) {|e,p,msg| job = lock_head if msg == "new-job" }
         job
       end

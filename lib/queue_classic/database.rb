@@ -58,7 +58,6 @@ module QC
           @db_params.user,
           @db_params.password
         )
-        @@connection.exec("LISTEN queue_classic_jobs")
         @@connection.exec("SET application_name = 'queue_classic'")
         silence_warnings unless ENV["LOGGING_ENABLED"]
       end
