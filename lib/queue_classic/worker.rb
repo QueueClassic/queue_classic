@@ -25,9 +25,7 @@ module QC
     end
 
     def start
-      while running? do
-        work
-      end
+      work while running?
     end
 
     def work
