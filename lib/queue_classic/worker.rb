@@ -1,5 +1,6 @@
 module QC
   class Worker
+    MAX_LOCK_ATTEMPTS = ENV["QC_MAX_LOCK_ATTEMPTS"] ||= 5
 
     def initialize
       @running = true
@@ -41,7 +42,6 @@ module QC
       end
     end
 
-    # blocks until we have a job
     def lock_job
       attempts = 0
       job = nil
