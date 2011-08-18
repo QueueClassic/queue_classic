@@ -53,6 +53,7 @@ context "Queue" do
     QC::Queue.length
     QC::Queue.enqueue "Klass.method"
     QC::Queue.delete QC::Queue.dequeue
+    QC::Queue.enqueue "Klass.method"
     QC::Queue.dequeue
     assert_equal 1, QC.connection_status[:total]
   end

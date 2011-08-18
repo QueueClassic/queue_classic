@@ -4,12 +4,11 @@ module QC
     def initialize(database)
       @database = database
       @table_name = @database.table_name
-      @listening = false
     end
 
     def <<(details)
       execute("INSERT INTO #{@table_name} (details) VALUES ('#{details.to_json}')")
-      if @listening
+      if USE_PUB_SUB
         execute("NOTIFY queue_classic_jobs, 'new-job'")
       end
     end
@@ -36,14 +35,18 @@ module QC
     end
 
     def first
-      if job = lock_head
-        @database.connection.exec("UNLISTEN queue_classic_jobs")
-        @listening = false
-        job
+      if USE_PUB_SUB
+        if job = lock_head
+          job
+        else
+          @database.connection.wait_for_notify(1) {|e,p,msg| job = lock_head if msg == "new-job" }
+          job
+        end
       else
-        @database.connection.exec("LISTEN queue_classic_jobs")
-        @listening = true
-        @database.connection.wait_for_notify(1) {|e,p,msg| job = lock_head if msg == "new-job" }
+        job = nil
+        until job
+          job = lock_head
+        end
         job
       end
     end

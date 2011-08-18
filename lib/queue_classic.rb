@@ -11,6 +11,9 @@ require 'queue_classic/queue'
 require 'queue_classic/job'
 
 module QC
+
+  USE_PUB_SUB = ENV["QC_USE_PUB_SUB"] == "true"
+
   def self.method_missing(sym, *args, &block)
     Queue.send(sym, *args, &block)
   end
