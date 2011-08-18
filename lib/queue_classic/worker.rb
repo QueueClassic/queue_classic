@@ -1,6 +1,6 @@
 module QC
   class Worker
-    MAX_LOCK_ATTEMPTS = ENV["QC_MAX_LOCK_ATTEMPTS"] || 5
+    MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
     def initialize
       @running = true
