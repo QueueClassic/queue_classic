@@ -45,7 +45,7 @@ module QC
       else
         job = nil
         until job
-          job = lock_head
+          sleep(1) unless job = lock_head
         end
         job
       end
