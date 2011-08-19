@@ -25,7 +25,12 @@ module QC
     end
 
     def start
-      work while running?
+      fork_and_work while running?
+    end
+
+    def fork_and_work
+      cpid = fork  { work }
+      Process.wait(cpid)
     end
 
     def work
@@ -47,7 +52,7 @@ module QC
         job = @queue.dequeue
         if job.nil?
           attempts += 1
-          if tries < MAX_LOCK_ATTEMPTS
+          if attempts < MAX_LOCK_ATTEMPTS
             sleep(2**attempts)
             next
           end
