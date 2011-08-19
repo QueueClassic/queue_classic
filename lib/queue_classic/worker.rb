@@ -1,6 +1,6 @@
 module QC
   class Worker
-    MAX_LOCK_ATTEMPTS = ENV["QC_MAX_LOCK_ATTEMPTS"] || 5
+    MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
     def initialize
       @running = true
@@ -30,6 +30,7 @@ module QC
 
     def fork_and_work
       cpid = fork  { work }
+      puts "fork #{cpid}"
       Process.wait(cpid)
     end
 
@@ -51,10 +52,13 @@ module QC
       until job
         job = @queue.dequeue
         if job.nil?
+          puts "exp backoff"
           attempts += 1
           if attempts < MAX_LOCK_ATTEMPTS
             sleep(2**attempts)
             next
+          else
+            break
           end
         else
         end
