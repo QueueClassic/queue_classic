@@ -29,7 +29,7 @@ module QC
     end
 
     def fork_and_work
-      cpid = fork  { work }
+      cpid = fork { work }
       puts "fork #{cpid}"
       Process.wait(cpid)
     end
