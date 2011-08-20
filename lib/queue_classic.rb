@@ -11,6 +11,8 @@ require 'queue_classic/queue'
 require 'queue_classic/job'
 
 module QC
+  VERBOSE = ENV["VERBOSE"] == true
+
   def self.method_missing(sym, *args, &block)
     Queue.send(sym, *args, &block)
   end

@@ -2,9 +2,10 @@ module QC
   class Database
     @@connection = nil
 
-    MAX_TOP_BOUND = 9
-    DEFAULT_QUEUE_NAME = "queue_classic_jobs"
-    NOTIFY_TIMEOUT = 10
+    DATABASE_URL        = (ENV["QC_DATABASE_URL"] || ENV["DATABASE_URL"])
+    MAX_TOP_BOUND       = (ENV["QC_TOP_BOUND"] || 9).to_i
+    NOTIFY_TIMEOUT      = (ENV["QC_NOTIFY_TIMEOUT"] || 10).to_i
+    DEFAULT_QUEUE_NAME  = "queue_classic_jobs"
 
     def self.create_queue(name)
       db = new(name)
@@ -16,9 +17,9 @@ module QC
     attr_reader :table_name
 
     def initialize(queue_name=nil)
-      @top_boundry = ENV["TOP_BOUND"] || MAX_TOP_BOUND
+      @top_boundry = MAX_TOP_BOUND
       @table_name = queue_name || DEFAULT_QUEUE_NAME
-      @db_params = URI.parse(ENV["DATABASE_URL"])
+      @db_params = URI.parse(DATABASE_URL)
     end
 
     def init_db
@@ -72,7 +73,7 @@ module QC
           @db_params.password
         )
         @@connection.exec("SET application_name = 'queue_classic'")
-        silence_warnings unless ENV["LOGGING_ENABLED"]
+        silence_warnings unless VERBOSE
       end
       @@connection
     end

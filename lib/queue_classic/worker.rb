@@ -34,12 +34,16 @@ module QC
     def start
       while running?
         if can_fork?
-          @cpid = fork { work }
-          Process.wait(@cpid)
+          fork_and_work
         else
           work
         end
       end
+    end
+
+    def fork_and_work
+      @cpid = fork { work }
+      Process.wait(@cpid)
     end
 
     def work
