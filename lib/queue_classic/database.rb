@@ -4,6 +4,7 @@ module QC
 
     MAX_TOP_BOUND = 9
     DEFAULT_QUEUE_NAME = "queue_classic_jobs"
+    NOTIFY_TIMEOUT = 10
 
     def self.create_queue(name)
       db = new(name)
@@ -24,6 +25,18 @@ module QC
       drop_table
       create_table
       load_functions
+    end
+
+    def listen
+      execute("LISTEN queue_classic_jobs")
+    end
+
+    def unlisten
+      execute("UNLISTEN queue_classic_jobs")
+    end
+
+    def wait_for_notify
+      connection.wait_for_notify(NOTIFY_TIMEOUT)
     end
 
     def waiting_conns

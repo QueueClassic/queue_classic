@@ -1,10 +1,28 @@
 module QC
+  class StrategyError; end
+
   class Worker
     MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
-    def initialize
-      @running = true
+    attr_accessor :strategies
+
+    def initialize(args={})
       @queue = QC::Queue.new(ENV["QUEUE"])
+      @running = true
+
+      # This is the default list of strategies.
+      # If you have your own, append your k:v via the @strategies accessor
+      # and specify the k in the args hash.
+      strategy = args[:strategy] || :pubsub
+      @strategies = {
+        :pubsub => PubSub,
+        :fork   => Fork
+      }
+
+      # This class will assume that the strategy defines
+      # start() and lock_job()
+      self.class.send(:include, @strategies[strategy])
+
       handle_signals
     end
 
@@ -13,7 +31,7 @@ module QC
     end
 
     def handle_signals
-      %W(INT TRAP).each do |sig|
+      %W(INT TERM).each do |sig|
         trap(sig) do
           if running?
             @running = false
@@ -24,17 +42,8 @@ module QC
       end
     end
 
-    def start
-      fork_and_work while running?
-    end
-
-    def fork_and_work
-      cpid = fork { work }
-      puts "fork #{cpid}"
-      Process.wait(cpid)
-    end
-
     def work
+      # How we lock the job is up to the strategy.
       if job = lock_job
         begin
           job.work
@@ -44,26 +53,6 @@ module QC
           @queue.delete(job)
         end
       end
-    end
-
-    def lock_job
-      attempts = 0
-      job = nil
-      until job
-        job = @queue.dequeue
-        if job.nil?
-          puts "exp backoff"
-          attempts += 1
-          if attempts < MAX_LOCK_ATTEMPTS
-            sleep(2**attempts)
-            next
-          else
-            break
-          end
-        else
-        end
-      end
-      job
     end
 
     #override this method to do whatever you want

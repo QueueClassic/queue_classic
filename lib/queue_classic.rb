@@ -10,6 +10,9 @@ require 'queue_classic/worker'
 require 'queue_classic/queue'
 require 'queue_classic/job'
 
+require 'queue_classic/strategies/pub_sub'
+require 'queue_classic/strategies/fork'
+
 module QC
   def self.method_missing(sym, *args, &block)
     Queue.send(sym, *args, &block)

@@ -8,6 +8,7 @@ module QC
 
     def <<(details)
       execute("INSERT INTO #{@table_name} (details) VALUES ('#{details.to_json}')")
+      execute("NOTIFY queue_classic_jobs")
     end
 
     def count
