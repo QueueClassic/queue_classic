@@ -1,33 +1,22 @@
 module QC
-  class StrategyError; end
-
   class Worker
+
+    FORK_WORKER = ENV["QC_FORK_WORKER"] == "true"
     MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
-    attr_accessor :strategies
-
-    def initialize(args={})
-      @queue = QC::Queue.new(ENV["QUEUE"])
+    def initialize
       @running = true
-
-      # This is the default list of strategies.
-      # If you have your own, append your k:v via the @strategies accessor
-      # and specify the k in the args hash.
-      strategy = args[:strategy] || :pubsub
-      @strategies = {
-        :pubsub => PubSub,
-        :fork   => Fork
-      }
-
-      # This class will assume that the strategy defines
-      # start() and lock_job()
-      self.class.send(:include, @strategies[strategy])
-
+      @queue = QC::Queue.new(ENV["QUEUE"])
+      @fork = FORK_WORKER
       handle_signals
     end
 
     def running?
-      @running
+      @running == true
+    end
+
+    def can_fork?
+      @fork == true
     end
 
     def handle_signals
@@ -42,8 +31,18 @@ module QC
       end
     end
 
+    def start
+      while running?
+        if can_fork?
+          @cpid = fork { work }
+          Process.wait(@cpid)
+        else
+          work
+        end
+      end
+    end
+
     def work
-      # How we lock the job is up to the strategy.
       if job = lock_job
         begin
           job.work
@@ -53,6 +52,19 @@ module QC
           @queue.delete(job)
         end
       end
+    end
+
+    def lock_job
+      job = nil
+      until job
+        if job = @queue.dequeue
+          @queue.database.unlisten
+        else
+          @queue.database.listen
+          @queue.database.wait_for_notify
+        end
+      end
+      job
     end
 
     #override this method to do whatever you want
