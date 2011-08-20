@@ -59,13 +59,19 @@ module QC
     end
 
     def lock_job
+      attempts = 0
       job = nil
       until job
-        if job = @queue.dequeue
-          @queue.database.unlisten
+        job = @queue.dequeue
+        if job.nil?
+          attempts += 1
+          if attempts < MAX_LOCK_ATTEMPTS
+            sleep(2**attempts)
+            next
+          else
+            break
+          end
         else
-          @queue.database.listen
-          @queue.database.wait_for_notify
         end
       end
       job
