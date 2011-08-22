@@ -1,22 +1,21 @@
 module QC
   class Worker
 
-    FORK_WORKER = ENV["QC_FORK_WORKER"] == "true"
     MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
     def initialize
-      @running = true
-      @queue = QC::Queue.new(ENV["QUEUE"])
-      @fork = FORK_WORKER
+      @running     = true
+      @queue       = QC::Queue.new(ENV["QUEUE"])
+      @fork_worker = ENV["QC_FORK_WORKER"] == "true"
       handle_signals
     end
 
     def running?
-      @running == true
+      @running
     end
 
-    def can_fork?
-      @fork == true
+    def fork_worker?
+      @fork_worker
     end
 
     def handle_signals
@@ -33,7 +32,7 @@ module QC
 
     def start
       while running?
-        if can_fork?
+        if fork_worker?
           fork_and_work
         else
           work
@@ -56,6 +55,8 @@ module QC
           @queue.delete(job)
         end
       end
+      job = nil
+      GC.start
     end
 
     def lock_job
