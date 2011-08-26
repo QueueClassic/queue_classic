@@ -1,5 +1,6 @@
 module QC
   class Database
+
     @@connection = nil
 
     DATABASE_URL        = (ENV["QC_DATABASE_URL"] || ENV["DATABASE_URL"])
@@ -17,9 +18,9 @@ module QC
     attr_reader :table_name
 
     def initialize(queue_name=nil)
-      @top_boundry = MAX_TOP_BOUND
-      @table_name = queue_name || DEFAULT_QUEUE_NAME
-      @db_params = URI.parse(DATABASE_URL)
+      @top_boundry  = MAX_TOP_BOUND
+      @table_name   = queue_name || DEFAULT_QUEUE_NAME
+      @db_params    = URI.parse(DATABASE_URL)
     end
 
     def init_db
