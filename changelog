@@ -1,3 +1,9 @@
+Version 0.3.4pre
+- Added logging configured by $VERBOSE or $QC_VERBOSE.
+- Added a method setup_child that gets called right after a worker forks.
+- Removed database helper methods: create_table, drop_table, silence_warnings.
+- Removed queue connection helper methods. Status should be discoverd by psql or the likes.
+
 Version 0.3.3pre
 - Removed PUB/SUB
 - Added GC after working a job
