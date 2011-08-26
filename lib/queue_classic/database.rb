@@ -16,10 +16,8 @@ module QC
       @db_params    = URI.parse(DATABASE_URL)
     end
 
-    def init_db
-      drop_table
-      create_table
-      load_functions
+    def set_application_name
+      execute("SET application_name = 'queue_classic'")
     end
 
     def listen
@@ -38,6 +36,10 @@ module QC
       connection.exec(sql)
     end
 
+    def connection
+      @@connection ||= connect
+    end
+
     def disconnect
       connection.finish
       @@connection = nil
@@ -52,23 +54,6 @@ module QC
         @db_params.user,
         @db_params.password
       )
-    end
-
-    def connection
-      @@connection ||= connect
-    end
-
-    def set_application_name
-      execute("SET application_name = 'queue_classic'")
-    end
-
-    def drop_table
-      execute("DROP TABLE IF EXISTS #{@table_name} CASCADE")
-    end
-
-    def create_table
-      execute("CREATE TABLE #{@table_name} (id serial, details text, locked_at timestamp)")
-      execute("CREATE INDEX #{@table_name}_id_idx ON #{@table_name} (id)")
     end
 
     def load_functions

@@ -2,7 +2,7 @@ require File.expand_path("../helper.rb", __FILE__)
 
 context "Queue" do
 
-  setup { init_db }
+  setup { @database = init_db }
 
   test "Queue class responds to enqueue" do
     QC::Queue.enqueue("Klass.method")
@@ -43,10 +43,10 @@ context "Queue" do
 
   test "queue instance responds to enqueue" do
     QC::Queue.enqueue("Something.hard_to_find")
-    init_db(:custom_queue_name)
+    tmp_db = init_db(:custom_queue_name)
     @queue = QC::Queue.new(:custom_queue_name)
     @queue.enqueue "Klass.method"
-    @queue.disconnect
+    @queue.database.disconnect
   end
 
   test "queue only uses 1 connection per class" do
@@ -55,7 +55,7 @@ context "Queue" do
     QC::Queue.delete QC::Queue.dequeue
     QC::Queue.enqueue "Klass.method"
     QC::Queue.dequeue
-    assert_equal 1, QC.connection_status[:total]
+    assert_equal 1, @database.execute("SELECT count(*) from pg_stat_activity")[0]["count"].to_i
   end
 
 end

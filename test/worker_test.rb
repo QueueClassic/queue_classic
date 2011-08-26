@@ -23,8 +23,12 @@ end
 context "Worker" do
 
   setup do
-    init_db
+    @database = init_db
     @worker = TestWorker.new
+  end
+
+  teardown do
+    @database.disconnect
   end
 
   test "working a job" do
@@ -46,6 +50,7 @@ context "Worker" do
   test "only makes one connection" do
     QC.enqueue "TestNotifier.deliver", {}
     @worker.work
-    assert_equal 1, QC.connection_status[:total]
+    assert_equal 1, @database.execute("SELECT count(*) from pg_stat_activity")[0]["count"].to_i
   end
+
 end
