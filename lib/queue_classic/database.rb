@@ -8,13 +8,6 @@ module QC
     NOTIFY_TIMEOUT      = (ENV["QC_NOTIFY_TIMEOUT"] || 10).to_i
     DEFAULT_QUEUE_NAME  = "queue_classic_jobs"
 
-    def self.create_queue(name)
-      db = new(name)
-      db.create_table
-      db.disconnect
-      true
-    end
-
     attr_reader :table_name
 
     def initialize(queue_name=nil)
