@@ -55,18 +55,14 @@ module QC
         @db_params.host,
         @db_params.port || 5432,
         nil, '',
-        @name,
+        @db_params.path.gsub("/",""), # database name
         @db_params.user,
         @db_params.password
       )
     end
 
     def connection
-      unless @@connection
-        @name = @db_params.path.gsub("/","")
-        @@connection = connect
-      end
-      @@connection
+      @@connection ||= connect
     end
 
     def set_application_name
