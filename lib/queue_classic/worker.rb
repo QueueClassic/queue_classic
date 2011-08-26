@@ -38,6 +38,10 @@ module QC
       end
     end
 
+    def setup_child
+      log("forked worker running setup")
+    end
+
     def start
       log("worker starting")
       while running?
@@ -51,7 +55,7 @@ module QC
     end
 
     def fork_and_work
-      @cpid = fork { work }
+      @cpid = fork { setup_child; work }
       log("worker forked pid=#{@cpid}")
       Process.wait(@cpid)
     end
