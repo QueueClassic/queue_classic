@@ -14,7 +14,6 @@ require 'queue_classic/queue'
 require 'queue_classic/job'
 
 module QC
-  require 'ruby-debug'; debugger
   VERBOSE = ENV["VERBOSE"] || ENV["QC_VERBOSE"]
   Logger.puts("Logging enabled")
 
