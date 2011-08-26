@@ -9,7 +9,6 @@ You should already have created a table named queue_classic_jobs. This is the de
   QC.length
   QC.query("Class.method")
   QC.delete_all
-  QC.connection_status
 
 ```
 
@@ -23,15 +22,12 @@ It should be noted that the following is true
 
 ### Multiple Queues
 
-If you want to create a new queue, you will need to create a new table. There is a rake task to help you with this:
+If you want to create a new queue, you will need to create a new table. The
+table should look identical to the queue_classic_jobs table.
 
-```bash
 
-  rake qc:create_queue["priority_queue"]
-
-```
-
-This will have created a table named "priority_queue." Next, you will need to create an instance of QC::Queue and tell it to bind to your newly created queue.
+Once you create a table named "priority_queue", you will need to create an
+instance of QC::Queue and tell it to attach to your newly created table.
 
 ```ruby
 
@@ -46,7 +42,7 @@ Now, just instruct your worker to attach to your newly created queue.
 
 ```bash
 
-  QUEUE="priority_queue" rake jobs:work
+  rake jobs:work QUEUE="priority_queue"
 
 ```
 

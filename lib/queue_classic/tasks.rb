@@ -22,8 +22,4 @@ namespace :qc do
     db.disconnect
   end
 
-  task :create_queue, :name, :needs => :environment do |t,args|
-    QC::Database.create_queue(args[:name])
-  end
-
 end

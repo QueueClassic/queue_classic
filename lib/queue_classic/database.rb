@@ -40,14 +40,6 @@ module QC
       connection.wait_for_notify(NOTIFY_TIMEOUT)
     end
 
-    def waiting_conns
-      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}' AND waiting = 't' AND application_name = 'queue_classic'")
-    end
-
-    def all_conns
-      execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}' AND application_name = 'queue_classic'")
-    end
-
     def execute(sql)
       connection.exec(sql)
     end

@@ -32,28 +32,11 @@ module QC
   end
 end
 
-module QC
-  module ConnectionHelper
-
-    def connection_status
-      {:total => database.all_conns.count, :waiting => database.waiting_conns.count}
-    end
-
-    def disconnect
-      database.disconnect
-    end
-
-  end
-end
-
 module  QC
   class Queue
 
     include AbstractQueue
     extend AbstractQueue
-
-    include ConnectionHelper
-    extend ConnectionHelper
 
     def self.array
       if defined? @@array
