@@ -72,9 +72,12 @@ module QC
       unless @@connection
         @name = @db_params.path.gsub("/","")
         @@connection = connect
-        @@connection.exec("SET application_name = 'queue_classic'")
       end
       @@connection
+    end
+
+    def set_application_name
+      execute("SET application_name = 'queue_classic'")
     end
 
     def drop_table
