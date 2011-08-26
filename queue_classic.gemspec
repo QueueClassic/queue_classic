@@ -14,6 +14,5 @@ Gem::Specification.new do |s|
   s.test_files = s.files.select {|path| path =~ /^test\/.*_test.rb/}
   s.require_paths = %w[lib]
 
-  s.add_dependency 'pg', ">= 0.10.1"
-  s.add_dependency 'json'
+  s.add_dependency 'pg', "~> 0.11.0"
 end
