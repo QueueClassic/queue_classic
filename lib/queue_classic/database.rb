@@ -48,10 +48,6 @@ module QC
       execute("SELECT * FROM pg_stat_activity WHERE datname = '#{@name}' AND application_name = 'queue_classic'")
     end
 
-    def silence_warnings
-      execute("SET client_min_messages TO 'warning'")
-    end
-
     def execute(sql)
       connection.exec(sql)
     end
@@ -77,7 +73,6 @@ module QC
         @name = @db_params.path.gsub("/","")
         @@connection = connect
         @@connection.exec("SET application_name = 'queue_classic'")
-        silence_warnings unless VERBOSE
       end
       @@connection
     end
