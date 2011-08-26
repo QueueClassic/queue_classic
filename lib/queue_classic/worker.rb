@@ -55,8 +55,6 @@ module QC
           @queue.delete(job)
         end
       end
-      job = nil
-      GC.start
     end
 
     def lock_job
