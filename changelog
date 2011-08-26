@@ -1,3 +1,10 @@
+Version 0.3.3pre
+- Removed PUB/SUB
+- Added GC after working a job
+- Added support for a database_url other than $DATABASE_URL. $QC_DATABASE_URL
+- Added exp backoff configured by $QC_MAX_LOCK_ATTEMPTS (default = 5)
+- Added option for forking worker configured by $QC_FORK_WORKER (default = false)
+
 Version 0.3.2
 - Fixed bug which caused workers to consume 2 connections. Now they only consume 1
 - Added a rake file for tests
