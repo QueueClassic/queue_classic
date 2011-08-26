@@ -11,9 +11,16 @@ module QC
     attr_reader :table_name
 
     def initialize(queue_name=nil)
-      @top_boundry  = MAX_TOP_BOUND
-      @table_name   = queue_name || DEFAULT_QUEUE_NAME
-      @db_params    = URI.parse(DATABASE_URL)
+      log("initialized")
+
+      @top_boundry = MAX_TOP_BOUND
+      log("top_boundry=#{@top_boundry}")
+
+      @table_name = queue_name || DEFAULT_QUEUE_NAME
+      log("table_name=#{@table_name}")
+
+      @db_params = URI.parse(DATABASE_URL)
+      log("uri=#{DATABASE_URL}")
     end
 
     def set_application_name
@@ -21,19 +28,28 @@ module QC
     end
 
     def listen
+      log("LISTEN")
       execute("LISTEN queue_classic_jobs")
     end
 
     def unlisten
+      log("UNLISTEN")
       execute("UNLISTEN queue_classic_jobs")
     end
 
     def wait_for_notify
+      log("waiting for notify timeout=#{NOTIFY_TIMEOUT}")
       connection.wait_for_notify(NOTIFY_TIMEOUT)
+      log("done waiting for notify")
     end
 
     def execute(sql)
-      connection.exec(sql)
+      log("executing=#{sql}")
+      begin
+        connection.exec(sql)
+      rescue PGError => e
+        log("execute exception=#{e.inspect}")
+      end
     end
 
     def connection
@@ -46,14 +62,19 @@ module QC
     end
 
     def connect
-      PGconn.connect(
+      log("establishing connection")
+      conn = PGconn.connect(
         @db_params.host,
         @db_params.port || 5432,
-        nil, '',
+        nil, '', #opts, tty
         @db_params.path.gsub("/",""), # database name
         @db_params.user,
         @db_params.password
       )
+      if conn.status != PGconn::CONNECTION_OK
+        log("connection error=#{conn.error}")
+      end
+      conn
     end
 
     def load_functions
@@ -108,6 +129,10 @@ module QC
         END;
         $$ LANGUAGE plpgsql;
       EOD
+    end
+
+    def log(msg)
+      Logger.puts(["database", msg].join(" "))
     end
 
   end
