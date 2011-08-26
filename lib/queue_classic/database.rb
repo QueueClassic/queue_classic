@@ -61,17 +61,21 @@ module QC
       @@connection = nil
     end
 
+    def connect
+      PGconn.connect(
+        @db_params.host,
+        @db_params.port || 5432,
+        nil, '',
+        @name,
+        @db_params.user,
+        @db_params.password
+      )
+    end
+
     def connection
       unless @@connection
         @name = @db_params.path.gsub("/","")
-        @@connection = PGconn.connect(
-          @db_params.host,
-          @db_params.port || 5432,
-          nil, '',
-          @name,
-          @db_params.user,
-          @db_params.password
-        )
+        @@connection = connect
         @@connection.exec("SET application_name = 'queue_classic'")
         silence_warnings unless VERBOSE
       end
