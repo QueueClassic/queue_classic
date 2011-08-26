@@ -7,7 +7,7 @@ module QC
     end
 
     def <<(details)
-      execute("INSERT INTO #{@table_name} (details) VALUES ('#{details.to_json}')")
+      execute("INSERT INTO #{@table_name} (details) VALUES ('#{JSON.dump(details)}')")
     end
 
     def count

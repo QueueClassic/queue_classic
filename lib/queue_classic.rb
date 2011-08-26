@@ -1,5 +1,6 @@
-require 'json'
 require 'pg'
+
+require 'json'
 require 'uri'
 
 $: << File.expand_path(__FILE__, 'lib')
