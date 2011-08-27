@@ -37,6 +37,10 @@ module QC
       execute("UNLISTEN queue_classic_jobs")
     end
 
+    def drain_notify
+      connection.notifies
+    end
+
     def wait_for_notify
       log("waiting for notify timeout=#{NOTIFY_TIMEOUT}")
       connection.wait_for_notify(NOTIFY_TIMEOUT)
