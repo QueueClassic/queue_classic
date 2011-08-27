@@ -14,6 +14,9 @@ module QC
       @fork_worker = ENV["QC_FORK_WORKER"] == "true"
       log("worker fork=#{@fork_worker}")
 
+      @listening_worker = ENV["QC_LISTENING_WORKER"] == "true"
+      log("worker listen=#{@listening_worker}")
+
       handle_signals
     end
 
@@ -23,6 +26,10 @@ module QC
 
     def fork_worker?
       @fork_worker
+    end
+
+    def can_listen?
+      @listening_worker
     end
 
     def handle_signals
@@ -88,8 +95,7 @@ module QC
           attempts += 1
           if attempts < MAX_LOCK_ATTEMPTS
             seconds = 2**attempts
-            log("worker sleeps seconds=#{seconds}")
-            sleep(seconds)
+            wait(seconds)
             log("worker tries again")
             next
           else
@@ -101,6 +107,20 @@ module QC
         end
       end
       job
+    end
+
+    def wait(t)
+      if can_listen?
+        log("worker waiting on LISTEN")
+        @queue.database.listen
+        @queue.database.wait_for_notify(t) { log("message received") }
+        @queue.database.unlisten
+        @queue.database.drain_notify
+        log("worker finished LISTEN")
+      else
+        log("worker sleeps seconds=#{seconds}")
+        Kernel.sleep(t)
+      end
     end
 
     #override this method to do whatever you want

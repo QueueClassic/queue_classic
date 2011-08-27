@@ -27,6 +27,11 @@ module QC
       execute("SET application_name = 'queue_classic'")
     end
 
+    def notify
+      log("NOTIFY")
+      execute("NOTIFY queue_classic_jobs")
+    end
+
     def listen
       log("LISTEN")
       execute("LISTEN queue_classic_jobs")
@@ -43,9 +48,9 @@ module QC
       end
     end
 
-    def wait_for_notify
-      log("waiting for notify timeout=#{NOTIFY_TIMEOUT}")
-      connection.wait_for_notify(NOTIFY_TIMEOUT)
+    def wait_for_notify(t)
+      log("waiting for notify timeout=#{t}")
+      connection.wait_for_notify(t)
       log("done waiting for notify")
     end
 
