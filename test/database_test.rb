@@ -18,6 +18,9 @@ context "DatabaseTest" do
     assert   @database.connection.notifies.nil?
 
     @database.execute("NOTIFY queue_classic_jobs, 'hello'")
+    @database.execute("NOTIFY queue_classic_jobs, 'hello'")
+    @database.execute("NOTIFY queue_classic_jobs, 'hello'")
+
     @database.drain_notify
     assert   @database.connection.notifies.nil?
   end
