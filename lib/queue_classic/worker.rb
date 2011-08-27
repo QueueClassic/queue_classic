@@ -118,7 +118,7 @@ module QC
         @queue.database.drain_notify
         log("worker finished LISTEN")
       else
-        log("worker sleeps seconds=#{seconds}")
+        log("worker sleeps seconds=#{t}")
         Kernel.sleep(t)
       end
     end
