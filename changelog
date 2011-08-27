@@ -1,3 +1,9 @@
+Version 0.3.6pre
+- Added listen/notify support configured by $QC_LISTENING_WORKER otherwise uses Kernel.sleep()
+
+Version 0.3.5pre
+- Removed debug statement. Mistake!
+
 Version 0.3.4pre
 - Added logging configured by $VERBOSE or $QC_VERBOSE.
 - Added a method setup_child that gets called right after a worker forks.
