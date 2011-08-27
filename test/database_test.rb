@@ -11,15 +11,15 @@ context "DatabaseTest" do
   end
 
   test "drain_notify clears all of the notifications" do
-    @database.execute("NOTIFY queue_classic_jobs")
-    assert_nil @database.drain_notify
-
     @database.listen
     @database.execute("NOTIFY queue_classic_jobs, 'hello'")
-    notify = @database.drain_notify
-    assert_equal "queue_classic_jobs", notify[:relname]
-    assert_equal "hello", notify[:extra]
-    assert_nil @database.drain_notify
+
+    assert ! @database.connection.notifies.nil?
+    assert   @database.connection.notifies.nil?
+
+    @database.execute("NOTIFY queue_classic_jobs, 'hello'")
+    @database.drain_notify
+    assert   @database.connection.notifies.nil?
   end
 
 end

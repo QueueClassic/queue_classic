@@ -38,7 +38,8 @@ module QC
     end
 
     def drain_notify
-      connection.notifies
+      trash = connection.notifies
+      trash = nil
     end
 
     def wait_for_notify
