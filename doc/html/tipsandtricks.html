@@ -12,9 +12,7 @@ these objects. Queue Classic to the rescue! (no pun intended)</p>
 case I wanted to call <code>Invoice.destroy(id)</code> a few thousand times. I fired up a
 heroku console session and executed this line:</p>
 
-<pre><code class="ruby">
-  Invoice.find(:all, :select =&gt; &quot;id&quot;, :conditions =&gt; &quot;some condition&quot;).map {|i| QC.enqueue(&quot;Invoice.destroy&quot;, i.id) }
-
+<pre><code class="ruby">  Invoice.find(:all, :select =&gt; &quot;id&quot;, :conditions =&gt; &quot;some condition&quot;).map {|i| QC.enqueue(&quot;Invoice.destroy&quot;, i.id) }
 </code></pre>
 
 <p>With the help of 20 workers I was able to destroy all of these records

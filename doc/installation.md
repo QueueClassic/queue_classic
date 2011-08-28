@@ -4,7 +4,7 @@ __Rails Compatibility: 2.X and 3.X__
 
 ```ruby
 
-  gem "queue_classic"
+  gem 'queue_classic'
 
 ```
 

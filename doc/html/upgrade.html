@@ -8,14 +8,13 @@
 <p>Also, the default queue is no longer named jobs,
 it is named queue<em>classic</em>jobs. Renaming the table is the only change that needs to be made.</p>
 
-<pre><code>$ psql your_database
-your_database=# ALTER TABLE jobs RENAME TO queue_classic_jobs;
+<pre><code class="bash">  $ psql your_database
+  your_database=# ALTER TABLE jobs RENAME TO queue_classic_jobs;
 </code></pre>
 
 <p>Or if you are using Rails' Migrations:</p>
 
-<pre><code class="ruby">
-class RenameJobsTable &lt; ActiveRecord::Migration
+<pre><code class="ruby">class RenameJobsTable &lt; ActiveRecord::Migration
 
   def self.up
     rename_table :jobs, :queue_classic_jobs
@@ -30,5 +29,4 @@ class RenameJobsTable &lt; ActiveRecord::Migration
   end
 
 end
-
 </code></pre>

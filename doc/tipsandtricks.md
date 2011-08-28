@@ -14,9 +14,7 @@ case I wanted to call `Invoice.destroy(id)` a few thousand times. I fired up a
 heroku console session and executed this line:
 
 ```ruby
-
   Invoice.find(:all, :select => "id", :conditions => "some condition").map {|i| QC.enqueue("Invoice.destroy", i.id) }
-
 ```
 
 With the help of 20 workers I was able to destroy all of these records

@@ -1,15 +1,16 @@
 # Queue Classic
-__0.3.2__ (beta)
+1.0.0
 
-Queue Classic is a postgres-backed queueing library that is focused on
+Queue Classic is a PostgreSQL-backed queueing library that is focused on
 concurrent job locking, minimizing database load & providing a simple &
 intuitive user experience.
 
 Queue Classic Features:
 
 * Support for multiple queues with heterogeneous workers
-* Utilization of  Postgres' PUB/SUB
+* Utilization of Postgres' PUB/SUB
 * JSON encoding for jobs
+* Forking workers
 * Postgres' rock-solid locking mechanism
 * Long term support
 
@@ -17,27 +18,34 @@ Queue Classic Features:
 
 See doc/installation.md for Rails instructions
 
-    $ gem install queue_classic
-    psql=# CREATE TABLE queue_classic_jobs (id serial, details text, locked_at timestamp);
-    psql=# CREATE INDEX queue_classic_jobs_id_idx ON queue_classic_jobs (id);
-    $ rake qc:load_functions
-    irb: QC.enqueue "Class.method", "arg"
-    $ rake jobs:work
+```bash
+  $ createdb queue_classic_test
+  $ psql queue_classic_test
+  psql=# CREATE TABLE queue_classic_jobs (id serial, details text, locked_at timestamp);
+  psql=# CREATE INDEX queue_classic_jobs_id_idx ON queue_classic_jobs (id);
+  $ export QC_DATABASE_URL="postgres://username:password@localhost/queue_classic_test"
+  $ gem install queue_classic
+  $ ruby -r queue_classic -e "QC::Database.new.load_functions"
+  $ ruby -r queue_classic -e "QC.enqueue("Kernel.puts", "hello world")"
+  $ ruby -r queue_classic -e "QC::Worker.new.start"
+```
 
 ## Hacking on Queue Classic
 
 ### Dependencies
 
-* Postgres version 9
-* Ruby
-* Gems: pg, json
+* Ruby 1.9.2
+* Postgres ~> 9.0
+* Rubygems: pg ~> 0.11.0
 
 ### Running Tests
 
-* Install dependencies: pg, json (see gemspec)
-* createdb queue_classic_test
-* export DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
-* rake will run the tests (or turn test/)
+```bash
+  $ bundle
+  $ createdb queue_classic_test
+  $ export QC_DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
+  $ rake
+```
 
 ### Building Documentation
 

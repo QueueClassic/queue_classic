@@ -1,6 +1,7 @@
 ### Single Queue
 
-You should already have created a table named queue_classic_jobs. This is the default queue. You can use the queueing methods on the QC module to interact with the default queue.
+You should already have created a table named queue_classic_jobs. This is the default queue.
+You can use the queueing methods on the QC module to interact with the default queue.
 
 ```ruby
 
@@ -12,12 +13,12 @@ You should already have created a table named queue_classic_jobs. This is the de
 
 ```
 
-It should be noted that the following is true
+It should be noted that the following enqueue calls do the same thing.
 
 ```ruby
-
-  QC.enqueue = QC::Queue.enqueue = QC::Queue.new("queue_classic_jobs").enqueue
-
+  QC.enqueue("Class.method")
+  QC::Queue.enqueue("Class.method")
+  QC::Queue.new("queue_classic_jobs").enqueue("Class.method")
 ```
 
 ### Multiple Queues
@@ -25,32 +26,42 @@ It should be noted that the following is true
 If you want to create a new queue, you will need to create a new table. The
 table should look identical to the queue_classic_jobs table.
 
+```bash
+  $ psql your_database
+  your_database=# CREATE TABLE priority_jobs (id serial, details text, locked_at timestamp);
+  your_database=# CREATE INDEX priority_jobs_id_idx ON priority_jobs (id);
+  your_database=# \q
+  $
+```
 
-Once you create a table named "priority_queue", you will need to create an
+Once you create a table named "priority_jobs", you will need to create an
 instance of QC::Queue and tell it to attach to your newly created table.
 
 ```ruby
-
-  @queue = QC::Queue.new("priority_queue")
-  @queue.enqueue("Class.method","arg1")
-
+  @queue = QC::Queue.new("priority_jobs")
+  @queue.enqueue("Class.method", "arg1")
 ```
 
-Any method available to the default queue (i.e. QC.enqueue) is available to @queue. In fact, both the class and instances of the class get their queueing methods from the same module, the AbstractQueue module. Look it up in lib/queue_classic/queue.rb for the particulars.
+Any method available to the default queue (i.e. QC.enqueue)
+is available to @queue. In fact, both the class and instances
+of the class get their queueing methods from the same module, the AbstractQueue module.
+Look it up in lib/queue_classic/queue.rb for the particulars.
 
 Now, just instruct your worker to attach to your newly created queue.
 
 ```bash
-
-  rake jobs:work QUEUE="priority_queue"
-
+  rake jobs:work QUEUE="priority_jobs"
 ```
 
-### Worker
 
-The worker is an instance of the QC::Worker class. The worker will begin working when you call __start()__ on the worker object. __start()__ will dequeue and work until you kill the process. If the job raises an exception, Queue Classic will ensure that handle_failure(job,exception) gets called. You may want to subclass QueueClassic's worker to define your own failure strategy.
+The worker is an instance of the QC::Worker class.
+The worker will begin working when you call __start()__ on the worker object.
+__start()__ will dequeue and work until you kill the process.
+If the job raises an exception, Queue Classic will ensure that handle_failure(job,exception) gets called.
+You may want to subclass queue_classic's worker to define your own failure strategy.
 
-By default, handle_failure will print the job and the exception. Of course, you can override this behavior. In Rails you can do the following:
+By default, handle_failure will print the job and the exception.
+Of course, you can override this behavior. In Rails you can do the following:
 
 1. Remove require 'queue_classic/tasks' from Rakefile
 2. Create new file in lib/tasks. Call it queue_classic.rb

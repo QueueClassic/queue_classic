@@ -1,8 +1,8 @@
 <h1>Queue Classic</h1>
 
-<p><strong>0.3.1</strong> (beta)</p>
+<p>1.0.0</p>
 
-<p>Queue Classic is a postgres-backed queueing library that is focused on
+<p>Queue Classic is a PostgreSQL-backed queueing library that is focused on
 concurrent job locking, minimizing database load &amp; providing a simple &amp;
 intuitive user experience.</p>
 
@@ -10,8 +10,9 @@ intuitive user experience.</p>
 
 <ul>
 <li>Support for multiple queues with heterogeneous workers</li>
-<li>Utilization of  Postgres' PUB/SUB</li>
+<li>Utilization of Postgres' PUB/SUB</li>
 <li>JSON encoding for jobs</li>
+<li>Forking workers</li>
 <li>Postgres' rock-solid locking mechanism</li>
 <li>Long term support</li>
 </ul>
@@ -20,12 +21,15 @@ intuitive user experience.</p>
 
 <p>See doc/installation.md for Rails instructions</p>
 
-<pre><code>$ gem install queue_classic
-psql=# CREATE TABLE queue_classic_jobs (id serial, details text, locked_at timestamp);
-psql=# CREATE INDEX queue_classic_jobs_id_idx ON queue_classic_jobs (id);
-$ rake qc:load_functions
-irb: QC.enqueue &quot;Class.method&quot;, &quot;arg&quot;
-$ rake jobs:work
+<pre><code class="bash">  $ createdb queue_classic_test
+  $ psql queue_classic_test
+  psql=# CREATE TABLE queue_classic_jobs (id serial, details text, locked_at timestamp);
+  psql=# CREATE INDEX queue_classic_jobs_id_idx ON queue_classic_jobs (id);
+  $ export QC_DATABASE_URL=&quot;postgres://username:password@localhost/queue_classic_test&quot;
+  $ gem install queue_classic
+  $ ruby -r queue_classic -e &quot;QC::Database.new.load_functions&quot;
+  $ ruby -r queue_classic -e &quot;QC.enqueue(&quot;Kernel.puts&quot;, &quot;hello world&quot;)&quot;
+  $ ruby -r queue_classic -e &quot;QC::Worker.new.start&quot;
 </code></pre>
 
 <h2>Hacking on Queue Classic</h2>
@@ -33,19 +37,18 @@ $ rake jobs:work
 <h3>Dependencies</h3>
 
 <ul>
-<li>Postgres version 9</li>
-<li>Ruby</li>
-<li>Gems: pg, json</li>
+<li>Ruby 1.9.2</li>
+<li>Postgres ~&gt; 9.0</li>
+<li>Rubygems: pg ~&gt; 0.11.0</li>
 </ul>
 
 <h3>Running Tests</h3>
 
-<ul>
-<li>Install dependencies: pg, json (see gemspec)</li>
-<li>createdb queue<em>classic</em>test</li>
-<li>export DATABASE<em>URL=&quot;postgres://username:pass@localhost/queue</em>classic_test&quot;</li>
-<li>rake will run the tests (or turn test/)</li>
-</ul>
+<pre><code class="bash">  $ bundle
+  $ createdb queue_classic_test
+  $ export QC_DATABASE_URL=&quot;postgres://username:pass@localhost/queue_classic_test&quot;
+  $ rake
+</code></pre>
 
 <h3>Building Documentation</h3>
 
@@ -54,6 +57,8 @@ once you have the markdown in place, please run: ruby doc/build.rb to make HTML
 for the docs.</p>
 
 <h2>Other Resources</h2>
+
+<h3><a href="https://github.com/ryandotsmith/queue_classic/tree/master/doc">Documentation</a></h3>
 
 <h3><a href="https://github.com/ryandotsmith/queue_classic_example">Example Rails App</a></h3>
 
