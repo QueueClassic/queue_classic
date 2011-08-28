@@ -8,6 +8,7 @@ module QC
 
     def <<(details)
       execute("INSERT INTO #{@table_name} (details) VALUES ('#{JSON.dump(details)}')")
+      @database.notify if ENV["QC_LISTENING_WORKER"] == "true"
     end
 
     def count
