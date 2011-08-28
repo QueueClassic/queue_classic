@@ -1,3 +1,7 @@
+Version 1.0.0rc1
+- Removed json gem and relying on ruby 1.9.2's stdlib
+- Added better documentation
+
 Version 0.3.6pre
 - Added listen/notify support configured by $QC_LISTENING_WORKER otherwise uses Kernel.sleep()
 

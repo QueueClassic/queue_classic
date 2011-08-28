@@ -113,7 +113,7 @@ module QC
       if can_listen?
         log("worker waiting on LISTEN")
         @queue.database.listen
-        @queue.database.wait_for_notify(t) { log("message received") }
+        @queue.database.wait_for_notify(t)
         @queue.database.unlisten
         @queue.database.drain_notify
         log("worker finished LISTEN")

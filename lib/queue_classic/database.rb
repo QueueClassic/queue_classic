@@ -50,7 +50,7 @@ module QC
 
     def wait_for_notify(t)
       log("waiting for notify timeout=#{t}")
-      connection.wait_for_notify(t)
+      connection.wait_for_notify(t) {|event, pid, msg| log("received notification #{event}")}
       log("done waiting for notify")
     end
 
