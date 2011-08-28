@@ -1,11 +1,11 @@
-# Queue Classic
-1.0.0
+# queue_classic
+v1.0.0
 
-Queue Classic is a PostgreSQL-backed queueing library that is focused on
+queue_classic is a PostgreSQL-backed queueing library that is focused on
 concurrent job locking, minimizing database load & providing a simple &
 intuitive user experience.
 
-Queue Classic Features:
+queue_classic features:
 
 * Support for multiple queues with heterogeneous workers
 * Utilization of Postgres' PUB/SUB
@@ -30,7 +30,7 @@ See doc/installation.md for Rails instructions
   $ ruby -r queue_classic -e "QC::Worker.new.start"
 ```
 
-## Hacking on Queue Classic
+## Hacking on queue_classic
 
 ### Dependencies
 
