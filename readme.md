@@ -30,6 +30,48 @@ See doc/installation.md for Rails instructions
   $ ruby -r queue_classic -e "QC::Worker.new.start"
 ```
 
+## Configure
+
+```bash
+
+# Enable logging.
+$VERBOSE
+
+# Specifies the database that queue_classic will rely upon.
+$QC_DATABASE_URL || $DATABASE_URL
+
+# For strict FIFO set to 1. Otherwise, worker will 
+# attempt to lock a job in this top region.
+# Default: 9
+$QC_TOP_BOUND
+
+# If you want your worker to fork a new 
+# child process for each job, set this var to 'true'
+# Default: false
+$QC_FORK_WORKER
+
+# The worker uses an exp backoff algorithm
+# if you want high throughput don't use Kernel.sleep
+# use LISTEN/NOTIFY sleep. When set to true, the worker's 
+# sleep will be preempted by insertion into the queue.
+# Default: false
+$QC_LISTENING_WORKER
+
+# The worker uses an exp backoff algorithm. The base of
+# the exponent is 2. This var determines the max power of the
+# exp.
+# Default: 5 which implies max sleep time of 2^(5-1) => 16 seconds
+$QC_MAX_LOCK_ATTEMPTS
+
+# This var is important for consumers of the queue.
+# If you have configured many queues, this var will
+# instruct the worker to bind to a particular queue.
+# Default: queue_classic_jobs --which is the default queue table.
+$QUEUE
+
+
+```
+
 ## Hacking on queue_classic
 
 ### Dependencies
