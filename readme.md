@@ -14,6 +14,18 @@ queue_classic features:
 * Postgres' rock-solid locking mechanism
 * Long term support
 
+## Proven
+
+I wrote queue_classic to solve a production problem.  My problem was that I needed a
+queueing system that wouldn't fall over should I decide to press it nor should it freak out 
+if I attached 100 workers to it. However, my problem didn't warrant adding an additional service. 
+I was already using PostgreSQL to manage my application's data, why not use PostgreSQL to pass some messages? 
+PostgreSQL was already handling thousands of reads and writes per second anyways. Why not add 35 more 
+reads/writes per second to my established performance metric? 
+
+queue_classic handles over **3,000,000** jobs per day. It does this on Heroku's Ronin Database.
+
+
 ## Quick Start
 
 See doc/installation.md for Rails instructions
