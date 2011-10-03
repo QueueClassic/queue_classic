@@ -12,7 +12,10 @@ queue_classic features:
 * JSON encoding for jobs
 * Forking workers
 * Postgres' rock-solid locking mechanism
+* Fuzzy-FIFO support (1)
 * Long term support
+
+1.Theory found here: http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf
 
 ## Proven
 
@@ -52,6 +55,7 @@ $VERBOSE
 # Specifies the database that queue_classic will rely upon.
 $QC_DATABASE_URL || $DATABASE_URL
 
+# Fuzzy-FIFO
 # For strict FIFO set to 1. Otherwise, worker will 
 # attempt to lock a job in this top region.
 # Default: 9
