@@ -38,7 +38,7 @@ See doc/installation.md for Rails instructions
   $ export QC_DATABASE_URL="postgres://username:password@localhost/queue_classic_test"
   $ gem install queue_classic
   $ ruby -r queue_classic -e "QC::Database.new.load_functions"
-  $ ruby -r queue_classic -e "QC.enqueue("Kernel.puts", "hello world")"
+  $ ruby -r queue_classic -e "QC.enqueue('Kernel.puts', 'hello world')"
   $ ruby -r queue_classic -e "QC::Worker.new.start"
 ```
 
