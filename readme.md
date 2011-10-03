@@ -109,10 +109,10 @@ for the docs.
 
 ## Other Resources
 
+###[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
+
 ###[Documentation](https://github.com/ryandotsmith/queue_classic/tree/master/doc)
 
 ###[Example Rails App](https://github.com/ryandotsmith/queue_classic_example)
-
-###[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
 
 ###[Slide Deck](http://dl.dropbox.com/u/1579953/talks/queue_classic.pdf)
