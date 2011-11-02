@@ -94,7 +94,9 @@ $QUEUE
 
 * Ruby 1.9.2 (tests work in 1.8.7 but compatibility is not guaranteed or supported)
 * Postgres ~> 9.0
-* Rubygems: pg ~> 0.11.0
+* Rubygems
+** pg ~> 0.11.0
+** json ~> 1.6.1
 
 ### Running Tests
 

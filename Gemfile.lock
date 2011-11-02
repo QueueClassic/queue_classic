@@ -1,9 +1,18 @@
-GEM
+PATH
+  remote: .
   specs:
+    queue_classic (1.0.0)
+      json (~> 1.6.1)
+      pg (~> 0.11.0)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    json (1.6.1)
     pg (0.11.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  pg (~> 0.11.0)
+  queue_classic!
