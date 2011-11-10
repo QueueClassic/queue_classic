@@ -95,7 +95,7 @@ module QC
         -- have identical columns to queue_classic_jobs.
         -- When QC supports queues with columns other than the default, we will have to change this.
 
-        CREATE OR REPLACE FUNCTION lock_head(tname varchar) RETURNS SETOF queue_classic_jobs AS $$
+        CREATE OR REPLACE FUNCTION lock_head(tname varchar, top_boundary integer) RETURNS SETOF queue_classic_jobs AS $$
         DECLARE
           unlocked integer;
           relative_top integer;
@@ -105,16 +105,16 @@ module QC
           -- The select count(*) is going to slow down dequeue performance but allow
           -- for more workers. Would love to see some optimization here...
 
-          SELECT TRUNC(random() * #{@top_boundry} + 1) INTO relative_top;
           EXECUTE 'SELECT count(*) FROM' || tname || '' INTO job_count;
-          IF job_count < 10 THEN
+          SELECT TRUNC(random() * top_boundary + 1) INTO relative_top;
+          IF job_count < top_boundary THEN
             relative_top = 0;
           END IF;
 
           LOOP
             BEGIN
               EXECUTE 'SELECT id FROM '
-                || tname::regclass
+                || quote_ident(tname::regclass)
                 || ' WHERE locked_at IS NULL'
                 || ' ORDER BY id ASC'
                 || ' LIMIT 1'
@@ -129,7 +129,7 @@ module QC
           END LOOP;
 
           RETURN QUERY EXECUTE 'UPDATE '
-            || tname::regclass
+            || quote_ident(tname::regclass)
             || ' SET locked_at = (CURRENT_TIMESTAMP)'
             || ' WHERE id = $1'
             || ' AND locked_at is NULL'
@@ -139,7 +139,13 @@ module QC
           RETURN;
         END;
         $$ LANGUAGE plpgsql;
-      EOD
+
+        CREATE OR REPLACE FUNCTION lock_head(tname varchar) RETURNS SETOF queue_classic_jobs AS $$
+        BEGIN
+          RETURN QUERY EXECUTE 'SELECT * FROM lock_head($1,10)' USING tname;
+        END;
+        $$ LANGUAGE plpgsql;
+     EOD
     end
 
     def log(msg)
