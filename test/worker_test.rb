@@ -50,7 +50,8 @@ context "Worker" do
   test "only makes one connection" do
     QC.enqueue "TestNotifier.deliver", {}
     @worker.work
-    assert_equal 1, @database.execute("SELECT count(*) from pg_stat_activity")[0]["count"].to_i
+    assert_equal 1, @database.execute("SELECT count(*) from pg_stat_activity")[0]["count"].to_i,
+      "Multiple connections -- Are there other connections in other terminals?"
   end
 
 end

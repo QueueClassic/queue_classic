@@ -4,6 +4,7 @@ module QC
     def initialize(database)
       @database = database
       @table_name = @database.table_name
+      @top_boundary = @database.top_boundary
     end
 
     def <<(details)
@@ -29,7 +30,7 @@ module QC
     end
 
     def first
-      find_one { "SELECT * FROM lock_head('#{@table_name}')" }
+      find_one { "SELECT * FROM lock_head('#{@table_name}', #{@top_boundary})" }
     end
 
     def each
