@@ -114,7 +114,7 @@ module QC
           LOOP
             BEGIN
               EXECUTE 'SELECT id FROM '
-                || quote_ident(tname::regclass)
+                || quote_ident(tname)::regclass
                 || ' WHERE locked_at IS NULL'
                 || ' ORDER BY id ASC'
                 || ' LIMIT 1'
@@ -129,7 +129,7 @@ module QC
           END LOOP;
 
           RETURN QUERY EXECUTE 'UPDATE '
-            || quote_ident(tname::regclass)
+            || quote_ident(tname)::regclass
             || ' SET locked_at = (CURRENT_TIMESTAMP)'
             || ' WHERE id = $1'
             || ' AND locked_at is NULL'
