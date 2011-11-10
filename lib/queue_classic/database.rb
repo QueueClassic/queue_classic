@@ -9,12 +9,13 @@ module QC
     DEFAULT_QUEUE_NAME  = "queue_classic_jobs"
 
     attr_reader :table_name
+    attr_reader :top_boundary
 
     def initialize(queue_name=nil)
       log("initialized")
 
-      @top_boundry = MAX_TOP_BOUND
-      log("top_boundry=#{@top_boundry}")
+      @top_boundary = MAX_TOP_BOUND
+      log("top_boundary=#{@top_boundary}")
 
       @table_name = queue_name || DEFAULT_QUEUE_NAME
       log("table_name=#{@table_name}")
