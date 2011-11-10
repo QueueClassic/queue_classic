@@ -19,6 +19,9 @@ module QC
       @table_name = queue_name || DEFAULT_QUEUE_NAME
       log("table_name=#{@table_name}")
 
+      @channel_name = @table_name
+      log("channel_name=#{@channel_name}")
+
       @db_params = URI.parse(DATABASE_URL)
       log("uri=#{DATABASE_URL}")
     end
@@ -29,17 +32,17 @@ module QC
 
     def notify
       log("NOTIFY")
-      execute("NOTIFY queue_classic_jobs")
+      execute("NOTIFY #{@channel_name}")
     end
 
     def listen
       log("LISTEN")
-      execute("LISTEN queue_classic_jobs")
+      execute("LISTEN #{@channel_name}")
     end
 
     def unlisten
       log("UNLISTEN")
-      execute("UNLISTEN queue_classic_jobs")
+      execute("UNLISTEN #{@channel_name}")
     end
 
     def drain_notify
