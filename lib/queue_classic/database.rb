@@ -109,7 +109,11 @@ module QC
           -- The select count(*) is going to slow down dequeue performance but allow
           -- for more workers. Would love to see some optimization here...
 
-          EXECUTE 'SELECT count(*) FROM' || tname || '' INTO job_count;
+          EXECUTE 'SELECT count(*) FROM ' ||
+            '(SELECT * FROM ' || quote_ident(tname) ||
+            ' LIMIT ' || quote_literal(top_boundary) || ') limited'
+            INTO job_count;
+
           SELECT TRUNC(random() * top_boundary + 1) INTO relative_top;
           IF job_count < top_boundary THEN
             relative_top = 0;
