@@ -99,7 +99,7 @@ module QC
         -- have identical columns to queue_classic_jobs.
         -- When QC supports queues with columns other than the default, we will have to change this.
 
-        CREATE OR REPLACE FUNCTION lock_head(tname varchar, top_boundary integer) RETURNS SETOF queue_classic_jobs AS $$
+        CREATE OR REPLACE FUNCTION lock_head(tname name, top_boundary integer) RETURNS SETOF queue_classic_jobs AS $$
         DECLARE
           unlocked integer;
           relative_top integer;
