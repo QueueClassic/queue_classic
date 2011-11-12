@@ -9,15 +9,19 @@ module QC
     DEFAULT_QUEUE_NAME  = "queue_classic_jobs"
 
     attr_reader :table_name
+    attr_reader :top_boundary
 
     def initialize(queue_name=nil)
       log("initialized")
 
-      @top_boundry = MAX_TOP_BOUND
-      log("top_boundry=#{@top_boundry}")
+      @top_boundary = MAX_TOP_BOUND
+      log("top_boundary=#{@top_boundary}")
 
       @table_name = queue_name || DEFAULT_QUEUE_NAME
       log("table_name=#{@table_name}")
+
+      @channel_name = @table_name
+      log("channel_name=#{@channel_name}")
 
       @db_params = URI.parse(DATABASE_URL)
       log("uri=#{DATABASE_URL}")
@@ -29,17 +33,17 @@ module QC
 
     def notify
       log("NOTIFY")
-      execute("NOTIFY queue_classic_jobs")
+      execute("NOTIFY #{@channel_name}")
     end
 
     def listen
       log("LISTEN")
-      execute("LISTEN queue_classic_jobs")
+      execute("LISTEN #{@channel_name}")
     end
 
     def unlisten
       log("UNLISTEN")
-      execute("UNLISTEN queue_classic_jobs")
+      execute("UNLISTEN #{@channel_name}")
     end
 
     def drain_notify
@@ -95,7 +99,7 @@ module QC
         -- have identical columns to queue_classic_jobs.
         -- When QC supports queues with columns other than the default, we will have to change this.
 
-        CREATE OR REPLACE FUNCTION lock_head(tname varchar) RETURNS SETOF queue_classic_jobs AS $$
+        CREATE OR REPLACE FUNCTION lock_head(tname varchar, top_boundary integer) RETURNS SETOF queue_classic_jobs AS $$
         DECLARE
           unlocked integer;
           relative_top integer;
@@ -105,16 +109,16 @@ module QC
           -- The select count(*) is going to slow down dequeue performance but allow
           -- for more workers. Would love to see some optimization here...
 
-          SELECT TRUNC(random() * #{@top_boundry} + 1) INTO relative_top;
           EXECUTE 'SELECT count(*) FROM' || tname || '' INTO job_count;
-          IF job_count < 10 THEN
+          SELECT TRUNC(random() * top_boundary + 1) INTO relative_top;
+          IF job_count < top_boundary THEN
             relative_top = 0;
           END IF;
 
           LOOP
             BEGIN
               EXECUTE 'SELECT id FROM '
-                || tname::regclass
+                || quote_ident(tname)::regclass
                 || ' WHERE locked_at IS NULL'
                 || ' ORDER BY id ASC'
                 || ' LIMIT 1'
@@ -129,7 +133,7 @@ module QC
           END LOOP;
 
           RETURN QUERY EXECUTE 'UPDATE '
-            || tname::regclass
+            || quote_ident(tname)::regclass
             || ' SET locked_at = (CURRENT_TIMESTAMP)'
             || ' WHERE id = $1'
             || ' AND locked_at is NULL'
@@ -139,7 +143,13 @@ module QC
           RETURN;
         END;
         $$ LANGUAGE plpgsql;
-      EOD
+
+        CREATE OR REPLACE FUNCTION lock_head(tname varchar) RETURNS SETOF queue_classic_jobs AS $$
+        BEGIN
+          RETURN QUERY EXECUTE 'SELECT * FROM lock_head($1,10)' USING tname;
+        END;
+        $$ LANGUAGE plpgsql;
+     EOD
     end
 
     def log(msg)
