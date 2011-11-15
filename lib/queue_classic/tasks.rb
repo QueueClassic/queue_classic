@@ -12,8 +12,9 @@ namespace :qc do
     QC::Worker.new.start
   end
 
+  desc "Returns the number of jobs in the (default) queue"
   task :jobs => :environment do
-    QC.queue_length
+    puts QC.length
   end
 
   task :load_functions => :environment do
