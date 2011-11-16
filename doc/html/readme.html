@@ -14,8 +14,22 @@ intuitive user experience.</p>
 <li>JSON encoding for jobs</li>
 <li>Forking workers</li>
 <li>Postgres' rock-solid locking mechanism</li>
+<li>Fuzzy-FIFO support (1)</li>
 <li>Long term support</li>
 </ul>
+
+<p>1.Theory found here: http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf</p>
+
+<h2>Proven</h2>
+
+<p>I wrote queue_classic to solve a production problem.  My problem was that I needed a
+queueing system that wouldn't fall over should I decide to press it nor should it freak out 
+if I attached 100 workers to it. However, my problem didn't warrant adding an additional service. 
+I was already using PostgreSQL to manage my application's data, why not use PostgreSQL to pass some messages? 
+PostgreSQL was already handling thousands of reads and writes per second anyways. Why not add 35 more 
+reads/writes per second to my established performance metric? </p>
+
+<p>queue_classic handles over <strong>3,000,000</strong> jobs per day. It does this on Heroku's Ronin Database.</p>
 
 <h2>Quick Start</h2>
 
@@ -28,8 +42,50 @@ intuitive user experience.</p>
   $ export QC_DATABASE_URL=&quot;postgres://username:password@localhost/queue_classic_test&quot;
   $ gem install queue_classic
   $ ruby -r queue_classic -e &quot;QC::Database.new.load_functions&quot;
-  $ ruby -r queue_classic -e &quot;QC.enqueue(&quot;Kernel.puts&quot;, &quot;hello world&quot;)&quot;
+  $ ruby -r queue_classic -e &quot;QC.enqueue('Kernel.puts', 'hello world')&quot;
   $ ruby -r queue_classic -e &quot;QC::Worker.new.start&quot;
+</code></pre>
+
+<h2>Configure</h2>
+
+<pre><code class="bash">
+# Enable logging.
+$VERBOSE
+
+# Specifies the database that queue_classic will rely upon.
+$QC_DATABASE_URL || $DATABASE_URL
+
+# Fuzzy-FIFO
+# For strict FIFO set to 1. Otherwise, worker will 
+# attempt to lock a job in this top region.
+# Default: 9
+$QC_TOP_BOUND
+
+# If you want your worker to fork a new 
+# child process for each job, set this var to 'true'
+# Default: false
+$QC_FORK_WORKER
+
+# The worker uses an exp backoff algorithm
+# if you want high throughput don't use Kernel.sleep
+# use LISTEN/NOTIFY sleep. When set to true, the worker's 
+# sleep will be preempted by insertion into the queue.
+# Default: false
+$QC_LISTENING_WORKER
+
+# The worker uses an exp backoff algorithm. The base of
+# the exponent is 2. This var determines the max power of the
+# exp.
+# Default: 5 which implies max sleep time of 2^(5-1) =&gt; 16 seconds
+$QC_MAX_LOCK_ATTEMPTS
+
+# This var is important for consumers of the queue.
+# If you have configured many queues, this var will
+# instruct the worker to bind to a particular queue.
+# Default: queue_classic_jobs --which is the default queue table.
+$QUEUE
+
+
 </code></pre>
 
 <h2>Hacking on queue_classic</h2>
@@ -37,9 +93,11 @@ intuitive user experience.</p>
 <h3>Dependencies</h3>
 
 <ul>
-<li>Ruby 1.9.2</li>
+<li>Ruby 1.9.2 (tests work in 1.8.7 but compatibility is not guaranteed or supported)</li>
 <li>Postgres ~&gt; 9.0</li>
-<li>Rubygems: pg ~&gt; 0.11.0</li>
+<li>Rubygems
+** pg ~&gt; 0.11.0
+** json ~&gt; 1.6.1</li>
 </ul>
 
 <h3>Running Tests</h3>
@@ -58,8 +116,10 @@ for the docs.</p>
 
 <h2>Other Resources</h2>
 
+<h3><a href="http://groups.google.com/group/queue_classic" title="discussion group">Discussion Group</a></h3>
+
 <h3><a href="https://github.com/ryandotsmith/queue_classic/tree/master/doc">Documentation</a></h3>
 
 <h3><a href="https://github.com/ryandotsmith/queue_classic_example">Example Rails App</a></h3>
 
-<h3><a href="http://groups.google.com/group/queue_classic" title="discussion group">Discussion Group</a></h3>
+<h3><a href="http://dl.dropbox.com/u/1579953/talks/queue_classic.pdf">Slide Deck</a></h3>

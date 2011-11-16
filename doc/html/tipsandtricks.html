@@ -17,3 +17,34 @@ heroku console session and executed this line:</p>
 
 <p>With the help of 20 workers I was able to destroy all of these records
 (preserving their callbacks) in a few minutes.</p>
+
+<h2>Enqueueing batches of jobs</h2>
+
+<p>I have seen several cases where the application will enqueue jobs in batches. For instance, you may be sending
+1,000 emails out. In this case, it would be foolish to do 1,000 individual transaction. Instead, you want to open 
+a new transaction, enqueue all of your jobs and then commit the transaction. This will save tons of time in the 
+database.</p>
+
+<p>To achieve this we will create a helper method:</p>
+
+<pre><code class="ruby">
+def qc_txn
+  begin
+    QC.database.execute(&quot;BEGIN&quot;)
+    yield
+    QC.database.execute(&quot;COMMIT&quot;)
+  rescue Exception
+    QC.database.execute(&quot;ROLLBACK&quot;)
+    raise
+  end
+end
+</code></pre>
+
+<p>Now in your application code you can do something like:</p>
+
+<pre><code class="ruby">qc_txn do
+  Account.all.each do |act|
+    QC.enqueue(&quot;Emailer.send_notice&quot;, act.id)
+  end
+end
+</code></pre>
