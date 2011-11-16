@@ -6,8 +6,7 @@ ENV['DATABASE_URL'] ||= 'postgres:///queue_classic_test'
 require 'queue_classic'
 require 'database_helpers'
 
-require 'minitest/unit'
-MiniTest::Unit.autorun
+require 'minitest/autorun'
 
 def context(*args, &block)
   return super unless (name = args.first) && block

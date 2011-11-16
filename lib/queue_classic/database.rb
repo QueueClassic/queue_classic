@@ -93,18 +93,44 @@ module QC
     end
 
     def load_functions
-      execute(<<-EOD)
-        -- We are declaring the return type to be queue_classic_jobs.
-        -- This is ok since I am assuming that all of the users added queues will
-        -- have identical columns to queue_classic_jobs.
-        -- When QC supports queues with columns other than the default, we will have to change this.
+      Database.sql_functions.each do |function, contents|
+        execute("CREATE OR REPLACE FUNCTION #{function} #{contents}")
+      end
+    end
 
-        CREATE OR REPLACE FUNCTION lock_head(tname name, top_boundary integer) RETURNS SETOF queue_classic_jobs AS $$
+    def remove_functions
+      Database.sql_function_monikers.each do |function|
+        execute("DROP FUNCTION IF EXISTS #{function} CASCADE")
+      end
+    end
+
+    def self.sql_function_monikers
+      sql_functions.keys
+    end
+
+    # Provides hash of postgres functions required by QC
+    # keys: function monikers (name and args)
+    #   Needed for CREATE and DROP commands
+    # value: "meat" of sql for creation
+    #
+    # Admittedly, this is not the best abstraction,
+    #   but it does provide a list of function names AND args
+    #   for use in CREATE and DROP
+    def self.sql_functions
+      functions ||= {}
+
+      functions['lock_head(tname name, top_boundary integer)'] = <<-EOS
+        RETURNS SETOF queue_classic_jobs AS $$
         DECLARE
           unlocked integer;
           relative_top integer;
           job_count integer;
         BEGIN
+          -- We are declaring the return type to be queue_classic_jobs.
+          -- This is ok since I am assuming that all of the users added queues will
+          -- have identical columns to queue_classic_jobs.
+          -- When QC supports queues with columns other than the default, we will have to change this.
+
           -- The purpose is to release contention for the first spot in the table.
           -- The select count(*) is going to slow down dequeue performance but allow
           -- for more workers. Would love to see some optimization here...
@@ -147,13 +173,22 @@ module QC
           RETURN;
         END;
         $$ LANGUAGE plpgsql;
+      EOS
 
-        CREATE OR REPLACE FUNCTION lock_head(tname varchar) RETURNS SETOF queue_classic_jobs AS $$
+      functions['lock_head(tname varchar)'] = <<-EOS
+        RETURNS SETOF queue_classic_jobs AS $$
         BEGIN
+          -- We are declaring the return type to be queue_classic_jobs.
+          -- This is ok since I am assuming that all of the users added queues will
+          -- have identical columns to queue_classic_jobs.
+          -- When QC supports queues with columns other than the default, we will have to change this.
+
           RETURN QUERY EXECUTE 'SELECT * FROM lock_head($1,10)' USING tname;
         END;
         $$ LANGUAGE plpgsql;
-     EOD
+      EOS
+
+      functions
     end
 
     def log(msg)

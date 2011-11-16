@@ -26,3 +26,17 @@ context "DatabaseTest" do
   end
 
 end
+
+# using minitest/spec
+describe QC::Database do
+
+  describe ".sql_functions" do
+    it "returns the necessary functions" do
+      subject = QC::Database.sql_functions
+      assert_equal 2, subject.length
+      assert_match /USING unlocked/, subject['lock_head(tname name, top_boundary integer)']
+      assert_match /RETURN QUERY EXECUTE .SELECT . FROM lock_head/, subject['lock_head(tname varchar)']
+    end
+  end
+
+end
