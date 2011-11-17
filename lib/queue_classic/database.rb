@@ -3,10 +3,10 @@ module QC
 
     @@connection = nil
 
-    DATABASE_URL        = (ENV["QC_DATABASE_URL"] || ENV["DATABASE_URL"])
-    MAX_TOP_BOUND       = (ENV["QC_TOP_BOUND"] || 9).to_i
-    NOTIFY_TIMEOUT      = (ENV["QC_NOTIFY_TIMEOUT"] || 10).to_i
-    DEFAULT_QUEUE_NAME  = "queue_classic_jobs"
+    # DATABASE_URL        = (ENV["QC_DATABASE_URL"] || ENV["DATABASE_URL"])
+    # MAX_TOP_BOUND       = (ENV["QC_TOP_BOUND"] || 9).to_i
+    # NOTIFY_TIMEOUT      = (ENV["QC_NOTIFY_TIMEOUT"] || 10).to_i
+    # DEFAULT_QUEUE_NAME  = "queue_classic_jobs"
 
     attr_reader :table_name
     attr_reader :top_boundary
@@ -14,17 +14,18 @@ module QC
     def initialize(queue_name=nil)
       log("initialized")
 
-      @top_boundary = MAX_TOP_BOUND
+      @top_boundary = (ENV["QC_TOP_BOUND"] || 9).to_i
       log("top_boundary=#{@top_boundary}")
 
-      @table_name = queue_name || DEFAULT_QUEUE_NAME
+      @table_name = queue_name || "queue_classic_jobs"
       log("table_name=#{@table_name}")
 
       @channel_name = @table_name
       log("channel_name=#{@channel_name}")
 
-      @db_params = URI.parse(DATABASE_URL)
-      log("uri=#{DATABASE_URL}")
+      db_url = (ENV["QC_DATABASE_URL"] || ENV["DATABASE_URL"])
+      @db_params = URI.parse(db_url)
+      log("uri=#{db_url}")
     end
 
     def set_application_name
