@@ -3,11 +3,6 @@ module QC
 
     @@connection = nil
 
-    # DATABASE_URL        = (ENV["QC_DATABASE_URL"] || ENV["DATABASE_URL"])
-    # MAX_TOP_BOUND       = (ENV["QC_TOP_BOUND"] || 9).to_i
-    # NOTIFY_TIMEOUT      = (ENV["QC_NOTIFY_TIMEOUT"] || 10).to_i
-    # DEFAULT_QUEUE_NAME  = "queue_classic_jobs"
-
     attr_reader :table_name
     attr_reader :top_boundary
 
