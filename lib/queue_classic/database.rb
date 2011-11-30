@@ -60,6 +60,7 @@ module QC
         connection.exec(sql)
       rescue PGError => e
         log("execute exception=#{e.inspect}")
+        raise
       end
     end
 

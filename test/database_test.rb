@@ -30,4 +30,10 @@ context "DatabaseTest" do
     assert_equal [{'foo'=>'11', 'bar'=>'22'}], result.to_a
   end
 
+  test "should raise error on failure" do
+    assert_raises PGError do
+      @database.execute 'SELECT unknown FROM missing;'
+    end
+  end
+
 end
