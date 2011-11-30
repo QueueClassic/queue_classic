@@ -8,7 +8,7 @@ module QC
     end
 
     def <<(details)
-      execute("INSERT INTO #{@table_name} (details) VALUES ('#{JSON.dump(details)}')")
+      execute("INSERT INTO #{@table_name} (details) VALUES ($1);", JSON.dump(details))
       @database.notify if ENV["QC_LISTENING_WORKER"] == "true"
     end
 
@@ -47,8 +47,8 @@ module QC
       execute(yield).map {|r| Job.new(r)}
     end
 
-    def execute(sql)
-      @database.execute(sql)
+    def execute(sql, *params)
+      @database.execute(sql, *params)
     end
 
   end

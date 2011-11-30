@@ -29,6 +29,12 @@ context "DurableArray" do
     assert_equal job, @array.first.details
   end
 
+  test "passes through strings with quotes" do
+    job = {"foo'bar\"baz" => 'abc\\def'}
+    @array << job
+    assert_equal job, @array.first.details
+  end
+
   test "first returns first job when many are in the array" do
     @array << {"job" => "one"}
     @array << {"job" => "two"}
