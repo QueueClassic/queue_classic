@@ -25,4 +25,9 @@ context "DatabaseTest" do
     assert   @database.connection.notifies.nil?
   end
 
+  test "execute should return rows" do
+    result = @database.execute 'SELECT 11 foo, 22 bar;'
+    assert_equal [{'foo'=>'11', 'bar'=>'22'}], result.to_a
+  end
+
 end
