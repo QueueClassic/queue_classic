@@ -36,4 +36,9 @@ context "DatabaseTest" do
     end
   end
 
+  test "execute should accept parameters" do
+    result = @database.execute 'SELECT $2::int b, $1::int a, $1::int + $2::int c;', 123, '456'
+    assert_equal [{"a"=>"123", "b"=>"456", "c"=>"579"}], result.to_a
+  end
+
 end

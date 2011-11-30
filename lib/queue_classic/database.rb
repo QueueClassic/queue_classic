@@ -54,10 +54,11 @@ module QC
       log("done waiting for notify")
     end
 
-    def execute(sql)
-      log("executing=#{sql}")
+    def execute(sql, *params)
+      log("executing #{sql.inspect}, #{params.inspect}")
       begin
-        connection.exec(sql)
+        params = nil if params.empty?
+        connection.exec(sql, params)
       rescue PGError => e
         log("execute exception=#{e.inspect}")
         raise
