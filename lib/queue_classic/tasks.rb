@@ -14,7 +14,7 @@ namespace :qc do
 
   desc 'Returns the number of jobs in the (default or QUEUE) queue'
   task :jobs => :environment do
-    puts QC.length
+    puts QC::Queue.new(ENV['QUEUE']).length
   end
 
   desc 'Ensure the database has the necessary functions for QC'
