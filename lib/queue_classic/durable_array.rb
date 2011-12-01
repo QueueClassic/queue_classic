@@ -17,7 +17,7 @@ module QC
     end
 
     def delete(job)
-      execute("DELETE FROM #{@table_name} WHERE id = #{job.id}")
+      execute("DELETE FROM #{@table_name} WHERE id = $1;", job.id)
       job
     end
 
@@ -26,15 +26,15 @@ module QC
     end
 
     def search_details_column(q)
-      find_many { "SELECT * FROM #{@table_name} WHERE details LIKE '%#{q}%'" }
+      find_many { ["SELECT * FROM #{@table_name} WHERE details LIKE $1;", "%#{q}%"] }
     end
 
     def first
-      find_one { "SELECT * FROM lock_head('#{@table_name}', #{@top_boundary})" }
+      find_one { ["SELECT * FROM lock_head($1, $2);", @table_name, @top_boundary] }
     end
 
     def each
-      execute("SELECT * FROM #{@table_name} ORDER BY id ASC").each do |r|
+      execute("SELECT * FROM #{@table_name} ORDER BY id ASC;").each do |r|
         yield Job.new(r)
       end
     end
@@ -44,7 +44,7 @@ module QC
     end
 
     def find_many
-      execute(yield).map {|r| Job.new(r)}
+      execute(*yield).map { |r| Job.new(r) }
     end
 
     def execute(sql, *params)
