@@ -21,10 +21,6 @@ module QC
       job
     end
 
-    def find(job)
-      find_one {"SELECT * FROM #{@table_name} WHERE id = #{job.id}"}
-    end
-
     def search_details_column(q)
       find_many { ["SELECT * FROM #{@table_name} WHERE details LIKE $1;", "%#{q}%"] }
     end
