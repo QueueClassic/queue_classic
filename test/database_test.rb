@@ -41,4 +41,33 @@ context "DatabaseTest" do
     assert_equal [{"a"=>"123", "b"=>"456", "c"=>"579"}], result.to_a
   end
 
+  def job_count
+    @database.execute('SELECT COUNT(*) FROM queue_classic_jobs')[0].values.first.to_i
+  end
+
+  test "transaction should commit" do
+    assert_equal true, @database.transaction_idle?
+    assert_equal 0, job_count
+    @database.transaction do
+      assert_equal false, @database.transaction_idle?
+      assert_equal 0, job_count
+      @database.execute "INSERT INTO queue_classic_jobs (details) VALUES ('test');"
+      assert_equal false, @database.transaction_idle?
+      assert_equal 1, job_count
+    end
+    assert_equal true, @database.transaction_idle?
+    assert_equal 1, job_count
+  end
+
+  test "transaction should rollback if there's an error" do
+    assert_raises RuntimeError do
+      @database.transaction do
+        @database.execute "INSERT INTO queue_classic_jobs (details) VALUES ('test');"
+        assert_equal 1, job_count
+        raise "force rollback"
+      end
+    end
+    assert_equal 0, job_count
+  end
+
 end

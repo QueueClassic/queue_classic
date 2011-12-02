@@ -54,6 +54,21 @@ module QC
       log("done waiting for notify")
     end
 
+    def transaction
+      begin
+        execute 'BEGIN'
+        yield
+        execute 'COMMIT'
+      rescue Exception
+        execute 'ROLLBACK'
+        raise
+      end
+    end
+
+    def transaction_idle?
+      connection.transaction_status == PGconn::PQTRANS_IDLE
+    end
+
     def execute(sql, *params)
       log("executing #{sql.inspect}, #{params.inspect}")
       begin
