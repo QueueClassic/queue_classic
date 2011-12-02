@@ -8,7 +8,7 @@ module QC
     end
 
     def <<(details)
-      execute("INSERT INTO #{@table_name} (details) VALUES ('#{JSON.dump(details)}')")
+      execute("INSERT INTO #{@table_name} (details) VALUES ($1);", JSON.dump(details))
       @database.notify if ENV["QC_LISTENING_WORKER"] == "true"
     end
 
@@ -17,24 +17,20 @@ module QC
     end
 
     def delete(job)
-      execute("DELETE FROM #{@table_name} WHERE id = #{job.id}")
+      execute("DELETE FROM #{@table_name} WHERE id = $1;", job.id)
       job
     end
 
-    def find(job)
-      find_one {"SELECT * FROM #{@table_name} WHERE id = #{job.id}"}
-    end
-
     def search_details_column(q)
-      find_many { "SELECT * FROM #{@table_name} WHERE details LIKE '%#{q}%'" }
+      find_many { ["SELECT * FROM #{@table_name} WHERE details LIKE $1;", "%#{q}%"] }
     end
 
     def first
-      find_one { "SELECT * FROM lock_head('#{@table_name}', #{@top_boundary})" }
+      find_one { ["SELECT * FROM lock_head($1, $2);", @table_name, @top_boundary] }
     end
 
     def each
-      execute("SELECT * FROM #{@table_name} ORDER BY id ASC").each do |r|
+      execute("SELECT * FROM #{@table_name} ORDER BY id ASC;").each do |r|
         yield Job.new(r)
       end
     end
@@ -44,11 +40,11 @@ module QC
     end
 
     def find_many
-      execute(yield).map {|r| Job.new(r)}
+      execute(*yield).map { |r| Job.new(r) }
     end
 
-    def execute(sql)
-      @database.execute(sql)
+    def execute(sql, *params)
+      @database.execute(sql, *params)
     end
 
   end

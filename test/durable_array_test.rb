@@ -29,6 +29,12 @@ context "DurableArray" do
     assert_equal job, @array.first.details
   end
 
+  test "passes through strings with quotes" do
+    job = {"foo'bar\"baz" => 'abc\\def'}
+    @array << job
+    assert_equal job, @array.first.details
+  end
+
   test "first returns first job when many are in the array" do
     @array << {"job" => "one"}
     @array << {"job" => "two"}
@@ -68,13 +74,13 @@ context "DurableArray" do
     assert_equal([{"job" => "one"},{"job" => "two"}], results)
   end
 
-  test "seach" do
+  test "search" do
     @array << {"job" => "A.signature"}
     jobs = @array.search_details_column("A.signature")
     assert_equal "A.signature", jobs.first.signature
   end
 
-  test "seach when data will not match" do
+  test "search when data will not match" do
     @array << {"job" => "A.signature"}
     jobs = @array.search_details_column("B.signature")
     assert_equal [], jobs
