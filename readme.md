@@ -88,6 +88,32 @@ $QUEUE
 
 ```
 
+## Testing
+
+In order to test the behaviour of your application using queue_classic
+you must include the queue classic test helper. This helper provides you with two
+methods, one for running all the jobs in a queue and another to clear all the jobs
+of a given queue (If you need to run multiple queues you can provide to those methods
+an array of classes implementing the queue).
+
+```ruby
+  require 'queue_classic/test_helper'
+  include QC::TestHelper
+
+  # In rspec you can do execute work_jobs in order to run all the jobs of the
+  # default queue (QC)
+  work_jobs
+
+  # Or you can run work_jobs with a list of queues in order to run the jobs of
+  # the given queues.
+  work_jobs([QC, other_queue])
+
+  # Also if you want to clear all the jobs you can execute the method clear_jobs
+  # this method also receive a list of queues so if you want to clear a given
+  # queue you can passed them as parameter
+  clear_jobs
+```
+
 ## Hacking on queue_classic
 
 ### Dependencies
@@ -104,7 +130,7 @@ $QUEUE
   $ bundle
   $ createdb queue_classic_test
   $ export QC_DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
-  $ rake
+  $ bundle exec rake
 ```
 
 ### Building Documentation
