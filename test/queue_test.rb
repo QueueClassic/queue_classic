@@ -58,4 +58,19 @@ context "Queue" do
     assert_equal 1, @database.execute("SELECT count(*) from pg_stat_activity")[0]["count"].to_i
   end
 
+  context 'Queue subclasses' do
+    setup do
+      @q1 = Class.new(QC::Queue)
+      @q2 = Class.new(QC::Queue)
+    end
+
+    test 'have their own array' do
+      refute_equal @q1.array, @q2.array
+    end
+
+    test 'have their own database' do
+      refute_equal @q1.database, @q2.database
+    end
+  end
+
 end
