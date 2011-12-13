@@ -1,3 +1,5 @@
+require 'forwardable'
+
 module QC
   module AbstractQueue
 
@@ -38,12 +40,13 @@ module  QC
     include AbstractQueue
     extend AbstractQueue
 
-    def self.array
-      @array ||= DurableArray.new(database)
-    end
+    class << self
+      extend Forwardable
+      def_delegators :default_queue, :array, :database
 
-    def self.database
-      @database ||= Database.new
+      def default_queue
+        @default_queue ||= new nil
+      end
     end
 
     def initialize(queue_name)
