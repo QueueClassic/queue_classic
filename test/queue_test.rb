@@ -1,4 +1,5 @@
 require File.expand_path("../helper.rb", __FILE__)
+require 'ostruct'
 
 context "Queue" do
 
@@ -56,6 +57,14 @@ context "Queue" do
     QC::Queue.enqueue "Klass.method"
     QC::Queue.dequeue
     assert_equal 1, @database.execute("SELECT count(*) from pg_stat_activity")[0]["count"].to_i
+  end
+
+  test "Queue class enqueues a job" do
+    job = OpenStruct.new :signature => 'Klass.method', :params => ['param']
+    QC::Queue.enqueue(job)
+    dequeued_job = QC::Queue.dequeue
+    assert_equal "Klass.method", dequeued_job.signature
+    assert_equal 'param', dequeued_job.params
   end
 
 end
