@@ -39,11 +39,11 @@ module  QC
     extend AbstractQueue
 
     def self.array
-      @@array ||= DurableArray.new(database)
+      @array ||= DurableArray.new(database)
     end
 
     def self.database
-      @@database ||= Database.new
+      @database ||= Database.new
     end
 
     def initialize(queue_name)
