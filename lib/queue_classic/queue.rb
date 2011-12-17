@@ -2,9 +2,9 @@ module QC
   module AbstractQueue
 
     def enqueue(job,*params)
-      if job.respond_to?(:details) and job.respond_to?(:params)
-        job = job.signature
+      if job.respond_to?(:signature) and job.respond_to?(:params)
         params = *job.params
+        job = job.signature
       end
       array << {"job" => job, "params" => params}
     end
