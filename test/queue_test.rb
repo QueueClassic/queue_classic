@@ -10,7 +10,8 @@ context "Queue" do
   end
 
   test "Queue class has a default table name" do
-    QC::Queue.enqueue("Klass.method")
+    default_table_name = QC::Database.new.table_name
+    assert_equal default_table_name, QC::Queue.database.table_name
   end
 
   test "Queue class responds to dequeue" do
