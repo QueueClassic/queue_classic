@@ -1,4 +1,4 @@
-require File.expand_path("../helper.rb", __FILE__)
+require 'helper'
 require 'ostruct'
 
 context "Queue" do
