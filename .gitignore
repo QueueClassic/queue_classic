@@ -3,3 +3,4 @@ etc/
 *.gem
 .env
 Gemfile.lock
+*~

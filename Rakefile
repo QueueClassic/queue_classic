@@ -1,4 +1,5 @@
 require 'rake/testtask'
+require 'rake/clean'
 task :default => ['test']
 Rake::TestTask.new do |t|
   t.libs << 'test'
@@ -6,3 +7,5 @@ Rake::TestTask.new do |t|
   t.verbose = true
   t.ruby_opts << "-rubygems" if RUBY_VERSION < "1.9"
 end
+
+CLOBBER << 'doc/html'
