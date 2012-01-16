@@ -5,7 +5,7 @@
 <p>The other day I found myself in a position in which I needed to delete a few
 thousand records. The tough part of this situation is that I needed to ensure
 the ActiveRecord callbacks were made on these objects thus making a simple SQL
-statement unfeasible. Also, I didn't want to wait all day to select and destroy
+statement unfeasible. Also, I didn&#39;t want to wait all day to select and destroy
 these objects. queue_classic to the rescue! (no pun intended)</p>
 
 <p>The API of queue_classic enables you to quickly dispatch jobs to workers. In my
@@ -17,3 +17,34 @@ heroku console session and executed this line:</p>
 
 <p>With the help of 20 workers I was able to destroy all of these records
 (preserving their callbacks) in a few minutes.</p>
+
+<h2>Enqueueing batches of jobs</h2>
+
+<p>I have seen several cases where the application will enqueue jobs in batches. For instance, you may be sending
+1,000 emails out. In this case, it would be foolish to do 1,000 individual transaction. Instead, you want to open 
+a new transaction, enqueue all of your jobs and then commit the transaction. This will save tons of time in the 
+database.</p>
+
+<p>To achieve this we will create a helper method:</p>
+
+<pre><code class="ruby">
+def qc_txn
+  begin
+    QC.database.execute(&quot;BEGIN&quot;)
+    yield
+    QC.database.execute(&quot;COMMIT&quot;)
+  rescue Exception
+    QC.database.execute(&quot;ROLLBACK&quot;)
+    raise
+  end
+end
+</code></pre>
+
+<p>Now in your application code you can do something like:</p>
+
+<pre><code class="ruby">qc_txn do
+  Account.all.each do |act|
+    QC.enqueue(&quot;Emailer.send_notice&quot;, act.id)
+  end
+end
+</code></pre>
