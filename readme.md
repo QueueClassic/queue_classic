@@ -20,11 +20,11 @@ queue_classic features:
 ## Proven
 
 I wrote queue_classic to solve a production problem.  My problem was that I needed a
-queueing system that wouldn't fall over should I decide to press it nor should it freak out 
-if I attached 100 workers to it. However, my problem didn't warrant adding an additional service. 
-I was already using PostgreSQL to manage my application's data, why not use PostgreSQL to pass some messages? 
-PostgreSQL was already handling thousands of reads and writes per second anyways. Why not add 35 more 
-reads/writes per second to my established performance metric? 
+queueing system that wouldn't fall over should I decide to press it nor should it freak out
+if I attached 100 workers to it. However, my problem didn't warrant adding an additional service.
+I was already using PostgreSQL to manage my application's data, why not use PostgreSQL to pass some messages?
+PostgreSQL was already handling thousands of reads and writes per second anyways. Why not add 35 more
+reads/writes per second to my established performance metric?
 
 queue_classic handles over **3,000,000** jobs per day. It does this on Heroku's Ronin Database.
 
@@ -56,19 +56,19 @@ $VERBOSE
 $QC_DATABASE_URL || $DATABASE_URL
 
 # Fuzzy-FIFO
-# For strict FIFO set to 1. Otherwise, worker will 
+# For strict FIFO set to 1. Otherwise, worker will
 # attempt to lock a job in this top region.
 # Default: 9
 $QC_TOP_BOUND
 
-# If you want your worker to fork a new 
+# If you want your worker to fork a new
 # child process for each job, set this var to 'true'
 # Default: false
 $QC_FORK_WORKER
 
 # The worker uses an exp backoff algorithm
 # if you want high throughput don't use Kernel.sleep
-# use LISTEN/NOTIFY sleep. When set to true, the worker's 
+# use LISTEN/NOTIFY sleep. When set to true, the worker's
 # sleep will be preempted by insertion into the queue.
 # Default: false
 $QC_LISTENING_WORKER
