@@ -1,10 +1,12 @@
 
-ENV['DATABASE_URL'] ||= 'postgres:///queue_classic_test'
 
 require 'queue_classic'
 require 'database_helpers'
 require 'minitest/autorun'
 
+def database_url
+  'postgres:///queue_classic_test'
+end
 
 def context(*args, &block)
   return super unless (name = args.first) && block
