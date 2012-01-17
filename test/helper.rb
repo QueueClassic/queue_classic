@@ -1,11 +1,20 @@
 
 
 require 'queue_classic'
-require 'database_helpers'
 require 'minitest/autorun'
 
-def database_url
-  'postgres:///queue_classic_test'
+module DatabaseHelpers
+  def database_url
+    'postgres:///queue_classic_test'
+  end
+
+  def setup_db
+    QueueClassic::Bootstrap.setup( database_url )
+  end
+
+  def teardown_db
+    QueueClassic::Bootstrap.teardown( database_url )
+  end
 end
 
 def context(*args, &block)

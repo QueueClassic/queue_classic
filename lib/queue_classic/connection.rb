@@ -1,10 +1,11 @@
+require 'queue_classic/pg_connection'
 module QueueClassic
   # A Connection encapsulates a single connection to a particular postgresql
   # database.
   class Connection
     include ::QueueClassic::Logable
 
-    attr_reader :db_url
+    attr_reader :schema
 
     # Connect to the given queue classic database
     #
@@ -13,69 +14,50 @@ module QueueClassic
     #
     # Returns a new Connection object
     def initialize( database_url, schema_name = Schema.default_schema_name )
-      @db_url    = database_url
-      @db_params = URI.parse( @db_url )
-      @schema    = QueueClassic::Schema.new( schema_name )
+      @pg_conn = QueueClassic::PGConnection.new( database_url )
+      @schema  = QueueClassic::Schema.new( schema_name )
       logger.info "connection uri = #{db_url}"
-      connection
+      apply_connection_settings
     end
 
-    # Connect to the database if we are not already connected
+    # Return the db_url
+    def db_url
+      @pg_conn.db_url
+    end
+
+    # Check and see if the schema name give on initialization exists in the
+    # database.
     #
-    # Returns the PGconn object
-    def connection
-      @connection ||= connect
+    # Returns true or false
+    def schema_exist?( schema_name = @schema.name )
+      @pg_conn.schema_exist?( schema_name )
+    end
+
+    # Execute the sql statement given the query and params
+    #
+    def execute( sql, *params )
+      @pg_conn.execute(sql, *params)
     end
 
     # Disconnect from the database
     #
-    # Returns nothing
     def disconnect
-      connection.finish
-      @connection = nil
-    end
-
-    # Execute the give sql with the substitution parameters
-    #
-    # sql    - the sql statement to execute
-    # params - the params to substitute into the statment
-    #
-    # Returns the PGresult
-    def execute(sql, *params)
-      logger.debug("executing #{sql.inspect}, #{params.inspect}")
-      begin
-        params = nil if params.empty?
-        connection.exec(sql, params)
-      rescue PGError => e
-        logger.error("execute exception=#{e.inspect}")
-        raise
-      end
+      @pg_conn.disconnect
     end
 
     #######
     private
-    #######
 
-    # Establish an actual connection to the Postgres database and return the
-    # PGConn object
+    # Connect to the database if we are not already connected
     #
-    # Returns a PGConn object
-    def connect
-      logger.info "establishing connection"
-      conn = PGconn.connect(
-        @db_params.host,
-        @db_params.port || 5432,
-        nil, #opts
-        '',  #tty
-        @db_params.path.gsub("/",""), #database name
-        @db_params.user,
-        @db_params.password
-      )
-      if conn.status != PGconn::CONNECTION_OK
-        logger.error("connection error=#{conn.error}")
-        raise QueueClassic::Error, "Error on connection #{conn.error}"
+    # Returns the PGconn object
+    def apply_connection_settings
+      if schema_exist? then
+        execute( "SET search_path TO #{@schema.name},public" )
+      else
+        raise QueueClassic::Error, "The Schema '#{@schema.name}' that you are attempting to connect to does not exist. Did you run QueueClassic::Bootstrap.setup( '#{db_url}', '#{@schema.name}' )?"
       end
-      conn
     end
+
   end
 end
