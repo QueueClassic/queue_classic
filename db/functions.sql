@@ -137,11 +137,13 @@ BEGIN
         WHERE id = job_id
           AND reserved_at IS NOT NULL
     RETURNING * INTO finalized_job;
+
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Unable to find job "%" in queue "%" that was reserved', job_id, queue;
   END IF;
-  INSERT INTO jobs_history(id, queue_id, details, ready_at, reserved_at, finalized_message)
-       VALUES (job_id, qid, finalized_job.details, finalized_job.ready_at, finalized_job.reserved_at, message )
+
+  INSERT INTO jobs_history(id    , queue_id, details              , ready_at              , reserved_at              , reserved_by              , finalized_message)
+       VALUES             (job_id, qid     , finalized_job.details, finalized_job.ready_at, finalized_job.reserved_at, finalized_job.reserved_by, message )
     RETURNING *
          INTO historical_job;
   RETURN historical_job;
