@@ -48,6 +48,23 @@ module QueueClassic
       return (result[0]['count'].to_i >= 1)
     end
 
+    # Check and see if the table name given exists in the database in the given
+    # schema
+    #
+    # Returns true or false
+    def table_exist?( schema_name, table_name )
+      result = execute(<<-_sql_, schema_name, table_name)
+      SELECT n.nspname, c.relname, count(*)::int
+        FROM pg_class AS c
+        JOIN pg_namespace AS n
+          ON n.oid = c.relnamespace
+       WHERE n.nspname = $1
+         AND c.relname = $2
+    GROUP BY n.nspname, c.relname
+      _sql_
+      return (result[0]['count'].to_i >= 1)
+    end
+
     #######
     private
 

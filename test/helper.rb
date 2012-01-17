@@ -1,5 +1,3 @@
-
-
 require 'queue_classic'
 require 'minitest/autorun'
 

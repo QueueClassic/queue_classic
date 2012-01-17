@@ -33,6 +33,15 @@ module QueueClassic
       @pg_conn.schema_exist?( schema_name )
     end
 
+    # Check and see if the table name given exists in the database in the schema
+    # of this connection
+    #
+    # Returns true or false
+    def table_exist?( table_name )
+      @pg_conn.table_exist?( @schema.name, table_name )
+    end
+
+
     # Execute the sql statement given the query and params
     #
     def execute( sql, *params )

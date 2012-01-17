@@ -18,7 +18,8 @@ context 'BootstrapTest' do
   test "can teardown the tables and functions in the schema" do
     refute @boot.conn.schema_exist?( 'qc' )
     @boot.setup
-    assert @boot.conn.schema_exist?( 'qc' )
+    assert @boot.schema_exist?( 'qc' )
+    assert @boot.table_exist?( 'qc', 'jobs' )
     @boot.teardown
     refute @boot.conn.schema_exist?( 'qc' )
   end
