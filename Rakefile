@@ -29,3 +29,11 @@ end
 directory 'doc/html'
 desc "Build the HTML docs"
 task :html => [ 'doc/html', DOC_MAP.values ].flatten
+
+require 'rcov/rcovtask'
+Rcov::RcovTask.new do |t|
+  t.libs << 'test'
+  t.pattern = "test/*_test.rb"
+  t.ruby_opts << "-rubygems" if RUBY_VERSION < "1.9"
+  t.rcov_opts << "--exclude gems/"
+end

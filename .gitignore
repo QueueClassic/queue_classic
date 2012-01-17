@@ -4,3 +4,4 @@ etc/
 .env
 Gemfile.lock
 *~
+coverage/
