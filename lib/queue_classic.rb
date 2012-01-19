@@ -16,7 +16,5 @@ module QueueClassic
 end
 
 require 'queue_classic/logable'
-require 'queue_classic/schema'
-require 'queue_classic/connection'
-require 'queue_classic/bootstrap'
+require 'queue_classic/session'
 require 'queue_classic/job'

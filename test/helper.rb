@@ -1,5 +1,6 @@
 require 'queue_classic'
 require 'minitest/autorun'
+require 'queue_classic/bootstrap'
 
 module DatabaseHelpers
   def database_url
