@@ -17,5 +17,6 @@ end
 
 require 'queue_classic/logable'
 require 'queue_classic/producer'
+require 'queue_classic/consumer'
 require 'queue_classic/session'
 require 'queue_classic/job'

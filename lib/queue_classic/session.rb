@@ -15,6 +15,9 @@ module QueueClassic
     # The Producer instances that are associated with the session.
     attr_reader :producers
 
+    # The Consumer instances that are associated with this session.
+    attr_reader :consumers
+
     # Connect to the given queue classic database
     #
     # database_url - url for connection, of the format postgres://user:password@host/database
@@ -26,6 +29,7 @@ module QueueClassic
       @conn       = QueueClassic::Connection.new( database_url )
       @schema     = QueueClassic::Schema.new( schema_name )
       @producers  = []
+      @consumers  = []
       logger.info "connection uri = #{@db_url}"
       apply_connection_settings
     end
@@ -69,6 +73,18 @@ module QueueClassic
       prod = QueueClassic::Producer.new( self, qname )
       @producers << prod
       return prod
+    end
+
+    # Return an instance of a Consumer that is connected to a particular queue
+    # in this session.
+    #
+    # name - the name of the queue that this Consumer is for.
+    #
+    # Returns an instance of Consumer
+    def consumer_for( qname )
+      consumer = QueueClassic::Consumer.new( self, qname )
+      @consumers << consumer
+      return consumer
     end
 
     #######

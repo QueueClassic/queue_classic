@@ -51,4 +51,11 @@ context 'SessionTest' do
     p1 = @session.producer_for( 'foo' )
     assert 2, @session.producers.size
   end
+
+  test "session creates a consumer for a queue" do
+    assert 1, @session.consumers.size
+    p1 = @session.producer_for( 'foo' )
+    assert 2, @session.consumers.size
+  end
+
 end
