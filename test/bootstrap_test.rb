@@ -1,6 +1,7 @@
 require 'helper'
 require 'queue_classic/bootstrap'
-context 'BootstrapTest' do
+
+context 'Bootstrap' do
   setup do
     @boot = QueueClassic::Bootstrap.new( 'postgres:///queue_classic_test', 'qc' )
   end

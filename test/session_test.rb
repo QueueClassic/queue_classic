@@ -1,5 +1,6 @@
 require 'helper'
-context 'SessionTest' do
+
+context 'Session' do
   setup do
     setup_db
     @session = QueueClassic::Session.new( database_url )
