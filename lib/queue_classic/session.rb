@@ -1,5 +1,6 @@
 require 'queue_classic/connection'
 require 'queue_classic/schema'
+require 'queue_classic/queue'
 
 module QueueClassic
   # A Session manages the Connection and is how Producers and Consumers are
@@ -28,6 +29,29 @@ module QueueClassic
     #
     def close
       @conn.close
+    end
+
+    # return the given Queue object.
+    #
+    # name - the name of the Queue object to return
+    #
+    # If the Queue does not exist then it is created.
+    #
+    # Retruns a Queue object attached to this session
+    def use_queue( name )
+      rows = @conn.execute( "SELECT * FROM queues WHERE name = $1", name )
+      if rows.empty? then
+        rows = @conn.execute( "SELECT * FROM use_queue( $1 )", name )
+      end
+      return QueueClassic::Queue.new( self, rows.first['name'] )
+    end
+
+    # Return an array of all the Queue's in the system
+    #
+    def queues
+      @conn.execute( "SELECT * FROM queues" ).map { |row|
+        QueueClassic::Queue.new( @conn, row['name'] )
+      }
     end
 
     #######
