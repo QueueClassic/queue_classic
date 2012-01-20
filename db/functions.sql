@@ -1,31 +1,16 @@
 --
--- Create a new worker identifier with the given prefix
---
-CREATE OR REPLACE FUNCTION qc_worker( prefix text, separator text ) RETURNS text AS $$
-DECLARE
-  worker_id text;
-BEGIN
-  SELECT prefix || separator || current_date::text || separator || pg_backend_pid()::text INTO worker_id;
-  RETURN worker_id;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE OR REPLACE FUNCTION qc_worker() RETURNS text AS $$
-BEGIN
-  RETURN qc_worker( 'qc', '.' );
-END;
-$$ LANGUAGE plpgsql;
-
---
--- Create a new queue
+-- return the given queue row, creating it if it does not exist
 --
 -- Usage: SELECT * from create_queue('myqueue');
 --
-CREATE OR REPLACE FUNCTION create_queue( queue text ) RETURNS queues AS $$
+CREATE OR REPLACE FUNCTION use_queue( queue text ) RETURNS queues AS $$
 DECLARE
   new_row queues%ROWTYPE;
 BEGIN
-  INSERT INTO queues(name) VALUES (queue) RETURNING * INTO new_row;
+  SELECT * INTO new_row FROM queues WHERE name = queue;
+  IF NOT FOUND THEN
+    INSERT INTO queues(name) VALUES (queue) RETURNING * INTO new_row;
+  END IF;
   RETURN new_row;
 END;
 $$ LANGUAGE plpgsql;
