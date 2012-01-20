@@ -3,6 +3,7 @@ CREATE TABLE queues(
   id            serial UNIQUE PRIMARY KEY,
   name          text   UNIQUE
 );
+INSERT INTO queues(name) VALUES ('default');
 
 DROP TABLE IF EXISTS jobs CASCADE;
 CREATE TABLE jobs (
