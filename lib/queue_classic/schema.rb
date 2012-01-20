@@ -18,10 +18,14 @@ module QueueClassic
       @name = name
     end
 
+    # Return the SQL commands to create the tables.
+    #
     def tables_ddl
       IO.read( QueueClassic.db_path( "ddl.sql" ) )
     end
 
+    # Return the SQL commands to create the functions.
+    #
     def functions_ddl
       IO.read( QueueClassic.db_path( "functions.sql" ) )
     end
