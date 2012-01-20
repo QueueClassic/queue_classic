@@ -1,3 +1,4 @@
+require 'queue_classic'
 require 'queue_classic/connection'
 require 'queue_classic/schema'
 require 'queue_classic/queue'
@@ -11,6 +12,9 @@ module QueueClassic
   class Session
     include ::QueueClassic::Logable
 
+    # The Producer instances that are associated with the session.
+    attr_reader :producers
+
     # Connect to the given queue classic database
     #
     # database_url - url for connection, of the format postgres://user:password@host/database
@@ -18,9 +22,10 @@ module QueueClassic
     #
     # Returns a new Session object
     def initialize( database_url, schema_name = Schema.default_schema_name )
-      @db_url = database_url
-      @conn   = QueueClassic::Connection.new( database_url )
-      @schema = QueueClassic::Schema.new( schema_name )
+      @db_url     = database_url
+      @conn       = QueueClassic::Connection.new( database_url )
+      @schema     = QueueClassic::Schema.new( schema_name )
+      @producers  = []
       logger.info "connection uri = #{@db_url}"
       apply_connection_settings
     end
@@ -37,7 +42,7 @@ module QueueClassic
     #
     # If the Queue does not exist then it is created.
     #
-    # Retruns a Queue object attached to this session
+    # Returns a Queue object attached to this session
     def use_queue( name )
       rows = @conn.execute( "SELECT * FROM queues WHERE name = $1", name )
       if rows.empty? then
@@ -52,6 +57,18 @@ module QueueClassic
       @conn.execute( "SELECT * FROM queues" ).map { |row|
         QueueClassic::Queue.new( @conn, row['name'] )
       }
+    end
+
+    # Return an instance of a Producer that is connected to the connection of
+    # this session.
+    #
+    # name - the name of the queue this is a producer for.
+    #
+    # Returns an instance of Producer
+    def producer_for( qname )
+      prod = QueueClassic::Producer.new( self, qname )
+      @producers << prod
+      return prod
     end
 
     #######

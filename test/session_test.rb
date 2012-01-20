@@ -46,5 +46,9 @@ context 'SessionTest' do
     QueueClassic::Bootstrap.teardown( database_url, "qc" )
   end
 
-
+  test "session creates a producer for a queue" do
+    assert 1, @session.producers.size
+    p1 = @session.producer_for( 'foo' )
+    assert 2, @session.producers.size
+  end
 end
