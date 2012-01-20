@@ -7,9 +7,9 @@ module QueueClassic
     # the name of this queue
     attr_reader :name
 
-    def initialize( session, name )
-      @session = session
-      @name    = name
+    def initialize( connection, name )
+      @connection = connection
+      @name       = name
     end
   end
 end
