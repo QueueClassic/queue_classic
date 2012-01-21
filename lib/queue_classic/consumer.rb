@@ -33,6 +33,21 @@ module QueueClassic
       return Message.new( r.first )
     end
 
+    # Yield each message that is currently on the queue
+    #
+    # This will reserve a message, yield it and then automatically finalize it
+    # if there were no exceptions during the processing of it. If there were
+    # errors during hte processing of the message those will be propogated up
+    # the stack.
+    #
+    # Returns nothing
+    def each_message
+      while message = reserve() do
+        yield message
+        finalize( message, "automatically finalized" )
+      end
+    end
+
     # Finalize a message. This removes a message from theq queue and puts it
     # into the messages_history table.
     #

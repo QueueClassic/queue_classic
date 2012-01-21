@@ -58,6 +58,21 @@ context 'Consumer' do
     refute_equal @session.connection, @consumer.connection
   end
 
+  test "can iterate over all the existing messages in its queue, automatically finalizing them" do
+    10.times do |x|
+      @producer.put( "a message #{x}" )
+    end
+
+    count = 0
+    assert_equal 0, @consumer.queue.finalized_size
+    @consumer.each_message do |msg|
+      assert_match /a message \d+/, msg.payload
+      count += 1
+    end
+    assert_equal 10, count
+    assert_equal 10, @consumer.queue.finalized_size
+  end
+
   test "#reserve returns nil if there is no message" do
     msg = @consumer.reserve
     assert_nil msg
