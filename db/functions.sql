@@ -34,6 +34,45 @@ END;
 $$ LANGUAGE plpgsql;
 
 --
+-- Return the number of rows in the messages table for the given queue that are
+-- ready, which means that their reserved_at timestamp is null.
+--
+CREATE OR REPLACE FUNCTION queue_ready_size( queue text ) RETURNS integer AS $$
+DECLARE
+  q_size integer;
+BEGIN
+  SELECT count(j.id) INTO q_size
+    FROM messages j
+    JOIN queues q
+      ON q.id = j.queue_id
+   WHERE q.name = queue
+     AND reserved_at IS NULL
+  ;
+
+  RETURN q_size;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+-- Return the number of rows in the messages table for the given queue that are
+-- reserved, which means that their reserved_at timestamp is not null.
+--
+CREATE OR REPLACE FUNCTION queue_reserved_size( queue text ) RETURNS integer AS $$
+DECLARE
+  q_size integer;
+BEGIN
+  SELECT count(j.id) INTO q_size
+    FROM messages j
+    JOIN queues q
+      ON q.id = j.queue_id
+   WHERE q.name = queue
+     AND reserved_at IS NOT NULL
+  ;
+
+  RETURN q_size;
+END;
+$$ LANGUAGE plpgsql;
+
 --
 -- Generate a unique identifier from the input and the application_name sequence
 --

@@ -20,8 +20,23 @@ module QueueClassic
     #
     def size
       row = connection.execute(" SELECT queue_size($1)", @name )
-      return row.first['queue_size']
+      return row.first['queue_size'].to_i
     end
+
+    # Return how many items are in the queue that are ready
+    #
+    def ready_size
+      row = connection.execute( "SELECT queue_ready_size($1)", @name )
+      return row.first['queue_ready_size'].to_i
+    end
+
+    # Return how many items are in the queue that are reserved
+    #
+    def reserved_size
+      row = connection.execute( "SELECT queue_reserved_size($1)", @name )
+      return row.first['queue_reserved_size'].to_i
+    end
+
 
     #######
     private
