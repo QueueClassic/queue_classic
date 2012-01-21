@@ -77,7 +77,7 @@ module QueueClassic
     #
     # Returns the new application_name
     def application_name=( app_name )
-      execute("SET application_name TO #{app_name}")
+      execute("SET application_name TO '#{app_name}'")
       return application_name()
     end
 
@@ -88,6 +88,21 @@ module QueueClassic
     def schema_exist?( schema_name )
       result = execute("SELECT count(*)::int FROM pg_namespace where nspname = $1", schema_name )
       return (result[0]['count'].to_i >= 1)
+    end
+
+    # Generate a unique applicaiton name based upon the input stem
+    #
+    # Returns the application name
+    def generate_application_name( stem )
+      result = execute("SELECT application_id( $1 )", stem)
+      return result.first['application_id']
+    end
+
+    # Apply an unique application name to the current connection
+    #
+    def apply_application_name( stem )
+      app_name = generate_application_name( stem )
+      self.application_name = app_name
     end
 
     # Check and see if the table name given exists in the database in the given

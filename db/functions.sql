@@ -34,6 +34,20 @@ END;
 $$ LANGUAGE plpgsql;
 
 --
+--
+-- Generate a unique identifier from the input and the application_name sequence
+--
+CREATE OR REPLACE FUNCTION application_id( stem text ) RETURNS text AS $$
+DECLARE
+  app_id text;
+BEGIN
+  SELECT stem || '-' || nextval('application_id_seq') INTO app_id;
+  RETURN app_id;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--
 -- Create a new msg on the given queue, if the queue does not exist, create it.
 --
 CREATE OR REPLACE FUNCTION put( queue text, msg text ) RETURNS jobs AS $$

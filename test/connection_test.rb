@@ -61,4 +61,12 @@ context 'Connection' do
     @conn.application_name = 'foo'
     assert_equal 'foo', @conn.application_name
   end
+
+  test "connection can generate a unique applciation name" do
+    @conn.search_path = 'queue_classic'
+    app_name = @conn.apply_application_name( 'app-uid' )
+    row = @conn.execute("SHOW application_name")
+    assert_match /app-uid-(\d+)/, row.first['application_name']
+  end
+
 end

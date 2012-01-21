@@ -31,4 +31,10 @@ CREATE TABLE jobs_history (
   finalized_message text
 );
 
-
+CREATE SEQUENCE application_id_seq
+  INCREMENT BY 1
+  MINVALUE 1
+  NO MAXVALUE
+  NO CYCLE
+  OWNED BY jobs.reserved_app
+  ;
