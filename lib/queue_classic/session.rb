@@ -34,7 +34,7 @@ module QueueClassic
       @producers  = []
       @consumers  = []
       logger.info "connection uri = #{@db_url}"
-      apply_connection_settings
+      apply_connection_settings( @connection )
     end
 
     # Disconnect from QueueClassic
@@ -90,16 +90,26 @@ module QueueClassic
       return consumer
     end
 
+    # Clone the connection of this session
+    #
+    # This means we create a new connection based upon the settings of the
+    # connection in the session.
+    #
+    def clone_connection
+      conn = QueueClassic::Connection.new( @db_url )
+      apply_connection_settings( conn )
+      return conn
+    end
+
     #######
     private
     #######
 
     # Apply connection oriented settings.
     #
-    def apply_connection_settings
-      if @connection.schema_exist?( @schema.name ) then
-        @connection.search_path = "#{@schema.name},public"
-        #execute( "select * from cleanup_stale_jobs()" )
+    def apply_connection_settings( conn )
+      if conn.schema_exist?( @schema.name ) then
+        conn.search_path = "#{@schema.name},public"
       else
         raise QueueClassic::Error, "The Schema '#{@schema.name}' that you are attempting to connect to does not exist. Did you run QueueClassic::Bootstrap.setup( '#{@db_url}', '#{@schema.name}' )?"
       end

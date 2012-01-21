@@ -56,8 +56,14 @@ context 'Session' do
 
   test "session creates a consumer for a queue" do
     assert_equal 0, @session.consumers.size
-    p1 = @session.consumer_for( 'foo' )
+    c1 = @session.consumer_for( 'foo' )
     assert_equal 1, @session.consumers.size
+  end
+
+  test "session spawns a new connetion for each consumer" do
+    c1 = @session.consumer_for('foo')
+    c2 = @session.consumer_for('foo')
+    refute_equal c1.connection, c2.connection
   end
 
 end
