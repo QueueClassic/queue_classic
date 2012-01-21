@@ -6,6 +6,9 @@ module QueueClassic
     # The queue the producer is attached to
     attr_reader :queue
 
+    # The unique identifier of the producer as determined by the connection
+    attr_reader :producer_id
+
     # Create a new producer
     #
     # session    - the Session object this producer is attached
@@ -13,8 +16,9 @@ module QueueClassic
     #
     # Returns the new producer object
     def initialize( session, queue_name )
-      @session = session
-      @queue   = session.use_queue( queue_name )
+      @session     = session
+      @queue       = session.use_queue( queue_name )
+      @producer_id = connection.apply_application_name( 'producer' )
     end
 
     # Put a message onto the queue
