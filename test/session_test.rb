@@ -18,45 +18,45 @@ context 'Session' do
 
   test "returns a list of all the known queues" do
     queues = @session.queues
-    assert 1, queues.size
-    assert 'default', queues.first.name
+    assert_equal 1, queues.size
+    assert_equal 'default', queues.first.name
   end
 
   test "session can create a queue if it doesn't exist" do
     queues = @session.queues
-    assert 1, queues.size
+    assert_equal 1, queues.size
     q2 = @session.use_queue( 'foo' )
-    assert 'foo', q2.name
+    assert_equal 'foo', q2.name
 
     queues = @session.queues
-    assert 2, queues.size
+    assert_equal 2, queues.size
   end
 
   test "session does not create a new queue if one by that name already exists" do
-    assert 1, @session.queues.size
+    assert_equal 1, @session.queues.size
     q2 = @session.use_queue( 'bar' )
-    assert 2, @session.queues.size
+    assert_equal 2, @session.queues.size
     q3 = @session.use_queue( 'bar' )
-    assert 2, @session.queues.size
+    assert_equal 2, @session.queues.size
   end
 
   test "session can use an alternative schema" do
     QueueClassic::Bootstrap.setup( database_url, "qc" )
     session = QueueClassic::Session.new( database_url, "qc" )
-    assert 1, session.queues.size
+    assert_equal 1, session.queues.size
     QueueClassic::Bootstrap.teardown( database_url, "qc" )
   end
 
   test "session creates a producer for a queue" do
-    assert 1, @session.producers.size
+    assert_equal 0, @session.producers.size
     p1 = @session.producer_for( 'foo' )
-    assert 2, @session.producers.size
+    assert_equal 1, @session.producers.size
   end
 
   test "session creates a consumer for a queue" do
-    assert 1, @session.consumers.size
-    p1 = @session.producer_for( 'foo' )
-    assert 2, @session.consumers.size
+    assert_equal 0, @session.consumers.size
+    p1 = @session.consumer_for( 'foo' )
+    assert_equal 1, @session.consumers.size
   end
 
 end
