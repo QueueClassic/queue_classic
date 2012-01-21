@@ -16,25 +16,39 @@ END;
 $$ LANGUAGE plpgsql;
 
 --
--- Create a new job on the given queue
+-- Return the number of rows in the jobs table for the given queue.
 --
-CREATE OR REPLACE FUNCTION put( queue text, job_details text ) RETURNS jobs AS $$
+CREATE OR REPLACE FUNCTION queue_size( queue text ) RETURNS integer AS $$
+DECLARE
+  q_size integer;
+BEGIN
+  SELECT count(j.id) INTO q_size
+    FROM jobs j
+    JOIN queues q
+      ON q.id = j.queue_id
+   WHERE q.name = queue
+  ;
+
+  RETURN q_size;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+-- Create a new msg on the given queue, if the queue does not exist, create it.
+--
+CREATE OR REPLACE FUNCTION put( queue text, msg text ) RETURNS jobs AS $$
 DECLARE
   new_job   jobs%ROWTYPE;
-  qid       integer;
+  q_row     queues%ROWTYPE;
 BEGIN
-  SELECT id INTO qid FROM queues WHERE name = queue;
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Unable to fine queue "%"', queue;
-  END IF;
-
-  INSERT INTO jobs(queue_id, details) VALUES(qid, job_details) RETURNING * INTO new_job;
+  SELECT * INTO q_row FROM use_queue( queue );
+  INSERT INTO jobs(queue_id, payload) VALUES(q_row.id, msg) RETURNING * INTO new_job;
   RETURN new_job;
 END;
 $$ LANGUAGE plpgsql;
 
 --
--- pull a job off the queue
+-- reserve a job off the queue, this means updating a few fields
 --
 CREATE OR REPLACE FUNCTION reserve( queue text, top_boundary integer, worker_id text ) RETURNS jobs AS $$
 DECLARE
@@ -127,8 +141,8 @@ BEGIN
     RAISE EXCEPTION 'Unable to find job "%" in queue "%" that was reserved', job_id, queue;
   END IF;
 
-  INSERT INTO jobs_history(id    , queue_id, details              , ready_at              , reserved_at              , reserved_by              , finalized_message)
-       VALUES             (job_id, qid     , finalized_job.details, finalized_job.ready_at, finalized_job.reserved_at, finalized_job.reserved_by, message )
+  INSERT INTO jobs_history(id    , queue_id, payload              , ready_at              , reserved_at              , reserved_by              , finalized_message)
+       VALUES             (job_id, qid     , finalized_job.payload, finalized_job.ready_at, finalized_job.reserved_at, finalized_job.reserved_by, message )
     RETURNING *
          INTO historical_job;
   RETURN historical_job;

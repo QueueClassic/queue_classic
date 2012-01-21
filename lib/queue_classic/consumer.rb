@@ -10,8 +10,16 @@ module QueueClassic
     #
     # Returns the new Consumer object
     def initialize( session, queue_name )
-      @session = session
-      @queue   = session.use_queue( queue_name )
+      @session    = session
+      @queue      = session.use_queue( queue_name )
+    end
+
+    #######
+    private
+    #######
+
+    def connection
+      @session.connection
     end
   end
 end
