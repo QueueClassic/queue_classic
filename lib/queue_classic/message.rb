@@ -21,35 +21,49 @@ module QueueClassic
       @id ||= Integer(@data['id'])
     end
 
-    # What queue the job is/was on
-    def queue
-      @data['queue']
-    end
-
     # The payload the message carries
     def payload
       @data['payload']
     end
 
-    # What time the job was enqueued
+    # What time the message was put on the queue
     #
     def ready_at
       @ready_at ||= epoch_to_time( @data['ready_at'] )
     end
 
-    # What time the job was reserved
+    # What time the message was reserved
     def reserved_at
       @reserved_at ||= epoch_to_time( @data['reserved_at'] )
     end
 
-    # What worker reserved the job
+    # What worker reserved the message
     def reserved_by
       @data['reserved_by']
     end
 
-    # What is the ip of the worker for this job
+    # What is the ip of the worker for this message
     def reserved_ip
       @data['reserved_ip'] || '127.0.0.1'
+    end
+
+    # What time was this message finalized
+    def finalized_at
+      if finalized? then
+        return @finalized_at ||= epoch_to_time(@data['finzalized_at'])
+      end
+      nil
+    end
+
+    # What is the finalized note
+    def finalized_note
+      return @data['finalized_note'] if finalized?
+      return nil
+    end
+
+    # Is this message finalized.
+    def finalized?
+      @data.has_key?('finalized_at')
     end
 
     #######
