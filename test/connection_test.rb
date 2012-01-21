@@ -32,6 +32,12 @@ context 'Connection' do
     end
   end
 
+  test "raises an error on failure to connect" do
+    assert_raises PGError do
+      QueueClassic::Connection.new( "postgresql:///does-not-exist" )
+    end
+  end
+
   test "execute should accept parameters" do
     result = @conn.execute 'SELECT $2::int b, $1::int a, $1::int + $2::int c;', 123, '456'
     assert_equal [{"a"=>"123", "b"=>"456", "c"=>"579"}], result
