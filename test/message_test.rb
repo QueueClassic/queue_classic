@@ -8,7 +8,7 @@ context 'Message' do
       'ready_at'    => '1327123522.48697',
       'reserved_at' => '1327124925.83834',
       'reserved_by' => 'consumer-42',
-      'reserved_ip' => nil,
+      'reserved_ip' => '192.168.1.1'
     }
     @msg = QueueClassic::Message.new( @args )
   end
@@ -37,11 +37,13 @@ context 'Message' do
 
   test 'message can be not finalized' do
     refute @msg.finalized?
+    assert_nil @msg.finalized_at
   end
 
   test 'message can be finalized' do
     @args['finalized_at'] = '1327125012.33224'
     msg = QueueClassic::Message.new( @args )
+    assert_equal 2012, msg.finalized_at.year
     assert msg.finalized?
   end
 
@@ -53,6 +55,27 @@ context 'Message' do
     @args['reserved_at'] = nil
     msg = QueueClassic::Message.new( @args )
     assert msg.ready?
+  end
+
+  test 'reserved_ip is available' do
+    assert_equal '192.168.1.1', @msg.reserved_ip
+  end
+
+  test 'reserved_ip is localhost if the value is nil' do
+    @args['reserved_ip'] = nil
+    msg = QueueClassic::Message.new( @args )
+    assert_equal '127.0.0.1', msg.reserved_ip
+  end
+
+  test 'the finalized note can be nil' do
+    assert_nil @msg.finalized_note
+  end
+
+  test 'the finalized note can hava a value' do
+    @args['finalized_at'] = '1327125012.33224'
+    @args['finalized_note'] = 'I am done!'
+    msg = QueueClassic::Message.new( @args )
+    assert_equal 'I am done!', msg.finalized_note
   end
 
   test 'an exception is raised if a message is in an unknown state' do

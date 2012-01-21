@@ -50,7 +50,7 @@ module QueueClassic
     # What time was this message finalized
     def finalized_at
       if finalized? then
-        return @finalized_at ||= epoch_to_time(@data['finzalized_at'])
+        return @finalized_at ||= epoch_to_time(@data['finalized_at'])
       end
       nil
     end
