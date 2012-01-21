@@ -10,10 +10,11 @@ context 'Producer' do
     teardown_db
   end
 
-  test 'producer add an item to the queue' do
+  test 'producer can add an item to the queue' do
     p = @session.producer_for('foo')
     assert 0, p.queue.size
     p.put( "a message")
     assert 1, p.queue.size
   end
+
 end
