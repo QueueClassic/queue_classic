@@ -61,10 +61,41 @@ module QueueClassic
       return nil
     end
 
+    # What is the state of the current message. This will be either :ready,
+    # :reserved or :finalized
+    #
+    # Return :ready, :reserved, or :finalized
+    def state
+      if @data.has_key?('ready_at') then
+        if @data.has_key?('reserved_at') then
+          if @data.has_key?('finalized_at') then
+            return :finalized
+          else
+            return :reserved
+          end
+        else
+          return :ready
+        end
+      else
+        raise QueueClassic::Error, "Message in unknown state."
+      end
+    end
+
     # Is this message finalized.
     def finalized?
-      @data.has_key?('finalized_at')
+      state == :finalized
     end
+
+    # Is this message ready
+    def ready?
+      state == :ready
+    end
+
+    # is this message reserved
+    def reserved?
+      state == :reserved
+    end
+
 
     #######
     private

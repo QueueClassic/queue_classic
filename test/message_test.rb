@@ -45,4 +45,22 @@ context 'Message' do
     assert msg.finalized?
   end
 
+  test 'a mesasge can be reserved' do
+    assert @msg.reserved?
+  end
+
+  test 'a message can be ready' do
+    @args.delete('reserved_at')
+    msg = QueueClassic::Message.new( @args )
+    assert msg.ready?
+  end
+
+  test 'an exception is raised if a message is in an unknown state' do
+    assert_raises QueueClassic::Error do
+      @args.delete('reserved_at')
+      @args.delete('ready_at')
+      msg = QueueClassic::Message.new( @args )
+      msg.state
+    end
+  end
 end
