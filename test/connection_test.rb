@@ -125,4 +125,11 @@ context 'Connection' do
     end
     assert_equal 10, count
   end
+
+  test "raises an exception if the connection is used after it is closed" do
+    @conn.close
+    assert_raises QueueClassic::Connection::ClosedError do
+      @conn.notify( 'c1', 'foo' )
+    end
+  end
 end

@@ -10,6 +10,7 @@ module QueueClassic
   #
   class Connection
     include QueueClassic::Logable
+    class ClosedError < ::QueueClassic::Error; end
 
     # Create a new Connection object that connects to the given db_url
     #
@@ -29,8 +30,16 @@ module QueueClassic
     #
     # Returns nothing
     def close
-      @connection.finish
-      @connection = nil
+      if @connection then
+        @connection.finish
+        @connection = nil
+      end
+    end
+
+    # Is this connection live?
+    #
+    def connected?
+      @connection
     end
 
     # Execute the give sql with the substitution parameters
@@ -38,16 +47,15 @@ module QueueClassic
     # sql    - the sql statement to execute
     # params - the params to substitute into the statment
     #
-    # Returns true if there 
+    # Returns true if there
     def execute(sql, *params)
+      raise ClosedError, "This the connection to host #{db_host}, database #{db_name}." unless connected?
       logger.debug("executing #{sql.inspect}, #{params.inspect}")
-      begin
-        params = nil if params.empty?
-        result_to_array_of_hashes( @connection.exec(sql, params) )
-      rescue PGError => e
-        logger.error("execute exception=#{e.inspect}")
-        raise
-      end
+      params = nil if params.empty?
+      result_to_array_of_hashes( @connection.exec(sql, params) )
+    rescue PGError => e
+      logger.error("execute exception=#{e.inspect}")
+      raise
     end
 
     # Show what the search path is for the current connection
@@ -203,6 +211,13 @@ module QueueClassic
       QueueClassic::Notification.new( h[:relname], h[:be_pid], h[:extra] )
     end
 
+    def db_name
+      @db_params.path.gsub("/","")
+    end
+
+    def db_host
+      @db_params.host
+    end
 
     # Establish an actual connection to the Postgres database and return the
     # PGConn object
@@ -211,13 +226,13 @@ module QueueClassic
     def connect
       logger.info "establishing connection"
       conn = PGconn.connect(
-        @db_params.host,
+        db_host,
         @db_params.port || 5432,
         nil, #opts
-          '',  #tty
-          @db_params.path.gsub("/",""), #database name
-          @db_params.user,
-          @db_params.password
+        '',  #tty
+        db_name,
+        @db_params.user,
+        @db_params.password
       )
       if conn.status != PGconn::CONNECTION_OK
         logger.error("connection error=#{conn.error}")
