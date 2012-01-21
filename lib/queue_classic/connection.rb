@@ -1,3 +1,5 @@
+require 'queue_classic/notification'
+
 module QueueClassic
   #
   # Connection is the minimal amount of overhead to make a ::PGconn object
@@ -105,6 +107,74 @@ module QueueClassic
       self.application_name = app_name
     end
 
+    # Listen on the connection for notifications on the given channel
+    #
+    def listen( channel )
+      execute("LISTEN #{channel}")
+    end
+
+    # Stop listening on the given channel
+    #
+    def unlisten( channel )
+      execute("UNLISTEN #{channel}")
+    end
+
+    # Wait for a notification
+    #
+    def wait_for_notification( timeout )
+      notification = nil
+      @connection.wait_for_notify( timeout ) do |channel, pid, msg|
+        notification = QueueClassic::Notification.new( channel, pid, msg )
+      end
+      return notification
+    end
+
+    # Send a notification on the given channel
+    #
+    def notify(channel, message = nil )
+      sql ="NOTIFY #{channel}"
+      sql += ", '#{message}'" if message
+      execute( sql )
+    end
+
+    # Return an Array of all the notifications left in the connection. If there
+    # are no notifications left, an empty array is retured.
+    #
+    # should_wait - should a small wait be done to see if some notifications
+    #               show up before returning all the notifications?
+    #               (default: false)
+    #
+    # Return an Array of all the notifications, it may be empty.
+    def notifications( should_wait = false)
+      notifications = []
+      if should_wait then
+        n = wait_for_notification( 1 )
+        notifications << n if n
+      end
+
+      while n = @connection.notifies do
+        notifications << new_notification( n )
+      end
+      return notifications
+    end
+
+    # Yield each notification that is still in the connection
+    #
+    # should_wait - should a small wait be done first to see if
+    #               there are notifications that need to be collected by the pg
+    #               adapter? ( default: false )
+    #
+    def each_notification( should_wait = false, &block)
+      if should_wait then
+        n = wait_for_notification( 1 )
+        yield n
+      end
+
+      while n = @connection.notifies do
+        yield new_notification( n )
+      end
+    end
+
     # Check and see if the table name given exists in the database in the given
     # schema
     #
@@ -125,6 +195,14 @@ module QueueClassic
     #######
     private
     #######
+
+    # Create a new Notification from the hash that is returned from
+    # PGconn#notifies
+    #
+    def new_notification( h )
+      QueueClassic::Notification.new( h[:relname], h[:be_pid], h[:extra] )
+    end
+
 
     # Establish an actual connection to the Postgres database and return the
     # PGConn object

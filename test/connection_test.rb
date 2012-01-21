@@ -3,10 +3,12 @@ context 'Connection' do
   setup do
     setup_db
     @conn = QueueClassic::Connection.new( database_url )
+    @recv = QueueClassic::Connection.new( database_url )
   end
 
   teardown do
     @conn.close
+    @recv.close
     teardown_db
   end
 
@@ -75,4 +77,52 @@ context 'Connection' do
     assert_match /app-uid-(\d+)/, row.first['application_name']
   end
 
+  test "can send a notification on one connection and receive it on another" do
+    @recv.listen( 'boom' )
+    @conn.notify( 'boom', 'pay attention')
+    n = @recv.wait_for_notification(1)
+    assert_equal 'boom', n.channel
+    assert_equal 'pay attention', n.message
+    @recv.unlisten( 'boom' )
+  end
+
+  test "can listen on more than one channel" do
+    @recv.listen( 'c1' )
+    @recv.listen( 'c2' )
+
+    @conn.notify( 'c1', "c1 message" )
+    @conn.notify( 'c2', "c2 message" )
+
+    n1 = @recv.wait_for_notification(1)
+    assert_equal 'c1', n1.channel
+    assert_equal 'c1 message', n1.message
+
+    n2 = @recv.wait_for_notification(1)
+    assert_equal 'c2', n2.channel
+    assert_equal 'c2 message', n2.message
+  end
+
+  test "it can return all pending notifications from the channel" do
+    @recv.listen( 'c1' )
+
+    10.times do |x|
+      @conn.notify( 'c1', "msg #{x}")
+    end
+    c = @recv.notifications( true )
+    assert_equal 10, c.size
+  end
+
+  test "it can iterate over all the notifcations in the channel" do
+    @recv.listen( 'c1' )
+    10.times do |x|
+      @conn.notify( 'c1', "msg #{x}" )
+    end
+
+    count = 0
+    @recv.each_notification(true) do |n|
+      assert_equal 'c1', n.channel
+      count += 1
+    end
+    assert_equal 10, count
+  end
 end
