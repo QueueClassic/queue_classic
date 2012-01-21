@@ -122,7 +122,7 @@ $$ LANGUAGE plpgsql;
 --
 -- reserve a message off the queue, this means updating a few fields
 --
-CREATE OR REPLACE FUNCTION reserve( qname text ) RETURNS messages AS $$
+CREATE OR REPLACE FUNCTION reserve( qname text ) RETURNS SETOF messages AS $$
 DECLARE
   reserved_message_id integer;
   relative_top        integer;
@@ -160,17 +160,19 @@ BEGIN
     END;
   END LOOP;
 
-  -- update the reserved row
-      UPDATE messages
-         SET reserved_at = (CURRENT_TIMESTAMP)
-            ,reserved_by = current_setting('application_name')
-            ,reserved_ip = COALESCE(inet_client_addr(), '127.0.0.1'::inet)
-       WHERE id = reserved_message_id
-   RETURNING *
-        INTO reserved_message;
+  IF FOUND THEN
+    -- update the reserved row
+        UPDATE messages
+           SET reserved_at = (CURRENT_TIMESTAMP)
+              ,reserved_by = current_setting('application_name')
+              ,reserved_ip = COALESCE(inet_client_addr(), '127.0.0.1'::inet)
+         WHERE id = reserved_message_id
+     RETURNING *
+          INTO reserved_message;
+    RETURN next reserved_message;
+  END IF;
+  RETURN;
 
-
-  RETURN reserved_message;
 END;
 $$ LANGUAGE plpgsql;
 

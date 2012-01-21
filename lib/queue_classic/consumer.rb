@@ -25,6 +25,7 @@ module QueueClassic
     #
     def reserve
       r = connection.execute("SELECT * FROM reserve($1)", @queue.name)
+      return nil if r.empty?
       return Message.new( r.first )
     end
 

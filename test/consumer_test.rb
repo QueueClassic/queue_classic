@@ -53,4 +53,9 @@ context 'Consumer' do
     end
   end
 
+  test "#reserve returns nil if there is no message" do
+    msg = @consumer.reserve
+    assert_nil msg
+  end
+
 end
