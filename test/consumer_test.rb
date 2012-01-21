@@ -18,7 +18,7 @@ context 'Consumer' do
 
   test 'consumer can reserve an item on the queue' do
     assert_equal 0, @producer.queue.size
-    @producer.put( "a message")
+    msg = @producer.put( "a message")
     assert_equal 1, @consumer.queue.size
     assert_equal 0, @consumer.queue.reserved_size
     assert_equal 1, @consumer.queue.ready_size
@@ -43,6 +43,14 @@ context 'Consumer' do
     assert_equal 0, @consumer.queue.ready_size
     assert_equal 0, @consumer.queue.reserved_size
     assert_equal 1, @consumer.queue.finalized_size
-
   end
+
+  test "an error is raised if an attempt is made to finalize a non-reserved message" do
+    assert_equal 0, @producer.queue.size
+    msg = @producer.put( "a message")
+    assert_raises PGError do
+      @consumer.finalize( msg, 'this should not happen' )
+    end
+  end
+
 end
