@@ -115,6 +115,7 @@ DECLARE
 BEGIN
   SELECT * INTO q_row FROM use_queue( queue );
   INSERT INTO messages(queue_id, payload) VALUES(q_row.id, message) RETURNING * INTO new_message;
+  PERFORM pg_notify( queue, new_message.id::text );
   RETURN new_message;
 END;
 $$ LANGUAGE plpgsql;

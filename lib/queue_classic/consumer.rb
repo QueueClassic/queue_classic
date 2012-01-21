@@ -23,11 +23,19 @@ module QueueClassic
       @queue       = session.use_queue( queue_name )
       @connection  = session.clone_connection
       @consumer_id = connection.apply_application_name( 'consumer' )
+      connection.listen( queue_name )
     end
 
     # Reserve an from the queue. This gets an item from the queue and returns it
     #
-    def reserve
+    # wait     - should we block until a message appears (default: :no_wait)
+    #            set to :wait if you want to wait for a bit
+    # how_long - how many seconds (fractional allowed) to wait if wait is :wait
+    #
+    def reserve( wait = :no_wait, how_long = 1 )
+      if wait == :wait then
+        n = connection.wait_for_notification( how_long )
+      end
       r = connection.execute("SELECT * FROM reserve($1)", @queue.name)
       return nil if r.empty?
       return Message.new( r.first )
@@ -59,7 +67,8 @@ module QueueClassic
     # Close the consumer, unhooking its connection
     #
     def close
-      @connection.close
+      connection.unlisten( @queue.name )
+      connection.close
     end
 
     # Wait for an item to be on the queue, and then return it

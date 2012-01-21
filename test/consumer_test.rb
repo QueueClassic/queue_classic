@@ -78,13 +78,21 @@ context 'Consumer' do
     assert_nil msg
   end
 
-  test "#reserve blocks until there is a message" do
+  test "#reserve returns nil if there is no message after the waiting period" do
+    msg = @consumer.reserve( :wait, 0.1 )
+    assert_nil msg
+  end
+
+  test "#reserve can block until there is a message" do
     t = Thread.new do
-      msg = @consumer.reserve
+      msg = @consumer.reserve( :wait, 1 )
       Thread.current[:msg] = msg
-      @consumer.finalize( msg )
+      @consumer.finalize( msg, 'finalized' )
     end
 
     pmsg = @producer.put("a message")
+    t.join
+    assert_equal 1, @producer.queue.finalized_size
+    assert_equal pmsg.payload, t[:msg].payload
   end
 end
