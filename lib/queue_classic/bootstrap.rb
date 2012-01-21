@@ -46,6 +46,12 @@ module QueueClassic
       @schema      = QueueClassic::Schema.new( @schema_name )
     end
 
+    # Close the bootstrap connection
+    #
+    def close
+      @conn.close
+    end
+
     # See if the given String is a schema in the database
     #
     # name - the schema to check

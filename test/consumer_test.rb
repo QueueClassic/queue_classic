@@ -9,6 +9,7 @@ context 'Consumer' do
   end
 
   teardown do
+    @session.close
     teardown_db
   end
 
@@ -18,7 +19,7 @@ context 'Consumer' do
 
   test 'consumer can reserve an item on the queue' do
     assert_equal 0, @producer.queue.size
-    msg = @producer.put( "a message")
+    msg = @producer.put( "a message" )
     assert_equal 1, @consumer.queue.size
     assert_equal 0, @consumer.queue.reserved_size
     assert_equal 1, @consumer.queue.ready_size
@@ -53,9 +54,22 @@ context 'Consumer' do
     end
   end
 
+  test "A consumer has a different database connection than the session" do
+    refute_equal @session.connection, @consumer.connection
+  end
+
   test "#reserve returns nil if there is no message" do
     msg = @consumer.reserve
     assert_nil msg
   end
 
+  test "#reserve blocks until there is a message" do
+    t = Thread.new do
+      msg = @consumer.reserve
+      Thread.current[:msg] = msg
+      @consumer.finalize( msg )
+    end
+
+    pmsg = @producer.put("a message")
+  end
 end

@@ -10,6 +10,7 @@ context 'Bootstrap' do
     if @boot.schema_exist?( 'qc' ) then
       @boot.teardown
     end
+    @boot.close
   end
 
   test "can setup the tables and functions into a schema" do

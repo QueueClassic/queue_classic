@@ -41,6 +41,9 @@ module QueueClassic
     #
     def close
       @connection.close
+      @consumers.each do |c|
+        c.close
+      end
     end
 
     # return the given Queue object.

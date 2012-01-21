@@ -7,6 +7,7 @@ context 'Session' do
   end
 
   teardown do
+    @session.close
     teardown_db
   end
 
@@ -66,4 +67,14 @@ context 'Session' do
     refute_equal c1.connection, c2.connection
   end
 
+  test "closing a session closes all consumer connections" do
+    c1 = @session.consumer_for('foo')
+    c2 = @session.consumer_for('foo')
+    @session.close
+    refute c1.connection.connected?
+    refute c2.connection.connected?
+    assert_raises QueueClassic::Connection::ClosedError do
+      c1.connection.execute("SELECT count(*) FROM messages")
+    end
+  end
 end

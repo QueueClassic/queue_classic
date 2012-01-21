@@ -9,6 +9,9 @@ module QueueClassic
     # The unique identifier of the consumer as determined by the connection
     attr_reader :consumer_id
 
+    # The connection for this Consumer
+    attr_reader :connection
+
     # Create a new consumer
     #
     # session    - the Session object this Consumer is attached
@@ -16,8 +19,9 @@ module QueueClassic
     #
     # Returns the new Consumer object
     def initialize( session, queue_name )
-      @session    = session
-      @queue      = session.use_queue( queue_name )
+      @session     = session
+      @queue       = session.use_queue( queue_name )
+      @connection  = session.clone_connection
       @consumer_id = connection.apply_application_name( 'consumer' )
     end
 
@@ -37,12 +41,21 @@ module QueueClassic
       return Message.new( r.first )
     end
 
-    #######
-    private
-    #######
-
-    def connection
-      @session.connection
+    # Close the consumer, unhooking its connection
+    #
+    def close
+      @connection.close
     end
+
+    # Wait for an item to be on the queue, and then return it
+    #
+    # def wait_for_reserve
+      # return msg if msg = reserve()
+      # connection.listen( @queue.name )
+      # return m if m
+      # return
+      # loop do
+      # end
+    # end
   end
 end

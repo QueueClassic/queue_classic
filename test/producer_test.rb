@@ -8,6 +8,7 @@ context 'Producer' do
   end
 
   teardown do
+    @session.close
     teardown_db
   end
 
