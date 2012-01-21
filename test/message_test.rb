@@ -50,15 +50,15 @@ context 'Message' do
   end
 
   test 'a message can be ready' do
-    @args.delete('reserved_at')
+    @args['reserved_at'] = nil
     msg = QueueClassic::Message.new( @args )
     assert msg.ready?
   end
 
   test 'an exception is raised if a message is in an unknown state' do
     assert_raises QueueClassic::Error do
-      @args.delete('reserved_at')
-      @args.delete('ready_at')
+      @args['reserved_at'] = nil
+      @args['ready_at'] = nil
       msg = QueueClassic::Message.new( @args )
       msg.state
     end

@@ -66,9 +66,9 @@ module QueueClassic
     #
     # Return :ready, :reserved, or :finalized
     def state
-      if @data.has_key?('ready_at') then
-        if @data.has_key?('reserved_at') then
-          if @data.has_key?('finalized_at') then
+      if @data['ready_at'] then
+        if @data['reserved_at'] then
+          if @data['finalized_at'] then
             return :finalized
           else
             return :reserved
@@ -101,6 +101,7 @@ module QueueClassic
     private
 
     def epoch_to_time( t )
+      return nil if t.nil?
       sec, usec = t.split(".")
       return Time.at( sec.to_i, usec.to_i )
     end
