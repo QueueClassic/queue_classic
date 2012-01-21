@@ -67,19 +67,10 @@ module QueueClassic
     # Close the consumer, unhooking its connection
     #
     def close
-      connection.unlisten( @queue.name )
-      connection.close
+      if connection.connected? then
+        connection.unlisten( @queue.name )
+        connection.close
+      end
     end
-
-    # Wait for an item to be on the queue, and then return it
-    #
-    # def wait_for_reserve
-      # return msg if msg = reserve()
-      # connection.listen( @queue.name )
-      # return m if m
-      # return
-      # loop do
-      # end
-    # end
   end
 end

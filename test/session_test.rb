@@ -7,8 +7,8 @@ context 'Session' do
   end
 
   teardown do
-    @session.close
     teardown_db
+    @session.close
   end
 
   test "session raises an error if the schema does not exist" do
@@ -70,6 +70,7 @@ context 'Session' do
   test "closing a session closes all consumer connections" do
     c1 = @session.consumer_for('foo')
     c2 = @session.consumer_for('foo')
+
     @session.close
     refute c1.connection.connected?
     refute c2.connection.connected?

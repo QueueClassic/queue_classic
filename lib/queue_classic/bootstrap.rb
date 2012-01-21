@@ -30,7 +30,7 @@ module QueueClassic
       if bs.schema_exist?( schema ) then
         bs.teardown
       end
-      return nil
+      return bs
     end
 
     # Create a new Boostrap object.

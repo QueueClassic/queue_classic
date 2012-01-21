@@ -31,6 +31,7 @@ module QueueClassic
     # Returns nothing
     def close
       if @connection then
+        notifications # drain notifications
         @connection.finish
         @connection = nil
       end
@@ -49,7 +50,7 @@ module QueueClassic
     #
     # Returns true if there
     def execute(sql, *params)
-      raise ClosedError, "This the connection to host #{db_host}, database #{db_name}." unless connected?
+      raise ClosedError, "This connection to host '#{db_host}', database '#{db_name}' is closed." unless connected?
       logger.debug("executing #{sql.inspect}, #{params.inspect}")
       params = nil if params.empty?
       result_to_array_of_hashes( @connection.exec(sql, params) )
