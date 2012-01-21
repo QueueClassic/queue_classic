@@ -42,4 +42,23 @@ context 'Connection' do
     refute @conn.schema_exist?( "doesnotexist" )
   end
 
+  test "connection knows its search path" do
+    assert_equal '"$user",public', @conn.search_path
+  end
+
+  test "connection can set its search_path" do
+    assert_equal '"$user",public', @conn.search_path
+    @conn.search_path = "queue_classic"
+    assert_equal "queue_classic", @conn.search_path
+  end
+
+  test "conneciton knows its application name" do
+    assert_equal '', @conn.application_name
+  end
+
+  test 'connection can set its application name' do
+    assert_equal '', @conn.application_name
+    @conn.application_name = 'foo'
+    assert_equal 'foo', @conn.application_name
+  end
 end

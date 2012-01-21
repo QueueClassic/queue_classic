@@ -48,6 +48,39 @@ module QueueClassic
       end
     end
 
+    # Show what the search path is for the current connection
+    #
+    def search_path
+      execute("SHOW search_path").first['search_path']
+    end
+
+    # Set the search path to the given value
+    #
+    # path - the string to set the search_path to.
+    #
+    # Returns the new search_path
+    def search_path=( path )
+      execute("SET search_path TO #{path}")
+      return search_path()
+    end
+
+    # Show what the application name is of the current connection
+    #
+    # Return the string application name
+    def application_name
+      execute("SHOW application_name").first['application_name']
+    end
+
+    # Set the application name to the given value
+    #
+    # name - the string to set the application_name to.
+    #
+    # Returns the new application_name
+    def application_name=( app_name )
+      execute("SET application_name TO #{app_name}")
+      return application_name()
+    end
+
     # Check and see if the schema name give on initialization exists in the
     # database.
     #
