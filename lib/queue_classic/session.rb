@@ -98,7 +98,7 @@ module QueueClassic
     #
     def apply_connection_settings
       if @connection.schema_exist?( @schema.name ) then
-        @connection.execute( "SET search_path TO #{@schema.name},public" )
+        @connection.search_path = "#{@schema.name},public"
         #execute( "select * from cleanup_stale_jobs()" )
       else
         raise QueueClassic::Error, "The Schema '#{@schema.name}' that you are attempting to connect to does not exist. Did you run QueueClassic::Bootstrap.setup( '#{@db_url}', '#{@schema.name}' )?"

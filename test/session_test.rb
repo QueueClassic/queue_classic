@@ -44,6 +44,7 @@ context 'Session' do
     QueueClassic::Bootstrap.setup( database_url, "qc" )
     session = QueueClassic::Session.new( database_url, "qc" )
     assert_equal 1, session.queues.size
+    assert_equal 'qc, public', session.connection.search_path
     QueueClassic::Bootstrap.teardown( database_url, "qc" )
   end
 
