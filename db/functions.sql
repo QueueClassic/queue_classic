@@ -74,6 +74,25 @@ END;
 $$ LANGUAGE plpgsql;
 
 --
+-- Return the number of rows in the messages_history table for the given queue
+--
+CREATE OR REPLACE FUNCTION queue_finalized_size( queue text ) RETURNS integer AS $$
+DECLARE
+  q_size integer;
+BEGIN
+  SELECT count(j.id) INTO q_size
+    FROM messages_history j
+    JOIN queues q
+      ON q.id = j.queue_id
+   WHERE q.name = queue
+  ;
+
+  RETURN q_size;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--
 -- Generate a unique identifier from the input and the application_name sequence
 --
 CREATE OR REPLACE FUNCTION application_id( stem text ) RETURNS text AS $$
@@ -145,6 +164,7 @@ BEGIN
       UPDATE messages
          SET reserved_at = (CURRENT_TIMESTAMP)
             ,reserved_by = current_setting('application_name')
+            ,reserved_ip = COALESCE(inet_client_addr(), '127.0.0.1'::inet)
        WHERE id = reserved_message_id
    RETURNING *
         INTO reserved_message;
@@ -157,29 +177,37 @@ $$ LANGUAGE plpgsql;
 --
 -- finalize a message, this involves removing it from the message queue and inserting it into the message_history table
 --
-CREATE OR REPLACE FUNCTION finalize( queue text, message_id bigint, message text ) RETURNS messages_history AS $$
+CREATE OR REPLACE FUNCTION finalize( qname text, message_id bigint, note text ) RETURNS messages_history AS $$
 DECLARE
-  qid             integer;
   finalized_message   RECORD;
   historical_message  messages_history%ROWTYPE;
 BEGIN
-  -- Get the queue id
-  SELECT id INTO qid FROM queues WHERE name = queue;
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Unable to fine queue "%"', queue;
-  END IF;
-
   DELETE FROM messages
         WHERE id = message_id
           AND reserved_at IS NOT NULL
     RETURNING * INTO finalized_message;
 
   IF NOT FOUND THEN
-    RAISE EXCEPTION 'Unable to find message "%" in queue "%" that was reserved', message_id, queue;
+    RAISE EXCEPTION 'Unable to find message "%" in queue "%" that was reserved', message_id, qname;
   END IF;
 
-  INSERT INTO messages_history(id    , queue_id, payload              , ready_at              , reserved_at              , reserved_by              , finalized_message)
-       VALUES             (message_id, qid     , finalized_message.payload, finalized_message.ready_at, finalized_message.reserved_at, finalized_message.reserved_by, message )
+  INSERT INTO messages_history(
+                id
+               ,queue_id
+               ,payload
+               ,ready_at
+               ,reserved_at
+               ,reserved_by
+               ,reserved_ip
+               ,finalized_note)
+       VALUES (message_id
+              ,finalized_message.queue_id
+              ,finalized_message.payload
+              ,finalized_message.ready_at
+              ,finalized_message.reserved_at
+              ,finalized_message.reserved_by
+              ,finalized_message.reserved_ip
+              ,note )
     RETURNING *
          INTO historical_message;
   RETURN historical_message;

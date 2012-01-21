@@ -18,16 +18,20 @@ CREATE TABLE messages (
 
 DROP TABLE IF EXISTS messages_history CASCADE;
 CREATE TABLE messages_history (
-  id                bigint    UNIQUE PRIMARY KEY,
-  queue_id          integer   REFERENCES queues(id),
-  details           text      NOT NULL,
-  ready_at          timestamp NOT NULL,
-  reserved_at       timestamp NOT NULL,
-  reserved_by       text      NOT NULL,
-  reserved_ip       inet      NOT NULL,
-  finalized_at      timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  finalized_message text
+  id              bigint    UNIQUE PRIMARY KEY,
+  queue_id        integer   REFERENCES queues(id),
+  payload         text      NOT NULL,
+  ready_at        timestamp NOT NULL,
+  reserved_at     timestamp NOT NULL,
+  reserved_by     text      NOT NULL,
+  reserved_ip     inet      NOT NULL,
+  finalized_at    timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  finalized_note  text
 );
+-- CREATE INDEX messages_history_ready_at_idx     ON messages_history(ready_at);
+-- CREATE INDEX messages_history_reserved_at_idx  ON messages_history(reserved_at);
+-- CREATE INDEX messages_history_reserved_ip_idx  ON messages_history(reserved_ip);
+-- CREATE INDEX messages_history_finalized_at_idx ON messages_history(finalized_at);
 
 CREATE SEQUENCE application_id_seq
   INCREMENT BY 1

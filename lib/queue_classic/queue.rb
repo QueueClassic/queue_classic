@@ -37,6 +37,12 @@ module QueueClassic
       return row.first['queue_reserved_size'].to_i
     end
 
+    # Return how many items are from this queue
+    #
+    def finalized_size
+      row = connection.execute( "SELECT queue_finalized_size($1)", @name )
+      return row.first['queue_finalized_size'].to_i
+    end
 
     #######
     private

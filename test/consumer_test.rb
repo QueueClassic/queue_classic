@@ -27,11 +27,22 @@ context 'Consumer' do
     assert_equal 0, @consumer.queue.ready_size
     assert_equal 1, @consumer.queue.reserved_size
 
+    assert_equal @consumer.consumer_id, item.reserved_by
   end
-  test 'producer can add an item to the queue' do
-    p = @session.producer_for('foo')
-    assert_equal 0, p.queue.size
-    p.put( "a message")
-    assert_equal 1, p.queue.size
+
+  test 'consumer can finalize an item on the queue' do
+    @producer.put( "a message")
+    msg = @consumer.reserve
+
+    assert_equal 0, @consumer.queue.ready_size
+    assert_equal 1, @consumer.queue.reserved_size
+
+    finalized_msg = @consumer.finalize( msg, "all is well" )
+    assert finalized_msg.finalized?
+    assert_equal 'all is well', finalized_msg.finalized_note
+    assert_equal 0, @consumer.queue.ready_size
+    assert_equal 0, @consumer.queue.reserved_size
+    assert_equal 1, @consumer.queue.finalized_size
+
   end
 end

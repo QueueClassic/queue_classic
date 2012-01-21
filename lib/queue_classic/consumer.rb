@@ -21,6 +21,21 @@ module QueueClassic
       @consumer_id = connection.apply_application_name( 'consumer' )
     end
 
+    # Reserve an from the queue. This gets an item from the queue and returns it
+    #
+    def reserve
+      r = connection.execute("SELECT * FROM reserve($1)", @queue.name)
+      return Message.new( r.first )
+    end
+
+    # Finalize a message. This removes a message from theq queue and puts it
+    # into the messages_history table.
+    #
+    def finalize( msg, note )
+      r = connection.execute( "SELECT * FROM finalize($1, $2, $3)", @queue.name, msg.id, note)
+      return Message.new( r.first )
+    end
+
     #######
     private
     #######
