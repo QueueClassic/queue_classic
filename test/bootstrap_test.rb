@@ -21,7 +21,7 @@ context 'Bootstrap' do
     refute @boot.schema_exist?( 'qc' )
     @boot.setup
     assert @boot.schema_exist?( 'qc' )
-    assert @boot.table_exist?( 'qc', 'jobs' )
+    assert @boot.table_exist?( 'qc', 'messages' )
     @boot.teardown
     refute @boot.schema_exist?( 'qc' )
   end

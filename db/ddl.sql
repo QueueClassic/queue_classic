@@ -5,28 +5,26 @@ CREATE TABLE queues(
 );
 INSERT INTO queues(name) VALUES ('default');
 
-DROP TABLE IF EXISTS jobs CASCADE;
-CREATE TABLE jobs (
+DROP TABLE IF EXISTS messages CASCADE;
+CREATE TABLE messages (
   id              bigserial UNIQUE PRIMARY KEY,
   queue_id        integer   REFERENCES queues(id),
   payload         text      NOT NULL,
   ready_at        timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   reserved_at     timestamp,
-  reserved_app    text, -- application_name
-  reserved_ip     inet, -- inet_client_addr()
-  reserved_port   int   -- inet_client_port()
+  reserved_by     text, -- application_name
+  reserved_ip     inet  -- inet_client_addr()
 );
 
-DROP TABLE IF EXISTS jobs_history CASCADE;
-CREATE TABLE jobs_history (
+DROP TABLE IF EXISTS messages_history CASCADE;
+CREATE TABLE messages_history (
   id                bigint    UNIQUE PRIMARY KEY,
   queue_id          integer   REFERENCES queues(id),
   details           text      NOT NULL,
   ready_at          timestamp NOT NULL,
   reserved_at       timestamp NOT NULL,
-  reserved_app      text      NOT NULL,
+  reserved_by       text      NOT NULL,
   reserved_ip       inet      NOT NULL,
-  reserved_port     int       NOT NULL,
   finalized_at      timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   finalized_message text
 );
@@ -36,5 +34,5 @@ CREATE SEQUENCE application_id_seq
   MINVALUE 1
   NO MAXVALUE
   NO CYCLE
-  OWNED BY jobs.reserved_app
+  OWNED BY messages.reserved_by
   ;
