@@ -25,7 +25,7 @@ module QueueClassic
     # Returns the id
     def put( obj )
       result = connection.execute( "SELECT * from put( $1, $2)", @queue.name, obj.to_s )
-      return result.first['id'].to_i
+      return Message.new( result.first )
     end
 
     #######
