@@ -166,22 +166,22 @@ $$ LANGUAGE plpgsql;
 --
 -- reserve a message off the queue, this means updating a few fields
 --
-CREATE OR REPLACE FUNCTION reserve( qname text ) RETURNS SETOF messages AS $$
+CREATE OR REPLACE FUNCTION reserve( qname text ) RETURNS SETOF messages ROWS 1 AS $$
 DECLARE
   reserved_message_id integer;
   relative_top        integer;
   message_count       integer;
-  top_boundary        integer;
+  consumer_count      integer;
   queue               queues%ROWTYPE;
   reserved_message    messages%ROWTYPE;
 BEGIN
   -- Get the queue id
-  queue         = use_queue( qname );
-  top_boundary  = consumer_count( qname );
-  message_count = queue_ready_size( qname );
+  queue          = use_queue( qname );
+  consumer_count = consumer_count( qname );
+  message_count  = queue_ready_size( qname );
 
-  SELECT TRUNC( random() * top_boundary + 1 ) INTO relative_top;
-  IF message_count < top_boundary THEN
+  SELECT TRUNC( random() * consumer_count + 1 ) INTO relative_top;
+  IF (consumer_count = 0) OR (message_count <= consumer_count) THEN
     relative_top = 0;
   END IF;
 
@@ -226,7 +226,7 @@ $$ LANGUAGE plpgsql;
 --
 -- finalize a message, this involves removing it from the message queue and inserting it into the message_history table
 --
-CREATE OR REPLACE FUNCTION finalize( qname text, message_id bigint, note text ) RETURNS SETOF messages_history AS $$
+CREATE OR REPLACE FUNCTION finalize( qname text, message_id bigint, note text ) RETURNS SETOF messages_history ROWS 1 AS $$
 DECLARE
   historical_message  messages_history%ROWTYPE;
   queue               queues%ROWTYPE;
