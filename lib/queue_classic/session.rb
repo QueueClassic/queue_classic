@@ -114,6 +114,7 @@ module QueueClassic
       if conn.schema_exist?( @schema.name ) then
         conn.search_path = "#{@schema.name},public"
         conn.execute( "SELECT * FROM update_participant_counts()" )
+        conn.execute( "SELECT * FROM reset_orphaned_messages()" )
       else
         raise QueueClassic::Error, "The Schema '#{@schema.name}' that you are attempting to connect to does not exist. Did you run QueueClassic::Bootstrap.setup( '#{@db_url}', '#{@schema.name}' )?"
       end

@@ -250,6 +250,41 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+
+--
+-- reset_orphan_messages, this will take those messages that are currently
+-- reserved, but whose app is no longer listed and reset their reserved_* fields
+-- so the message is ready again for processing
+--
+CREATE OR REPLACE FUNCTION reset_orphaned_messages() RETURNS SETOF messages AS $$
+DECLARE
+  found_msg   messages%ROWTYPE;
+  updated_msg messages%ROWTYPE;
+BEGIN
+  FOR found_msg IN SELECT * FROM messages WHERE reserved_at IS NOT NULL
+  LOOP
+     PERFORM application_name
+        FROM pg_stat_activity
+       WHERE application_name = found_msg.reserved_by;
+
+    IF NOT FOUND THEN
+          UPDATE messages
+             SET reserved_at = NULL
+                ,reserved_by = NULL
+                ,reserved_ip = NULL
+                ,ready_at    = (CURRENT_TIMESTAMP)
+           WHERE id = found_msg.id
+       RETURNING * INTO updated_msg;
+
+      RETURN NEXT updated_msg;
+      PERFORM adjust_stat( updated_msg.queue_id, 'ready_count'   , 1  );
+      PERFORM adjust_stat( updated_msg.queue_id, 'reserved_count', -1 );
+    END IF;
+  END LOOP;
+  RETURN;
+END;
+$$ LANGUAGE plpgsql;
+
 --
 -- finalize a message, this involves removing it from the message queue and inserting it into the message_history table
 --

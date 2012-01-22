@@ -78,4 +78,21 @@ context 'Session' do
       c1.connection.execute("SELECT count(*) FROM messages")
     end
   end
+
+  test "orphaned messages are requeued on next session connection if their consumer has died" do
+    p1 = @session.producer_for('foo')
+    p1.put( 'reset me' )
+    c1 = @session.consumer_for('foo')
+    msg = c1.reserve
+    assert_equal 0, p1.queue.ready_count
+    assert_equal 1, p1.queue.reserved_count
+
+    # force a disconnect
+    @session.close
+
+    sess = QueueClassic::Session.new( database_url )
+    c1 = sess.consumer_for('foo')
+    assert_equal 1, c1.queue.ready_count
+    assert_equal 0, c1.queue.reserved_count
+  end
 end
