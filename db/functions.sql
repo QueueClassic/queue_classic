@@ -10,23 +10,47 @@ BEGIN
   SELECT * INTO new_row FROM queues WHERE name = queue;
   IF NOT FOUND THEN
     INSERT INTO queues(name) VALUES (queue) RETURNING * INTO new_row;
+    INSERT INTO stats(queue_id, name) VALUES (new_row.id, 'ready_count');
+    INSERT INTO stats(queue_id, name) VALUES (new_row.id, 'reserved_count');
+    INSERT INTO stats(queue_id, name) VALUES (new_row.id, 'finalized_count');
   END IF;
   RETURN new_row;
+END;
+$$ LANGUAGE plpgsql;
+SELECT * FROM use_queue('default');
+
+--
+-- Increment or decrement a stat for a queue
+--
+CREATE OR REPLACE FUNCTION adjust_stat( qid integer, sname text, amount integer ) RETURNS integer AS $$
+DECLARE
+  new_stat  integer;
+BEGIN
+  UPDATE stats
+     SET value = value + amount
+   WHERE queue_id = qid
+     AND name = sname
+  RETURNING value
+    INTO new_stat;
+
+  RETURN new_stat;
 END;
 $$ LANGUAGE plpgsql;
 
 --
 -- Return the number of rows in the messages table for the given queue.
 --
-CREATE OR REPLACE FUNCTION queue_size( queue text ) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION queue_size( qname text ) RETURNS integer AS $$
 DECLARE
   q_size integer;
+  queue  queues%ROWTYPE;
 BEGIN
-  SELECT count(j.id) INTO q_size
-    FROM messages j
-    JOIN queues q
-      ON q.id = j.queue_id
-   WHERE q.name = queue
+  queue = use_queue( qname );
+
+  SELECT sum(value) INTO q_size
+    FROM stats
+   WHERE queue_id = queue.id
+     AND name != 'finalized_count'
   ;
 
   RETURN q_size;
@@ -37,16 +61,17 @@ $$ LANGUAGE plpgsql;
 -- Return the number of rows in the messages table for the given queue that are
 -- ready, which means that their reserved_at timestamp is null.
 --
-CREATE OR REPLACE FUNCTION queue_ready_size( queue text ) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION queue_ready_size( qname text ) RETURNS integer AS $$
 DECLARE
   q_size integer;
+  queue  queues%ROWTYPE;
 BEGIN
-  SELECT count(j.id) INTO q_size
-    FROM messages j
-    JOIN queues q
-      ON q.id = j.queue_id
-   WHERE q.name = queue
-     AND reserved_at IS NULL
+  queue = use_queue( qname );
+
+  SELECT value INTO q_size
+    FROM stats
+   WHERE queue_id = queue.id
+     AND name = 'ready_count'
   ;
 
   RETURN q_size;
@@ -57,16 +82,17 @@ $$ LANGUAGE plpgsql;
 -- Return the number of rows in the messages table for the given queue that are
 -- reserved, which means that their reserved_at timestamp is not null.
 --
-CREATE OR REPLACE FUNCTION queue_reserved_size( queue text ) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION queue_reserved_size( qname text ) RETURNS integer AS $$
 DECLARE
   q_size integer;
+  queue  queues%ROWTYPE;
 BEGIN
-  SELECT count(j.id) INTO q_size
-    FROM messages j
-    JOIN queues q
-      ON q.id = j.queue_id
-   WHERE q.name = queue
-     AND reserved_at IS NOT NULL
+  queue = use_queue( qname );
+
+  SELECT value INTO q_size
+    FROM stats
+   WHERE queue_id = queue.id
+     AND name = 'reserved_count'
   ;
 
   RETURN q_size;
@@ -76,15 +102,17 @@ $$ LANGUAGE plpgsql;
 --
 -- Return the number of rows in the messages_history table for the given queue
 --
-CREATE OR REPLACE FUNCTION queue_finalized_size( queue text ) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION queue_finalized_size( qname text ) RETURNS integer AS $$
 DECLARE
   q_size integer;
+  queue  queues%ROWTYPE;
 BEGIN
-  SELECT count(j.id) INTO q_size
-    FROM messages_history j
-    JOIN queues q
-      ON q.id = j.queue_id
-   WHERE q.name = queue
+  queue = use_queue( qname );
+
+  SELECT value INTO q_size
+    FROM stats
+   WHERE queue_id = queue.id
+     AND name = 'finalized_count'
   ;
 
   RETURN q_size;
@@ -108,14 +136,15 @@ $$ LANGUAGE plpgsql;
 --
 -- Create a new message on the given queue, if the queue does not exist, create it.
 --
-CREATE OR REPLACE FUNCTION put( queue text, message text ) RETURNS messages AS $$
+CREATE OR REPLACE FUNCTION put( qname text, message text ) RETURNS messages AS $$
 DECLARE
-  new_message   messages%ROWTYPE;
-  q_row     queues%ROWTYPE;
+  new_message messages%ROWTYPE;
+  queue       queues%ROWTYPE;
 BEGIN
-  SELECT * INTO q_row FROM use_queue( queue );
-  INSERT INTO messages(queue_id, payload) VALUES(q_row.id, message) RETURNING * INTO new_message;
-  PERFORM pg_notify( queue, new_message.id::text );
+  queue = use_queue( qname );
+  INSERT INTO messages(queue_id, payload) VALUES(queue.id, message) RETURNING * INTO new_message;
+  PERFORM adjust_stat( queue.id, 'ready_count', 1 );
+  PERFORM pg_notify( qname, new_message.id::text );
   RETURN new_message;
 END;
 $$ LANGUAGE plpgsql;
@@ -171,7 +200,10 @@ BEGIN
      RETURNING *
           INTO reserved_message;
     RETURN next reserved_message;
+    PERFORM adjust_stat( queue.id, 'ready_count'   , -1 );
+    PERFORM adjust_stat( queue.id, 'reserved_count', 1  );
   END IF;
+
   RETURN;
 
 END;
@@ -213,6 +245,10 @@ BEGIN
               ,note )
     RETURNING *
          INTO historical_message;
+
+  PERFORM adjust_stat( finalized_message.queue_id, 'reserved_count' , -1 );
+  PERFORM adjust_stat( finalized_message.queue_id, 'finalized_count', 1  );
+
   RETURN historical_message;
 END;
 $$ LANGUAGE plpgsql;

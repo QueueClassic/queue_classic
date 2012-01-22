@@ -3,7 +3,16 @@ CREATE TABLE queues(
   id            serial UNIQUE PRIMARY KEY,
   name          text   UNIQUE
 );
-INSERT INTO queues(name) VALUES ('default');
+
+DROP TABLE IF EXISTS stats CASCADE;
+CREATE TABLE stats (
+  id       serial  UNIQUE PRIMARY KEY,
+  queue_id integer REFERENCES queues(id),
+  name     text    NOT NULL,
+  value    bigint  NOT NULL DEFAULT 0
+) WITH (fillfactor=50);
+CREATE INDEX stats_name_idx ON stats(name);
+CREATE UNIQUE INDEX stats_queue_id_name_udx ON stats(queue_id, name);
 
 DROP TABLE IF EXISTS messages CASCADE;
 CREATE TABLE messages (
@@ -14,7 +23,7 @@ CREATE TABLE messages (
   reserved_at     timestamp,
   reserved_by     text, -- application_name
   reserved_ip     inet  -- inet_client_addr()
-);
+) WITH (fillfactor=50);
 
 DROP TABLE IF EXISTS messages_history CASCADE;
 CREATE TABLE messages_history (
