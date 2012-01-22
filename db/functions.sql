@@ -68,22 +68,16 @@ DECLARE
   count integer;
   stat  stats%ROWTYPE;
 BEGIN
-  FOR qrole IN   WITH roles(role_name) AS (VALUES ('consumer'),('producer'))
-               SELECT q.id        AS id
-                     ,q.name      AS qname
-                     ,r.role_name AS rname
-                 FROM queues      AS q
-           CROSS JOIN roles       AS r
-
+  FOR qrole IN SELECT * FROM queue_roles
   LOOP
       SELECT count(*) INTO count
         FROM pg_stat_activity
-       WHERE application_name LIKE qrole.rname || '-' || qrole.qname || '-%';
+       WHERE application_name LIKE qrole.role_name || '-' || qrole.queue_name || '-%';
 
       UPDATE stats
          SET value = count
-       WHERE queue_id = qrole.id
-         AND name = qrole.rname || '_count'
+       WHERE queue_id = qrole.queue_id
+         AND name = qrole.role_name || '_count'
    RETURNING * INTO stat ;
 
       RETURN NEXT stat;
