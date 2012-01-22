@@ -40,6 +40,25 @@ END;
 $$ LANGUAGE plpgsql;
 
 --
+-- retrieve a partuclar stat for a particular queue
+--
+CREATE OR REPLACE FUNCTION queue_stat( qname text, sname text ) RETURNS integer AS $$
+DECLARE
+  queue  queues%ROWTYPE;
+  retval integer;
+BEGIN
+  queue = use_queue( qname );
+
+  SELECT value INTO retval
+    FROM stats
+   WHERE queue_id = queue.id
+     AND name = sname ;
+
+  RETURN retval;
+END;
+$$ LANGUAGE plpgsql;
+
+--
 -- update the producer/consumer_count values in the stats table for all the
 -- queues.
 --
@@ -76,20 +95,20 @@ $$ LANGUAGE plpgsql;
 --
 -- Return the number of rows in the messages table for the given queue.
 --
-CREATE OR REPLACE FUNCTION queue_size( qname text ) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION queue_processing_count( qname text ) RETURNS integer AS $$
 DECLARE
-  q_size integer;
-  queue  queues%ROWTYPE;
+  sum   integer;
+  queue queues%ROWTYPE;
 BEGIN
   queue = use_queue( qname );
 
-  SELECT sum(value) INTO q_size
+  SELECT sum(value) INTO sum
     FROM stats
    WHERE queue_id = queue.id
      AND name IN ('ready_count', 'reserved_count')
   ;
 
-  RETURN q_size;
+  RETURN sum;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -97,20 +116,10 @@ $$ LANGUAGE plpgsql;
 -- Return the number of rows in the messages table for the given queue that are
 -- ready, which means that their reserved_at timestamp is null.
 --
-CREATE OR REPLACE FUNCTION queue_ready_size( qname text ) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION queue_ready_count( qname text ) RETURNS integer AS $$
 DECLARE
-  q_size integer;
-  queue  queues%ROWTYPE;
 BEGIN
-  queue = use_queue( qname );
-
-  SELECT value INTO q_size
-    FROM stats
-   WHERE queue_id = queue.id
-     AND name = 'ready_count'
-  ;
-
-  RETURN q_size;
+  RETURN queue_stat( qname, 'ready_count' );
 END;
 $$ LANGUAGE plpgsql;
 
@@ -118,40 +127,20 @@ $$ LANGUAGE plpgsql;
 -- Return the number of rows in the messages table for the given queue that are
 -- reserved, which means that their reserved_at timestamp is not null.
 --
-CREATE OR REPLACE FUNCTION queue_reserved_size( qname text ) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION queue_reserved_count( qname text ) RETURNS integer AS $$
 DECLARE
-  q_size integer;
-  queue  queues%ROWTYPE;
 BEGIN
-  queue = use_queue( qname );
-
-  SELECT value INTO q_size
-    FROM stats
-   WHERE queue_id = queue.id
-     AND name = 'reserved_count'
-  ;
-
-  RETURN q_size;
+  RETURN queue_stat( qname, 'reserved_count' );
 END;
 $$ LANGUAGE plpgsql;
 
 --
 -- Return the number of rows in the messages_history table for the given queue
 --
-CREATE OR REPLACE FUNCTION queue_finalized_size( qname text ) RETURNS integer AS $$
+CREATE OR REPLACE FUNCTION queue_finalized_count( qname text ) RETURNS integer AS $$
 DECLARE
-  q_size integer;
-  queue  queues%ROWTYPE;
 BEGIN
-  queue = use_queue( qname );
-
-  SELECT value INTO q_size
-    FROM stats
-   WHERE queue_id = queue.id
-     AND name = 'finalized_count'
-  ;
-
-  RETURN q_size;
+  RETURN queue_stat( qname, 'finalized_count' );
 END;
 $$ LANGUAGE plpgsql;
 
@@ -160,17 +149,8 @@ $$ LANGUAGE plpgsql;
 --
 CREATE OR REPLACE FUNCTION consumer_count( qname text ) RETURNS integer AS $$
 DECLARE
-  count integer;
-  queue queues%ROWTYPE;
 BEGIN
-  queue = use_queue( qname );
-
-  SELECT value INTO count
-    FROM stats
-   WHERE queue_id = queue.id
-     AND name = 'consumer_count';
-
-  RETURN count;
+  RETURN queue_stat( qname, 'consumer_count' );
 END;
 $$ LANGUAGE plpgsql;
 
@@ -182,14 +162,7 @@ DECLARE
   count integer;
   queue queues%ROWTYPE;
 BEGIN
-  queue = use_queue( qname );
-
-  SELECT value INTO count
-    FROM stats
-   WHERE queue_id = queue.id
-     AND name = 'producer_count';
-
-  RETURN count;
+  RETURN queue_stat( qname, 'producer_count' );
 END;
 $$ LANGUAGE plpgsql;
 
@@ -238,7 +211,7 @@ BEGIN
   -- Get the queue id
   queue          = use_queue( qname );
   consumer_count = consumer_count( qname );
-  message_count  = queue_ready_size( qname );
+  message_count  = queue_ready_count( qname );
 
   SELECT TRUNC( random() * consumer_count + 1 ) INTO relative_top;
   IF (consumer_count = 0) OR (message_count <= consumer_count) THEN

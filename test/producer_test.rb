@@ -17,9 +17,9 @@ context 'Producer' do
   end
 
   test 'producer can add an item to the queue' do
-    assert_equal 0, @producer.queue.size
+    assert_equal 0, @producer.queue.processing_count
     @producer.put( "a message")
-    assert_equal 1, @producer.queue.size
+    assert_equal 1, @producer.queue.processing_count
   end
 
   test 'a producer produces a message in the ready state' do

@@ -18,15 +18,15 @@ context 'Consumer' do
   end
 
   test 'consumer can reserve an item on the queue' do
-    assert_equal 0, @producer.queue.size
+    assert_equal 0, @producer.queue.processing_count
     msg = @producer.put( "a message" )
-    assert_equal 1, @consumer.queue.size
-    assert_equal 0, @consumer.queue.reserved_size
-    assert_equal 1, @consumer.queue.ready_size
+    assert_equal 1, @consumer.queue.processing_count
+    assert_equal 0, @consumer.queue.reserved_count
+    assert_equal 1, @consumer.queue.ready_count
 
     item = @consumer.reserve
-    assert_equal 0, @consumer.queue.ready_size
-    assert_equal 1, @consumer.queue.reserved_size
+    assert_equal 0, @consumer.queue.ready_count
+    assert_equal 1, @consumer.queue.reserved_count
 
     assert_equal @consumer.consumer_id, item.reserved_by
   end
@@ -35,19 +35,19 @@ context 'Consumer' do
     @producer.put( "a message")
     msg = @consumer.reserve
 
-    assert_equal 0, @consumer.queue.ready_size
-    assert_equal 1, @consumer.queue.reserved_size
+    assert_equal 0, @consumer.queue.ready_count
+    assert_equal 1, @consumer.queue.reserved_count
 
     finalized_msg = @consumer.finalize( msg, "all is well" )
     assert finalized_msg.finalized?
     assert_equal 'all is well', finalized_msg.finalized_note
-    assert_equal 0, @consumer.queue.ready_size
-    assert_equal 0, @consumer.queue.reserved_size
-    assert_equal 1, @consumer.queue.finalized_size
+    assert_equal 0, @consumer.queue.ready_count
+    assert_equal 0, @consumer.queue.reserved_count
+    assert_equal 1, @consumer.queue.finalized_count
   end
 
   test "an error is raised if an attempt is made to finalize a non-reserved message" do
-    assert_equal 0, @producer.queue.size
+    assert_equal 0, @producer.queue.processing_count
     msg = @producer.put( "a message")
     assert_raises PGError do
       @consumer.finalize( msg, 'this should not happen' )
@@ -64,13 +64,13 @@ context 'Consumer' do
     end
 
     count = 0
-    assert_equal 0, @consumer.queue.finalized_size
+    assert_equal 0, @consumer.queue.finalized_count
     @consumer.each_message do |msg|
       assert_match /a message \d+/, msg.payload
       count += 1
     end
     assert_equal 10, count
-    assert_equal 10, @consumer.queue.finalized_size
+    assert_equal 10, @consumer.queue.finalized_count
   end
 
   test "#reserve returns nil if there is no message" do
@@ -92,7 +92,7 @@ context 'Consumer' do
 
     pmsg = @producer.put("a message")
     t.join
-    assert_equal 1, @producer.queue.finalized_size
+    assert_equal 1, @producer.queue.finalized_count
     assert_equal pmsg.payload, t[:msg].payload
   end
 end

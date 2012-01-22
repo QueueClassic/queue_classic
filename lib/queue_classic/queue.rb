@@ -16,32 +16,33 @@ module QueueClassic
       @name    = name
     end
 
-    # Return how many items are in the queue
+    # Return how many items are in the queue, this is the sum of the ready_count
+    # and the reserved_count
     #
-    def size
-      row = connection.execute(" SELECT queue_size($1)", @name )
-      return row.first['queue_size'].to_i
+    def processing_count
+      row = connection.execute(" SELECT queue_processing_count($1)", @name )
+      return row.first['queue_processing_count'].to_i
     end
 
     # Return how many items are in the queue that are ready
     #
-    def ready_size
-      row = connection.execute( "SELECT queue_ready_size($1)", @name )
-      return row.first['queue_ready_size'].to_i
+    def ready_count
+      row = connection.execute( "SELECT queue_ready_count($1)", @name )
+      return row.first['queue_ready_count'].to_i
     end
 
     # Return how many items are in the queue that are reserved
     #
-    def reserved_size
-      row = connection.execute( "SELECT queue_reserved_size($1)", @name )
-      return row.first['queue_reserved_size'].to_i
+    def reserved_count
+      row = connection.execute( "SELECT queue_reserved_count($1)", @name )
+      return row.first['queue_reserved_count'].to_i
     end
 
     # Return how many items are from this queue
     #
-    def finalized_size
-      row = connection.execute( "SELECT queue_finalized_size($1)", @name )
-      return row.first['queue_finalized_size'].to_i
+    def finalized_count
+      row = connection.execute( "SELECT queue_finalized_count($1)", @name )
+      return row.first['queue_finalized_count'].to_i
     end
 
     #######
