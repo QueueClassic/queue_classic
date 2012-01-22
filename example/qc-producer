@@ -20,7 +20,7 @@ puts "#{producer.producer_id}: Started!"
 # Insert messages into the queue until done
 cli.options.count.times do |x|
   timer.measure do
-    producer.put( "messeg #{x}" )
+    producer.put( "message #{x}" )
   end
 
   # output some stats ever so often
