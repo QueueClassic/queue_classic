@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+
+require 'queue_classic'
+require 'trollop'
+require 'hitimes'
+
+opts = Trollop::options do
+  opt :database, "Database URL", :default => 'postgresql:///queue_classic'
+  opt :queue, "Queue ot use", :default => 'foo'
+end
+
+session = QueueClassic::Session.new( opts[:database] )
+consumer = session.consumer_for( opts[:queue] )
+timer = Hitimes::TimedMetric.new( 'consumer' )
+puts "#{consumer.consumer_id}: Started!"
+loop do
+  timer.start
+  msg = consumer.reserve
+  break unless msg
+  consumer.finalize( msg, "finalized" )
+  timer.stop
+
+  if timer.count % 1000 == 0 then
+    puts "#{consumer.consumer_id}: mean #{timer.mean} rate #{timer.rate} cont #{timer.count}"
+  end
+end
+puts "#{consumer.consumer_id}: mean #{timer.mean} rate #{timer.rate} cont #{timer.count}"

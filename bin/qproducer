@@ -1,0 +1,25 @@
+#!/usr/bin/env ruby
+
+require 'queue_classic'
+require 'trollop'
+require 'hitimes'
+
+opts = Trollop::options do
+  opt :database, "Database URL", :default => 'postgresql:///queue_classic'
+  opt :queue, "Queue to use", :default => 'foo'
+  opt :count, "Number of messges to produce", :default => 100
+end
+
+session = QueueClassic::Session.new( opts[:database] )
+producer = session.producer_for( opts[:queue] )
+timer = Hitimes::TimedMetric.new( 'producer' )
+opts[:count].times do |x|
+  timer.measure do
+    producer.put( "message #{x}")
+  end
+
+  if timer.count % 1000 == 0 then
+    puts "#{producer.producer_id}: mean #{timer.mean} rate #{timer.rate} cont #{timer.count}"
+  end
+end
+puts "#{producer.producer_id}: mean #{timer.mean} rate #{timer.rate} cont #{timer.count}"
