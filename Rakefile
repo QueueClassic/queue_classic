@@ -11,6 +11,7 @@ Rake::TestTask.new do |t|
 end
 
 CLOBBER << 'doc/html'
+CLOBBER << "*.gem"
 
 MD_SRC    = FileList['doc/*.md', 'readme.md']
 
