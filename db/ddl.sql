@@ -49,3 +49,14 @@ CREATE SEQUENCE application_id_seq
   NO CYCLE
   OWNED BY messages.reserved_by
   ;
+
+--
+-- A handy view for use by some of the functions
+--
+CREATE VIEW queue_roles ( queue_id, queue_name, role_name) AS
+    WITH roles(role_name) AS (VALUES ('consumer'),('producer'))
+    SELECT q.id        AS queue_id
+          ,q.name      AS queue_name
+          ,r.role_name AS role_name
+      FROM queues      AS q
+CROSS JOIN roles       AS r
