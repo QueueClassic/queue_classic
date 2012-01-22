@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.authors       = ["Ryan Smith"]
   s.homepage      = "http://github.com/ryandotsmith/queue_classic"
 
-  s.files         = %w[readme.md] + Dir["{lib,test}/**/*.rb"]
+  s.files         = %w[readme.md] + Dir["{lib,test}/**/*.rb"] + Dir["{bin,db,example}/*"]
   s.test_files    = s.files.select {|path| path =~ /^test\/.*_test.rb/}
 
   s.require_paths = %w[lib]
