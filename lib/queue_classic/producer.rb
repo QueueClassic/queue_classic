@@ -18,7 +18,7 @@ module QueueClassic
     def initialize( session, queue_name )
       @session     = session
       @queue       = session.use_queue( queue_name )
-      @producer_id = connection.apply_application_name( 'producer' )
+      @producer_id = connection.apply_application_name( "producer-#{queue_name}" )
     end
 
     # Put a message onto the queue

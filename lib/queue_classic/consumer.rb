@@ -22,7 +22,7 @@ module QueueClassic
       @session     = session
       @queue       = session.use_queue( queue_name )
       @connection  = session.clone_connection
-      @consumer_id = connection.apply_application_name( 'consumer' )
+      @consumer_id = connection.apply_application_name( "consumer-#{queue_name}" )
       connection.listen( queue_name )
     end
 

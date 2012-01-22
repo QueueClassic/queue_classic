@@ -20,6 +20,20 @@ $$ LANGUAGE plpgsql;
 SELECT * FROM use_queue('default');
 
 --
+-- Count the number of consumers that are connected to the databae
+--
+CREATE OR REPLACE FUNCTION consumer_count( queue text ) RETURNS integer AS $$
+DECLARE
+  consumer_count integer;
+BEGIN
+  SELECT count(application_name) INTO consumer_count
+    FROM pg_stat_activity
+   WHERE application_name like 'consumer-' || queue || '%';
+  RETURN consumer_count;
+END;
+$$ LANGUAGE plpgsql;
+
+--
 -- Increment or decrement a stat for a queue
 --
 CREATE OR REPLACE FUNCTION adjust_stat( qid integer, sname text, amount integer ) RETURNS integer AS $$
@@ -162,9 +176,9 @@ DECLARE
   reserved_message    messages%ROWTYPE;
 BEGIN
   -- Get the queue id
-  queue        = use_queue( qname );
-  top_boundary = 10;
-  message_count    = queue_ready_size( qname );
+  queue         = use_queue( qname );
+  top_boundary  = consumer_count( qname );
+  message_count = queue_ready_size( qname );
 
   SELECT TRUNC( random() * top_boundary + 1 ) INTO relative_top;
   IF message_count < top_boundary THEN
