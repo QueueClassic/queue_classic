@@ -8,11 +8,13 @@ module DatabaseHelpers
   end
 
   def setup_db
-    QueueClassic::Bootstrap.setup( database_url )
+    bs = QueueClassic::Bootstrap.setup( database_url )
+    bs.close
   end
 
   def teardown_db
-    QueueClassic::Bootstrap.teardown( database_url )
+    bs = QueueClassic::Bootstrap.teardown( database_url )
+    bs.close
   end
 end
 
