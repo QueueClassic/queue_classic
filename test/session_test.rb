@@ -20,7 +20,7 @@ context 'Session' do
   test "returns a list of all the known queues" do
     queues = @session.queues
     assert_equal 1, queues.size
-    assert_equal 'default', queues.first.name
+    assert_equal 'classic', queues.first.name
   end
 
   test "session can create a queue if it doesn't exist" do

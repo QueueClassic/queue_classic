@@ -19,7 +19,7 @@ BEGIN
   RETURN new_row;
 END;
 $$ LANGUAGE plpgsql;
-SELECT * FROM use_queue('default');
+SELECT * FROM use_queue('classic');
 
 --
 -- Increment or decrement a stat for a queue

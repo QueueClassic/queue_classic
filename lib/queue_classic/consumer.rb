@@ -33,10 +33,12 @@ module QueueClassic
     # how_long - how many seconds (fractional allowed) to wait if wait is :wait
     #
     def reserve( wait = :no_wait, how_long = 1 )
-      if wait == :wait then
-        n = connection.wait_for_notification( how_long )
-      end
       r = connection.execute("SELECT * FROM reserve($1)", @queue.name)
+      if wait == :wait and r.empty? then
+        if n = connection.wait_for_notification( how_long ) then
+          r = connection.execute("SELECT * FROM reserve($1)", @queue.name)
+        end
+      end
       return nil if r.empty?
       return Message.new( r.first )
     end
