@@ -13,25 +13,13 @@ BEGIN
     INSERT INTO stats(queue_id, name) VALUES (new_row.id, 'ready_count');
     INSERT INTO stats(queue_id, name) VALUES (new_row.id, 'reserved_count');
     INSERT INTO stats(queue_id, name) VALUES (new_row.id, 'finalized_count');
+    INSERT INTO stats(queue_id, name) VALUES (new_row.id, 'producer_count');
+    INSERT INTO stats(queue_id, name) VALUES (new_row.id, 'consumer_count');
   END IF;
   RETURN new_row;
 END;
 $$ LANGUAGE plpgsql;
 SELECT * FROM use_queue('default');
-
---
--- Count the number of consumers that are connected to the databae
---
-CREATE OR REPLACE FUNCTION consumer_count( queue text ) RETURNS integer AS $$
-DECLARE
-  consumer_count integer;
-BEGIN
-  SELECT count(application_name) INTO consumer_count
-    FROM pg_stat_activity
-   WHERE application_name like 'consumer-' || queue || '%';
-  RETURN consumer_count;
-END;
-$$ LANGUAGE plpgsql;
 
 --
 -- Increment or decrement a stat for a queue
@@ -52,6 +40,40 @@ END;
 $$ LANGUAGE plpgsql;
 
 --
+-- update the producer/consumer_count values in the stats table for all the
+-- queues.
+--
+CREATE OR REPLACE FUNCTION update_participant_counts() RETURNS SETOF stats AS $$
+DECLARE
+  qrole RECORD;
+  count integer;
+  stat  stats%ROWTYPE;
+BEGIN
+  FOR qrole IN   WITH roles(role_name) AS (VALUES ('consumer'),('producer'))
+               SELECT q.id        AS id
+                     ,q.name      AS qname
+                     ,r.role_name AS rname
+                 FROM queues      AS q
+           CROSS JOIN roles       AS r
+
+  LOOP
+      SELECT count(*) INTO count
+        FROM pg_stat_activity
+       WHERE application_name LIKE qrole.rname || '-' || qrole.qname || '-%';
+
+      UPDATE stats
+         SET value = count
+       WHERE queue_id = qrole.id
+         AND name = qrole.rname || '_count'
+   RETURNING * INTO stat ;
+
+      RETURN NEXT stat;
+  END LOOP;
+  RETURN;
+END;
+$$ LANGUAGE plpgsql;
+
+--
 -- Return the number of rows in the messages table for the given queue.
 --
 CREATE OR REPLACE FUNCTION queue_size( qname text ) RETURNS integer AS $$
@@ -64,7 +86,7 @@ BEGIN
   SELECT sum(value) INTO q_size
     FROM stats
    WHERE queue_id = queue.id
-     AND name != 'finalized_count'
+     AND name IN ('ready_count', 'reserved_count')
   ;
 
   RETURN q_size;
@@ -130,6 +152,44 @@ BEGIN
   ;
 
   RETURN q_size;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+-- Count the number of consumers that are connected to the queue
+--
+CREATE OR REPLACE FUNCTION consumer_count( qname text ) RETURNS integer AS $$
+DECLARE
+  count integer;
+  queue queues%ROWTYPE;
+BEGIN
+  queue = use_queue( qname );
+
+  SELECT value INTO count
+    FROM stats
+   WHERE queue_id = queue.id
+     AND name = 'consumer_count';
+
+  RETURN count;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+-- Count the numbero of producers that are connected to the queue
+--
+CREATE OR REPLACE FUNCTION producer_count( queue text )RETURNS integer AS $$
+DECLARE
+  count integer;
+  queue queues%ROWTYPE;
+BEGIN
+  queue = use_queue( qname );
+
+  SELECT value INTO count
+    FROM stats
+   WHERE queue_id = queue.id
+     AND name = 'producer_count';
+
+  RETURN count;
 END;
 $$ LANGUAGE plpgsql;
 
