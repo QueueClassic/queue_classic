@@ -212,19 +212,12 @@ $$ LANGUAGE plpgsql;
 --
 -- finalize a message, this involves removing it from the message queue and inserting it into the message_history table
 --
-CREATE OR REPLACE FUNCTION finalize( qname text, message_id bigint, note text ) RETURNS messages_history AS $$
+CREATE OR REPLACE FUNCTION finalize( qname text, message_id bigint, note text ) RETURNS SETOF messages_history AS $$
 DECLARE
-  finalized_message   RECORD;
   historical_message  messages_history%ROWTYPE;
+  queue               queues%ROWTYPE;
 BEGIN
-  DELETE FROM messages
-        WHERE id = message_id
-          AND reserved_at IS NOT NULL
-    RETURNING * INTO finalized_message;
-
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Unable to find message "%" in queue "%" that was reserved', message_id, qname;
-  END IF;
+  queue = use_queue( qname );
 
   INSERT INTO messages_history(
                 id
@@ -234,22 +227,32 @@ BEGIN
                ,reserved_at
                ,reserved_by
                ,reserved_ip
-               ,finalized_note)
-       VALUES (message_id
-              ,finalized_message.queue_id
-              ,finalized_message.payload
-              ,finalized_message.ready_at
-              ,finalized_message.reserved_at
-              ,finalized_message.reserved_by
-              ,finalized_message.reserved_ip
-              ,note )
-    RETURNING *
-         INTO historical_message;
+               ,finalized_note
+            )
+        SELECT message_id
+              ,queue.id
+              ,m.payload
+              ,m.ready_at
+              ,m.reserved_at
+              ,m.reserved_by
+              ,m.reserved_ip
+              ,note
+          FROM messages m
+         WHERE id = message_id
+           AND reserved_at IS NOT NULL
+    RETURNING * INTO historical_message
+  ;
 
-  PERFORM adjust_stat( finalized_message.queue_id, 'reserved_count' , -1 );
-  PERFORM adjust_stat( finalized_message.queue_id, 'finalized_count', 1  );
+  IF FOUND THEN
+    DELETE FROM messages WHERE id = message_id;
+    PERFORM adjust_stat( historical_message.queue_id, 'reserved_count' , -1 );
+    PERFORM adjust_stat( historical_message.queue_id, 'finalized_count', 1  );
+    RETURN next historical_message;
+  ELSE
+    RAISE EXCEPTION 'Unable to find reserved message "%" in queue "%".', message_id, qname;
+  END IF;
 
-  RETURN historical_message;
+  RETURN;
 END;
 $$ LANGUAGE plpgsql;
 
