@@ -32,6 +32,7 @@ module QueueClassic
     #            set to :wait if you want to wait for a bit
     # how_long - how many seconds (fractional allowed) to wait if wait is :wait
     #
+    # Returns a Message or nil if no messages was found
     def reserve( wait = :no_wait, how_long = 1 )
       r = connection.execute("SELECT * FROM reserve($1)", @queue.name)
       if wait == :wait and r.empty? then
