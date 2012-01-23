@@ -1,4 +1,5 @@
 require 'servolux'
+require 'stringio'
 module QueueClassic
   #
   # The Worker style we are going to use here is the fork-per-job pattern.
