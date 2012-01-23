@@ -4,7 +4,7 @@ module QueueClassic
   # Class#method(args) format so that you can then just invoke #call on it 
   # so it does its thing.
   #
-  # A RunablePlayload is created with a JSON string. The fields in the String
+  # A RunnablePlayload is created with a JSON string. The fields in the String
   # define different methodologies for encoding a Class#method#args invocation.
   #
   # There is the QueueClassic style, which is of the form:
@@ -17,10 +17,10 @@ module QueueClassic
   #
   # In the resque style, it is assumed the method to call is 'perform'
   #
-  # RunablePayload can work with both styles. Runable works by passing in that
+  # RunnablePayload can work with both styles. Runnable works by passing in that
   # initial JSON string, and then just calling 'run'.
   #
-  class RunablePayload
+  class RunnablePayload
     class Error < ::QueueClassic::Error ; end
 
     # The Class of the Payload
@@ -32,11 +32,11 @@ module QueueClassic
     # The arguments to pass to method
     attr_reader :args
 
-    # Create a new RunablePayload
+    # Create a new RunnablePayload
     #
     # json_string - the argument name should be self explanatory.
     #
-    # Returns a new RunablePayload.
+    # Returns a new RunnablePayload.
     def initialize( json_string )
       raise Error, "really? nil/false as the payload?" unless json_string
       @opts = ::JSON.parse( json_string )
