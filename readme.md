@@ -35,54 +35,34 @@ See doc/installation.md for Rails instructions
 
 ```bash
   $ createdb queue_classic_test
-  $ psql queue_classic_test
-  psql=# CREATE TABLE queue_classic_jobs (id serial, details text, locked_at timestamp);
-  psql=# CREATE INDEX queue_classic_jobs_id_idx ON queue_classic_jobs (id);
-  $ export QC_DATABASE_URL="postgres://username:password@localhost/queue_classic_test"
   $ gem install queue_classic
-  $ ruby -r queue_classic -e "QC::Database.new.load_functions"
-  $ ruby -r queue_classic -e "QC.enqueue('Kernel.puts', 'hello world')"
-  $ ruby -r queue_classic -e "QC::Worker.new.start"
+  $ queue_classic -d postgres://username:password@localhost/queue_classic_test setup
+  $ queue_classic -d postgres://username:password@localhost/queue_classic_test producer 'hello world'
+  $ queue_classic -d postgres://username:password@localhost/queue_classic_test consumer
 ```
 
 ## Configure
 
 ```bash
 
-# Enable logging.
-$VERBOSE
-
 # Specifies the database that queue_classic will rely upon.
-$QC_DATABASE_URL || $DATABASE_URL
-
-# Fuzzy-FIFO
-# For strict FIFO set to 1. Otherwise, worker will
-# attempt to lock a job in this top region.
-# Default: 9
-$QC_TOP_BOUND
-
-# If you want your worker to fork a new
-# child process for each job, set this var to 'true'
-# Default: false
-$QC_FORK_WORKER
-
-# The worker uses an exp backoff algorithm
-# if you want high throughput don't use Kernel.sleep
-# use LISTEN/NOTIFY sleep. When set to true, the worker's
-# sleep will be preempted by insertion into the queue.
-# Default: false
-$QC_LISTENING_WORKER
-
-# The worker uses an exp backoff algorithm. The base of
-# the exponent is 2. This var determines the max power of the
-# exp.
-# Default: 5 which implies max sleep time of 2^(5-1) => 16 seconds
-$QC_MAX_LOCK_ATTEMPTS
+# Something like
+#  postgres://user:password@host/dbname
+#
+# If you have a .pgpass file you queue_classic will that up so you can
+# specify postgres://host/dbname and if you have your .pgpass setup
+# all will be good:
+# http://www.postgresql.org/docs/9.1/static/libpq-pgpass.html
+$QC_DATABASE_URL
 
 # This var is important for consumers of the queue.
 # If you have configured many queues, this var will
-# instruct the worker to bind to a particular queue.
-# Default: queue_classic_jobs --which is the default queue table.
+# instruct the worker to bind to a particular queue(s).
+# Default: classic
+# You can have multiple queues, and in this case, use the
+# $QUEUES variable. For instance:
+#   $QUEUES=foo,bar,baz
+# Will connect to all 3 queues.
 $QUEUE
 
 

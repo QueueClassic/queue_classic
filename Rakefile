@@ -13,7 +13,7 @@ end
 CLOBBER << 'doc/html'
 CLOBBER << "*.gem"
 
-MD_SRC    = FileList['doc/*.md', 'readme.md']
+MD_SRC    = FileList['doc/*.md', 'readme.md', 'differences.md']
 
 DOC_MAP  = MD_SRC.inject({}) { |h,k| h.merge!(k => k.pathmap('doc/html/%n.html')) }
 MARKDOWN = Redcarpet::Markdown.new( Redcarpet::Render::XHTML.new( :filter_html => true ),

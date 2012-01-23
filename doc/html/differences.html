@@ -1,0 +1,253 @@
+<h1>Damn, now that&#39;s a pull request.  What is the difference:</h1>
+
+<h2>New Benefits of this feature branch?</h2>
+
+<p>In no particular order:</p>
+
+<ul>
+<li>Removal of all the static class variables from the original code base.</li>
+<li>Automatic Queue creation, when a producer or consumer (see terminology below)
+attaches to a queue, it is automatically created, like beanstalk.</li>
+<li>NOTIFY/LISTEN is now per queue based, and notifications are only received by
+consumers that are listening on the appropriate channel.</li>
+<li>Stats on what is being done where. We can do a little bit of introspection
+into the system now.</li>
+<li>Connected clients are recognized via the pg<em>stats</em>activity table and used
+to populate fields in the <em>stats</em>.</li>
+<li>The relative_top of the Fuzzy FIFO algorithm is now automatically calculated
+based upon the stats table.</li>
+<li>Runnable Jobs are created from Mesasge bodies enableing queue classice to be
+used wither with its own style jobs or with Resqueue style jobs (see the json
+format for the payload).</li>
+<li>The Worker forking process is implemented using Servolux::Piper and can listen
+on multiple queues in the same way that Resque can listen on multipel queues.</li>
+</ul>
+
+<p>There are probably a few more things going on and I cannot remember them right
+now.</p>
+
+<h2>Terminology</h2>
+
+<p>The big one is that I decided to stop using the term Job and switch to Message.</p>
+
+<p>The other new concepts are a Session, a Producer and a Consumer. There is no
+single class that may both add to the queue and remove from it. </p>
+
+<p>You start out by creating a Session, which is the fundamental connection to
+Postgres with some added sugar. </p>
+
+<pre><code>session = QueueClassic::Session.new( &#39;postgres://user:pass@host/db&#39; )
+</code></pre>
+
+<p>You create Producers and Consumers from the Session for a given queue.</p>
+
+<pre><code>producer = session.producer_for( &#39;my-queue&#39; )
+consumer = session.consumer_for( &#39;my-queue&#39; )
+</code></pre>
+
+<h2>Message Life Cycle</h2>
+
+<p>A message follows a life cycle very similar to that of one in
+<a href="http://kr.github.com/beanstalkd/">beanstalk</a>. </p>
+
+<ol>
+<li>A Producer <em>put</em> a mesasge onto the queue and it is in the <em>ready</em> state,
+which means it is available for processing.</li>
+<li>A Consumer <em>reserve</em> a message, which means that it is going to process it.</li>
+<li>A Consumer <em>finalize</em> a message, which removes it from the queue and puts it
+into the history table.</li>
+</ol>
+
+<p>Currently the concepts of <em>kick</em> and <em>bury</em> are not implemented as they do not
+exist in the release version of queue_classic.</p>
+
+<h2>Database Structure</h2>
+
+<p>First, all the tables, functions, etc. are installed under their own schema so
+that they do not conflict with any other parts of the system.</p>
+
+<p>And now there are 4 tables involved instead of 1.</p>
+
+<h3>Queues</h3>
+
+<p>This is a new lookup table to keep track of the queues in the system. Pretty
+simple, I would imagine it would stay pretty small. New queue entries should be
+created by the <em>use_queue( &#39;queue-name&#39; )</em> function. This function will populate
+the new stat rows for the queue, see the <em>stats</em> table further down.</p>
+
+<h3>Messages</h3>
+
+<p>This is what use to be queue_classic_jobs. It doesn&#39;t lose anything, and gains a
+few columns</p>
+
+<ul>
+<li>queue_id - foreign key to queues table above</li>
+<li>payload  - this is essentially what was the &#39;description&#39; field before</li>
+<li>ready_at - the time that the message is ready for processing, essentially
+created at</li>
+<li>reserved_at - this is what used to be locked_at</li>
+<li>reserved_by - a string indicating what worker process reserved the message,
+this is pulled from pg<em>stat</em>activity.application_name</li>
+<li>reserved_ip - the ip address of the worker process that reserved the message,
+this is pulled by using inet<em>client</em>addr()</li>
+</ul>
+
+<p>There is a potential optimization here, the table is created with
+<em>fillfactor=50</em>, since for the basic life cycle of this table, the message is
+inserted once, then updated once and then deleted once. setting the
+<em>fillfactor=50</em> will hopefully allow postgresql an efficiency boost in storing
+the updated tuple for the row on the same page as the original, and then it can
+all be reaped when the page becomes free.</p>
+
+<p>This table should have an extremely high churn.</p>
+
+<h3>Messages History</h3>
+
+<p>This is a new table, and may not be strictly necessary, It is exactly the same
+as <em>messages</em> with 2 additional columns:</p>
+
+<ul>
+<li>finalized_at - the time when the message was inserted into this table</li>
+<li>finalized_note - this is a text string that can be used to put some additional
+data about how the message was finalized. Error status, exception dump, okay
+status etc.</li>
+</ul>
+
+<p>This table, is essentially a write once table, the rows are never updated.</p>
+
+<h3>Stats</h3>
+
+<p>This is a new table, it shows some stats about the system and it use internally
+by some of the PL/pgsql functions and is updated by triggers and some other
+functions which can reset the stats should they get out of whack because one of
+us operators does something foolish.</p>
+
+<ul>
+<li>queue_id - foreign key to the queues table</li>
+<li>name - the name of the stat</li>
+<li>value - the value of the stat</li>
+</ul>
+
+<p>Currently there are only 5 stats, and they exist for each queue. That is, each
+of the numbers below is per queue.</p>
+
+<ul>
+<li>ready_count - the number of rows in <em>messages</em> that are ready for processing
+for a queue</li>
+<li>reserved_count - the number of rows in <em>messages</em> that are currently being
+processed</li>
+<li>finalized_count - the number of rows in <em>messages_history</em></li>
+<li>producer_count - the number of postgres clients attached that say they are
+putting messages onto the queue.</li>
+<li>consumer_count - the number of postgres clients attached that say they are
+taking messagses off of the queue.</li>
+</ul>
+
+<p>All of the stats are updated automatically. The ready/reserved/finalized are
+updated via triggers on the <em>messages</em> and <em>messages_history</em> table. The
+producer/consumer counts are updated automatically from the Ruby program as an
+affect of creating a Session object.</p>
+
+<p>The <em>consumer_count</em> and the <em>ready_count</em> for a queue are used internally in
+the <em>reserve()</em> function to automatically determine the <em>relative_top</em> for use
+in the fuzzy FIFO algorithm.</p>
+
+<p>This table exists mainly to support the <em>reserve()</em> function so that it doesn&#39;t
+have to do a select count() on the messages table which can be quite expensive
+when the table has lots of rows in it.</p>
+
+<p>Over time I would imagine that the stats would get out of whack a bit, so there
+are two functions that may be invoked to set the stats to their true values.</p>
+
+<pre><code>select * from update_participant_counts()
+select * from update_queue_counts()
+</code></pre>
+
+<p>Those may be invoked at anytime and to fix all the stats should they become
+skewed.</p>
+
+<h2>Performance (Back of the Envelope)</h2>
+
+<p>These numbers are on my 2011 MBP. With a <em>messages</em> table with over 1,000,000
+rows in it.</p>
+
+<h3>Putting messages onto the queues</h3>
+
+<p>On the performance side, inserting into the database is a little more expensive
+since there are some triggers to update stats and a few more columns, but not by
+much.</p>
+
+<pre><code>jeremy@[local]] 23:01:10&gt; explain analyze select * from put(&#39;classic&#39;, &#39;some data&#39;);
+                                             QUERY PLAN
+----------------------------------------------------------------------------------------------------
+ Function Scan on put  (cost=0.25..0.26 rows=1 width=124) (actual time=0.265..0.265 rows=1 loops=1)
+ Total runtime: 0.274 m
+</code></pre>
+
+<p>If you compare this to the values that are in
+<a href="performance.html">performance.html</a>, and I have no idea if that is a valid
+comparison, it is slower, and roughly equivalent. Sub millisecond is not bad.</p>
+
+<p>There is now an <em>example/qc-producer</em> program which just does
+<em>put(&#39;classic&#39;,&#39;data&#39;)</em> into the messages table as fast as it can, on my machine
+this is in the roughly 2,000 mps, so if it was going flat out that rate would
+insert <em>172 Million</em> records in a day. Not that anyone has that many messages in
+queue_classic. And that goes above and beyond the <em>3 Million</em> records a day in
+the original <a href="readme.html">readme</a>.</p>
+
+<h3>Reserving messages for processing</h3>
+
+<p>On this side of things, its looks like things were sped up a bit, most likely by
+using the data in the <em>stats</em> table.</p>
+
+<pre><code>[jeremy@[local]] 23:12:05&gt; explain analyze select * from reserve(&#39;classic&#39;);
+                                               QUERY PLAN
+--------------------------------------------------------------------------------------------------------
+ Function Scan on reserve  (cost=0.25..0.26 rows=1 width=124) (actual time=0.675..0.676 rows=1 loops=1)
+ Total runtime: 0.686 ms
+</code></pre>
+
+<p>Again, if you compare this to <a href="performance.html">performance.html</a>, we&#39;re faster
+in this case, and roughly equivalent. Sub millisecond is not bad.</p>
+
+<p>If we compare the fundamental query we see that it was speed up quite a bit,
+although I have no idea why. There is an index on queue_id and in this analyze
+it is still doing a Sequence Scan.</p>
+
+<pre><code>[jeremy@[local]] 23:14:01&gt; explain analyze select * from messages where queue_id = 1 and reserved_at is null limit 1 offset 10 for update nowait;
+                                                        QUERY PLAN
+--------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.38..0.42 rows=1 width=58) (actual time=0.054..0.054 rows=1 loops=1)
+   -&gt;  LockRows  (cost=0.00..39189.63 rows=1020638 width=58) (actual time=0.033..0.052 rows=11 loops=1)
+         -&gt;  Seq Scan on messages  (cost=0.00..28983.25 rows=1020638 width=58) (actual time=0.008..0.015 rows=11 loops=1)
+               Filter: ((reserved_at IS NULL) AND (queue_id = 1))
+ Total runtime: 0.080 ms
+</code></pre>
+
+<h3>Finalizing the message</h3>
+
+<p>Where we gained time on the reserving, we lose it again on the finalizing. Now,
+instead of just deleting a row, we are moving it to the <em>messages_history</em>
+table. So that expense needs to be taken into account as well.</p>
+
+<pre><code>[jeremy@[local]] 23:24:57&gt; explain analyze select * from finalize(&#39;classic&#39;,3,&#39;blah&#39;);
+                                               QUERY PLAN
+---------------------------------------------------------------------------------------------------------
+ Function Scan on finalize  (cost=0.25..0.26 rows=1 width=164) (actual time=0.346..0.347 rows=1 loops=1)
+ Total runtime: 0.356 ms
+</code></pre>
+
+<h3>Performance Thoughts</h3>
+
+<p>All in all, I think the performance of this version is basically the same as the
+previous one, some back of the envelope testing shows that it is totally the
+database that is the bottle neck if you think there is one. My assumption is
+that the whatever process is executed based upon receiving a message from
+queue_classic is going to take longer then receiving the message itself.</p>
+
+<p>And with that thought, I ran some experiments numbers and it looks like the
+ratios of 1 producer for 3-5 consumers might be a good ratio. That roughly falls
+in line with the costs of insertion and selection from the database.</p>
+
+<p>So, with the current benchmark of 3,000,000 jobs a day through the system,
+that&#39;s just 35 messages a second, which is totally doable.</p>
