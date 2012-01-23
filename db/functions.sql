@@ -87,6 +87,90 @@ END;
 $$ LANGUAGE plpgsql;
 
 --
+-- update the ready_count stat for a queue
+--
+CREATE OR REPLACE FUNCTION update_ready_count( qname text ) RETURNS stats AS $$
+DECLARE
+  queue queues%ROWTYPE;
+  stat  stats%ROWTYPE;
+BEGIN
+  queue = use_queue( qname );
+  UPDATE stats AS s
+     SET value = (SELECT count(*)
+                    FROM messages
+                   WHERE ready_at IS NOT NULL
+                     AND reserved_at IS NULL
+                     AND queue_id = queue.id )
+    WHERE queue_id = queue.id
+      AND name = 'ready_count'
+  RETURNING * INTO stat;
+  RETURN stat;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+-- update the reserved_count stat for a queue
+--
+CREATE OR REPLACE FUNCTION update_reserved_count( qname text ) RETURNS stats AS $$
+DECLARE
+  queue queues%ROWTYPE;
+  stat  stats%ROWTYPE;
+BEGIN
+  queue = use_queue( qname );
+  UPDATE stats AS s
+     SET value = (SELECT count(*)
+                    FROM messages
+                   WHERE ready_at IS NOT NULL
+                     AND reserved_at IS NOT NULL
+                     AND queue_id = queue.id )
+    WHERE queue_id = queue.id
+      AND name = 'reserved_count'
+  RETURNING * INTO stat;
+  RETURN stat;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+-- update the finalized_count stat for a queue
+--
+CREATE OR REPLACE FUNCTION update_finalized_count( qname text ) RETURNS stats AS $$
+DECLARE
+  queue queues%ROWTYPE;
+  stat  stats%ROWTYPE;
+BEGIN
+  queue = use_queue( qname );
+  UPDATE stats AS s
+     SET value = (SELECT count(*)
+                    FROM messages_history
+                   WHERE queue_id = queue.id )
+    WHERE queue_id = queue.id
+      AND name = 'finalized_count'
+  RETURNING * INTO stat;
+  RETURN stat;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--
+-- update the queue counts to their actual numbers
+--
+CREATE OR REPLACE FUNCTION update_queue_counts() RETURNS SETOF stats AS $$
+DECLARE
+  queue queues%ROWTYPE;
+  stat  stats%ROWTYPE;
+BEGIN
+  FOR queue IN SELECT * FROM queues
+  LOOP
+    RETURN QUERY SELECT * FROM update_ready_count( queue.name );
+    RETURN QUERY SELECT * FROM update_reserved_count( queue.name );
+    RETURN QUERY SELECT * FROM update_finalized_count( queue.name );
+  END LOOP;
+  RETURN;
+END;
+$$ LANGUAGE plpgsql;
+
+
+--
 -- Return the number of rows in the messages table for the given queue.
 --
 CREATE OR REPLACE FUNCTION queue_processing_count( qname text ) RETURNS integer AS $$
