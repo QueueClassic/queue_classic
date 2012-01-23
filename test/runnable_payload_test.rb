@@ -64,4 +64,10 @@ context 'RunnablePayload' do
     p = ::QueueClassic::RunnablePayload.new( @qc_json )
     assert_equal 'QueueClassic::FakeJob.other( "a", 42 )', p.to_s
   end
+
+  test "raises and error if it is not valid json in the payload" do
+    assert_raises ::QueueClassic::RunnablePayload::Error do
+      ::QueueClassic::RunnablePayload.new( "foo" )
+    end
+  end
 end

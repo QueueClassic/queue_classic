@@ -43,6 +43,8 @@ module QueueClassic
       @klass, @method, @args = build_qc_style(@opts) || build_resque_style(@opts)
       raise Error, "I don't know how to build a runable payload from #{@opts.inspect}" unless @klass
       raise Error, "#{@klass}.#{method} is not implemented" unless @klass.respond_to?( @method )
+    rescue JSON::ParserError => jpe
+      raise Error, "Pay load should be json: #{jpe}"
     end
 
     def to_s
