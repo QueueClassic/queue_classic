@@ -40,6 +40,72 @@ END;
 $$ LANGUAGE plpgsql;
 
 --
+-- The procedure to fire on insert, update, delete's from to the messages table
+--
+CREATE OR REPLACE FUNCTION stats_ready_reserved_counts() RETURNS trigger AS $$
+BEGIN
+  CASE TG_OP
+  WHEN 'INSERT' THEN
+    IF NEW.reserved_at IS NULL THEN
+      PERFORM adjust_stat( NEW.queue_id, 'ready_count', 1 );
+    ELSE
+      PERFORM adjust_stat( NEW.queue_id, 'reserved_count', 1 );
+    END IF;
+    RETURN NEW;
+
+  WHEN 'UPDATE' THEN
+    IF OLD.reserved_at IS NULL THEN
+      IF NEW.reserved_at IS NOT NULL THEN
+        PERFORM adjust_stat( NEW.queue_id, 'reserved_count', 1 );
+        PERFORM adjust_stat( OLD.queue_id, 'ready_count', -1 );
+      END IF;
+    END IF;
+    RETURN NEW;
+
+  WHEN 'DELETE' THEN
+    IF OLD.reserved_at IS NOT NULL THEN
+      PERFORM adjust_stat( OLD.queue_id, 'reserved_count', -1 );
+    ELSE
+      PERFORM adjust_stat( OLD.queue_id, 'ready_count', -1 );
+    END IF;
+    RETURN OLD;
+  END CASE;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+-- Adjust ready_count or reserved_count on insert into messages
+--
+DROP TRIGGER IF EXISTS messages_triggger ON messages;
+CREATE TRIGGER messages_trigger AFTER INSERT OR UPDATE OR DELETE ON messages
+  FOR EACH ROW EXECUTE PROCEDURE stats_ready_reserved_counts();
+
+
+--
+-- The procedure to fine on insert or delete from messages_history table
+--
+CREATE OR REPLACE FUNCTION stats_finalized_counts() RETURNS trigger AS $$
+BEGIN
+  CASE TG_OP
+  WHEN 'INSERT' THEN
+    PERFORM adjust_stat( OLD.queue_id, 'finalized_count', 1 );
+
+  WHEN 'DELETE' THEN
+    PERFORM adjust_stat( OLD.queue_id, 'finalized_count', -1 );
+  END CASE;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+--
+-- Adjust finalized_count on messages_history;
+--
+DROP TRIGGER IF EXISTS messages_history_triggger ON messages_history;
+CREATE TRIGGER messages_history_trigger AFTER INSERT OR DELETE ON messages_history
+  FOR EACH ROW EXECUTE PROCEDURE stats_finalized_counts();
+
+
+--
 -- retrieve a partuclar stat for a particular queue
 --
 CREATE OR REPLACE FUNCTION queue_stat( qname text, sname text ) RETURNS integer AS $$
@@ -268,7 +334,6 @@ DECLARE
 BEGIN
   queue = use_queue( qname );
   INSERT INTO messages(queue_id, payload) VALUES(queue.id, message) RETURNING * INTO new_message;
-  PERFORM adjust_stat( queue.id, 'ready_count', 1 );
   PERFORM pg_notify( qname, new_message.id::text );
   RETURN new_message;
 END;
@@ -325,8 +390,6 @@ BEGIN
      RETURNING *
           INTO reserved_message;
     RETURN next reserved_message;
-    PERFORM adjust_stat( queue.id, 'ready_count'   , -1 );
-    PERFORM adjust_stat( queue.id, 'reserved_count', 1  );
   END IF;
 
   RETURN;
@@ -361,8 +424,6 @@ BEGIN
        RETURNING * INTO updated_msg;
 
       RETURN NEXT updated_msg;
-      PERFORM adjust_stat( updated_msg.queue_id, 'ready_count'   , 1  );
-      PERFORM adjust_stat( updated_msg.queue_id, 'reserved_count', -1 );
     END IF;
   END LOOP;
   RETURN;
@@ -405,8 +466,6 @@ BEGIN
 
   IF FOUND THEN
     DELETE FROM messages WHERE id = message_id;
-    PERFORM adjust_stat( historical_message.queue_id, 'reserved_count' , -1 );
-    PERFORM adjust_stat( historical_message.queue_id, 'finalized_count', 1  );
     RETURN next historical_message;
   ELSE
     RAISE EXCEPTION 'Unable to find reserved message "%" in queue "%".', message_id, qname;
