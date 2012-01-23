@@ -38,3 +38,10 @@ Rcov::RcovTask.new do |t|
   t.ruby_opts << "-rubygems" if RUBY_VERSION < "1.9"
   t.rcov_opts << "--exclude gems/"
 end
+
+
+$LOAD_PATH << "./lib"
+task :environment do
+
+end
+require 'queue_classic/tasks'

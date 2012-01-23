@@ -49,6 +49,13 @@ module QueueClassic
       return row.first['queue_finalized_count'].to_i
     end
 
+    def counts
+      { 'processing_count' => processing_count,
+        'ready_count'      => ready_count,
+        'reserved_count'   => reserved_count,
+        'finalized_count'  => finalized_count }
+    end
+
     #######
     private
     #######
