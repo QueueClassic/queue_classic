@@ -4,6 +4,10 @@ module QueueClassic
   #
   class Queue
 
+    def self.default_name
+      "classic"
+    end
+
     # the name of this queue
     attr_reader :name
 
