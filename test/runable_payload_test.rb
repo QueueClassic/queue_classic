@@ -43,7 +43,7 @@ context 'RunablePayload' do
 
   test "raises an error if an unknown method is used" do
     bad_json = { "job" => "QueueClassic::FakeJob.boom", "params" => [] }.to_json
-    assert_raises NotImplementedError do
+    assert_raises ::QueueClassic::RunablePayload::Error do
       p = ::QueueClassic::RunablePayload.new( bad_json )
     end
   end
@@ -58,5 +58,10 @@ context 'RunablePayload' do
     p = ::QueueClassic::RunablePayload.new( @resque_json )
     result = p.run
     assert_equal 'called FakeJob.perform( "b", "foo", 42 )', result
+  end
+
+  test "#to_s" do
+    p = ::QueueClassic::RunablePayload.new( @qc_json )
+    assert_equal 'QueueClassic::FakeJob.other( "a", 42 )', p.to_s
   end
 end

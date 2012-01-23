@@ -21,6 +21,7 @@ module QueueClassic
   # initial JSON string, and then just calling 'run'.
   #
   class RunablePayload
+    class Error < ::QueueClassic::Error ; end
 
     # The Class of the Payload
     attr_reader :klass
@@ -37,11 +38,15 @@ module QueueClassic
     #
     # Returns a new RunablePayload.
     def initialize( json_string )
-      raise ArgumentException, "really? nil/false as the payload?" unless json_string
+      raise Error, "really? nil/false as the payload?" unless json_string
       @opts = ::JSON.parse( json_string )
       @klass, @method, @args = build_qc_style(@opts) || build_resque_style(@opts)
-      raise ArgumentException, "I don't know how to build a runable payload from #{@opts.inspect}" unless @klass
-      raise NotImplementedError, "#{@klass}.#{method} is not implemented" unless @klass.respond_to?( @method )
+      raise Error, "I don't know how to build a runable payload from #{@opts.inspect}" unless @klass
+      raise Error, "#{@klass}.#{method} is not implemented" unless @klass.respond_to?( @method )
+    end
+
+    def to_s
+      "#{@klass}.#{@method}( #{@args.map { |a| a.inspect }.join(", ")} )"
     end
 
     # Run the Class#method(args)
