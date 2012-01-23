@@ -49,18 +49,22 @@ module QueueClassic
 
     # What should be done every iteration of work
     #
+    # work loop will loop over each consumer and burn down the first queue that
+    # has messages in it. It will then restart on the first queue in the list
+    #
     def work_loop
       loop do
-        puts "starting loop"
-        puts
         @consumers.each do |consumer|
           procline "waiting for message from #{consumer.consumer_id}"
-          puts "waiting for message from #{consumer.consumer_id}"
-          consumer.each_message( :wait, @timeout ) do |msg|
+          count = consumer.each_message( :wait, @timeout ) do |msg|
             work_payload( msg.payload )
           end
+
+          # if we did work on this queue, ones that have higher priority
+          # my have jobs, so we return from the itereation to try a higher
+          # priority queue.
+          break if count > 0
         end
-        puts "verifying stats"
       end
     end
 

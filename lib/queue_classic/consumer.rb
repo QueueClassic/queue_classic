@@ -58,12 +58,15 @@ module QueueClassic
     # The return value from the block is what is used as the finalized message
     # note
     #
-    # Returns nothing
+    # Returns the number of iterations that done
     def each_message( wait = :no_wait, how_long = 1 )
+      count = 0
       while message = reserve( wait, how_long ) do
         finalize_note = yield message
         finalize( message, finalize_note )
+        count += 1
       end
+      return count
     end
 
     # Finalize a message. This removes a message from theq queue and puts it
