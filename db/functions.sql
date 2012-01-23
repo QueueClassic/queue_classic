@@ -361,7 +361,7 @@ BEGIN
     relative_top = 0;
   END IF;
 
-  -- select for update a random message in the top_boundary range of the queue
+  -- select for update a random message in the relative_top range of the queue
   LOOP
     BEGIN
         SELECT id INTO reserved_message_id
