@@ -13,7 +13,7 @@ producers= %w[ foo bar baz ].map { |q| session.producer_for( q ) }
 cli.options.count.times do |x|
   p = producers[ x % producers.size ]
 
-  j = { "job" => "ExampleJob.doit", "params" => [ "meaningless task", x ] }
+  j = { "job" => "Kernel.puts", "params" => [ "meaningless task", x ] }
   json = j.to_json
   p.put( json )
   puts "#{p.queue.name} put #{json}"
