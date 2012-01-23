@@ -25,7 +25,10 @@ end
 # we'll just loop continually over the messages until we are done and then go
 # back to waiting for notifications
 #
-# This is done in this manner mainly to get timings.
+# NOTICE:::
+# This is done in this manner mainly to get timings. If you were to do this for
+# real, look at job-consumer and Consumer#each_message for a more idiomatic
+# approach.
 puts "#{consumer.consumer_id}: waiting 10 sec for notifications"
 while msg = consumer.reserve( :wait, 10 ) do
   consumer.finalize( msg, 'finalized' )
