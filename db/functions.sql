@@ -88,7 +88,7 @@ CREATE OR REPLACE FUNCTION stats_finalized_counts() RETURNS trigger AS $$
 BEGIN
   CASE TG_OP
   WHEN 'INSERT' THEN
-    PERFORM adjust_stat( OLD.queue_id, 'finalized_count', 1 );
+    PERFORM adjust_stat( NEW.queue_id, 'finalized_count', 1 );
 
   WHEN 'DELETE' THEN
     PERFORM adjust_stat( OLD.queue_id, 'finalized_count', -1 );
