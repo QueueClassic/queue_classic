@@ -44,18 +44,25 @@ module QueueClassic
       return Message.new( r.first )
     end
 
-    # Yield each message that is currently on the queue
+    # Yield each message that is currently on the queue.
+    #
+    # wait     - should we block until a message appears (default: :no_wait)
+    #            set to :wait if you want to wait for a bit
+    # how_long - how many seconds (fractional allowed) to wait if wait is :wait
     #
     # This will reserve a message, yield it and then automatically finalize it
     # if there were no exceptions during the processing of it. If there were
     # errors during hte processing of the message those will be propogated up
     # the stack.
     #
+    # The return value from the block is what is used as the finalized message
+    # note
+    #
     # Returns nothing
-    def each_message
-      while message = reserve() do
-        yield message
-        finalize( message, "automatically finalized" )
+    def each_message( wait = :no_wait, how_long = 1 )
+      while message = reserve( wait, how_long ) do
+        finalize_note = yield message
+        finalize( message, finalize_note )
       end
     end
 
