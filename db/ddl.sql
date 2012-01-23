@@ -17,7 +17,7 @@ CREATE UNIQUE INDEX stats_queue_id_name_udx ON stats(queue_id, name);
 DROP TABLE IF EXISTS messages CASCADE;
 CREATE TABLE messages (
   id              bigserial UNIQUE PRIMARY KEY,
-  queue_id        integer   REFERENCES queues(id),
+  queue_id        integer   NOT NULL REFERENCES queues(id),
   payload         text      NOT NULL,
   ready_at        timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   reserved_at     timestamp,
