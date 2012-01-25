@@ -1,5 +1,21 @@
 # Tips & Tricks
 
+## Running Synchronously for tests
+
+I was tesing some code that started out handling some work in a web request and 
+wanted to move that work over to a queue.  After completing a red-green-refactor
+I did not want my tests to have to worry about workers or even hit the database.
+
+Turns out its easy to get QueueClassic to just work in a synchronous way with:
+
+```ruby
+  def QC.enqueue(function_call, *args)
+    eval("#{function_call} *args")
+  end
+```
+
+Now you can test QueueClassic as if it was calling your method directly!
+
 
 ## Dispatching new jobs to workers without new code
 
