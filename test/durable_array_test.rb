@@ -35,6 +35,12 @@ context "DurableArray" do
     assert_equal job, @array.first.details
   end
 
+  test "passes through newlines" do
+    job = {"word" => "line1\nline2\nline3\n"}
+    @array << job
+    assert_equal job, @array.first.details
+  end
+
   test "first returns first job when many are in the array" do
     @array << {"job" => "one"}
     @array << {"job" => "two"}
