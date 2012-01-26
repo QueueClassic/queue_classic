@@ -1,0 +1,21 @@
+#!/usr/bin/env ruby
+
+load File.expand_path( '../options.rb', __FILE__ )
+
+cli = ExampleCLI.new
+cli.parser.parse!
+
+# Allocate a session to start
+session  = QueueClassic::Session.new( cli.options.db_url )
+producers= %w[ foo bar baz ].map { |q| session.producer_for( q ) }
+
+#   { "job" => "Module::Class.method", "params" => [ 'foo', 42 ] }
+cli.options.count.times do |x|
+  p = producers[ x % producers.size ]
+
+  j = { "job" => "Kernel.puts", "params" => [ "meaningless task", x ] }
+  json = j.to_json
+  p.put( json )
+  puts "#{p.queue.name} put #{json}"
+  sleep( 0.1 )
+end

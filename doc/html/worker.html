@@ -3,7 +3,7 @@
 <h4>General Idea</h4>
 
 <p>The worker class (QC::Worker) is designed to be extended via inheritance. Any of
-it's methods should be considered for extension. There are a few in particular
+it&#39;s methods should be considered for extension. There are a few in particular
 that act as stubs in hopes that the user will override them. Such methods
 include: <code>handle_failure() and setup_child()</code>. See the section near the bottom
 for a detailed descriptor of how to subclass the worker.</p>
@@ -30,12 +30,12 @@ all sorts of crazy things, thus warranting the cleanup that fork allows.
 Nevertheless, forking is not enabled by default. To instruct your worker to
 fork, ensure the following shell variable is set:</p>
 
-<pre><code class="bash">$ export QC_FORK_WORKER='true'
+<pre><code class="bash">$ export QC_FORK_WORKER=&#39;true&#39;
 </code></pre>
 
 <p>One last note on forking. It is often the case that after Ruby forks a process,
 some sort of setup needs to be done. For instance, you may want to re-establish
-a database connection, or get a new file descriptor. queue_classic's worker
+a database connection, or get a new file descriptor. queue_classic&#39;s worker
 provides a hook that is called immediately after <code>Kernel.fork</code>. To use this hook
 subclass the worker and override <code>setup_child()</code>.</p>
 
@@ -56,7 +56,7 @@ notification, the worker will quit waiting after the timeout has expired.</p>
 
 <p>LISTEN/NOTIFY is disabled by default but can be enabled by setting the following shell variable:</p>
 
-<pre><code class="bash">$ export QC_LISTENING_WORKER='true'
+<pre><code class="bash">$ export QC_LISTENING_WORKER=&#39;true&#39;
 </code></pre>
 
 <h4>Failure</h4>
@@ -96,7 +96,7 @@ approach to customizing a worker. Somewhere in your project --the lib directory
 works good in a Rails project; you will create a file, call it worker.rb</p>
 
 <pre><code class="ruby"># lib/worker.rb
-require 'queue_classic'
+require &#39;queue_classic&#39;
 
 class MyWorker &lt; QC::Worker
 
@@ -113,7 +113,7 @@ of QC::Worker. Lets take a look at the different ways to run a worker.</p>
 
 <h4>Running the Worker</h4>
 
-<p>In the installation doc, we showed that including <code>require 'queue_classic/tasks</code>
+<p>In the installation doc, we showed that including <code>require &#39;queue_classic/tasks</code>
 into your Rakefile would expose <code>rake jobs:work</code>. The task defined in
 queue_classic will simply instantiate QC::Worker and call start on that
 instance. This is fine for default setups. However, if you have a customized
@@ -125,10 +125,10 @@ directory in this project and inside that directory a file named worker.</p>
 
 <pre><code class="ruby">#!/usr/bin/env ruby
 
-$: &lt;&lt; File.expand_path('lib')
+$: &lt;&lt; File.expand_path(&#39;lib&#39;)
 
-require 'queue_classic'
-require 'my_worker'
+require &#39;queue_classic&#39;
+require &#39;my_worker&#39;
 
 MyWorker.new.start
 </code></pre>
@@ -140,14 +140,14 @@ $ ./bin/worker
 </code></pre>
 
 <p>Now we are running our custom worker. The next example will show a similar
-approach but using Rake. In this example, I'll assume we are working with a
+approach but using Rake. In this example, I&#39;ll assume we are working with a
 Rails project.</p>
 
 <p>Create a new file lib/tasks/my_worker.rake</p>
 
-<pre><code class="ruby">require 'queue_classic'
-require 'queue_classic/tasks'
-require 'my_worker'
+<pre><code class="ruby">require &#39;queue_classic&#39;
+require &#39;queue_classic/tasks&#39;
+require &#39;my_worker&#39;
 # OR you can define MyWorker in this file.
 
 namespace :jobs do

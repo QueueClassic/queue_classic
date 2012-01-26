@@ -1,62 +1,67 @@
-module QC
-  module AbstractQueue
-
-    def enqueue(job,*params)
-      if job.respond_to?(:signature) and job.respond_to?(:params)
-        params = *job.params
-        job = job.signature
-      end
-      array << {"job" => job, "params" => params}
-    end
-
-    def dequeue
-      array.first
-    end
-
-    def query(signature)
-      array.search_details_column(signature)
-    end
-
-    def delete(job)
-      array.delete(job)
-    end
-
-    def delete_all
-      array.each {|j| delete(j) }
-    end
-
-    def length
-      array.count
-    end
-
-  end
-end
-
-module  QC
+module QueueClassic
+  # The Queue represents a single connection to a Single queue in the system.
+  # You can do diferent operations on a queue:
+  #
   class Queue
 
-    include AbstractQueue
-    extend AbstractQueue
-
-    def self.array
-      @@array ||= DurableArray.new(database)
+    def self.default_name
+      "classic"
     end
 
-    def self.database
-      @@database ||= Database.new
+    # the name of this queue
+    attr_reader :name
+
+    # Create a new queue
+    #
+    # session - the Session to use for introspection
+    # name    - the name of the queue
+    def initialize( session , name )
+      @session = session
+      @name    = name
     end
 
-    def initialize(queue_name)
-      @database = Database.new(queue_name)
-      @array = DurableArray.new(@database)
+    # Return how many items are in the queue, this is the sum of the ready_count
+    # and the reserved_count
+    #
+    def processing_count
+      row = connection.execute(" SELECT queue_processing_count($1)", @name )
+      return row.first['queue_processing_count'].to_i
     end
 
-    def array
-      @array
+    # Return how many items are in the queue that are ready
+    #
+    def ready_count
+      row = connection.execute( "SELECT queue_ready_count($1)", @name )
+      return row.first['queue_ready_count'].to_i
     end
 
-    def database
-      @database
+    # Return how many items are in the queue that are reserved
+    #
+    def reserved_count
+      row = connection.execute( "SELECT queue_reserved_count($1)", @name )
+      return row.first['queue_reserved_count'].to_i
+    end
+
+    # Return how many items are from this queue
+    #
+    def finalized_count
+      row = connection.execute( "SELECT queue_finalized_count($1)", @name )
+      return row.first['queue_finalized_count'].to_i
+    end
+
+    def counts
+      { 'processing_count' => processing_count,
+        'ready_count'      => ready_count,
+        'reserved_count'   => reserved_count,
+        'finalized_count'  => finalized_count }
+    end
+
+    #######
+    private
+    #######
+
+    def connection
+      @session.connection
     end
 
   end

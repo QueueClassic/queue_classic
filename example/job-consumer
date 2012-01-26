@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+load File.expand_path( '../options.rb', __FILE__ )
+
+class ExampleJob
+  def self.doit( *args )
+    "Doing IT: #{args.join(", ")}"
+  end
+end
+
+cli = ExampleCLI.new
+cli.parser.parse!
+
+# Allocating a session so we can look up all the queue naems
+session = QueueClassic::Session.new( cli.options.db_url )
+queues = session.queues.map { |q| q.name }
+puts "Creating a worker to process queues: #{queues.join(", ")}"
+worker   = QueueClassic::Worker.new( cli.options.db_url, *queues )
+worker.work

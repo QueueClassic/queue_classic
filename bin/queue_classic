@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+begin
+  require 'queue_classic/cli'
+rescue LoadError => le
+  abort "Unable to load the 'queue_classic/cli' library"
+end
+
+QueueClassic::CLI.new.run( ARGV, ENV )
+

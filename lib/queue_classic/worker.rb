@@ -1,140 +1,150 @@
-module QC
+require 'servolux'
+require 'stringio'
+module QueueClassic
+  #
+  # The Worker style we are going to use here is the fork-per-job pattern.
+  # The main process wil wait for jobs to show up on the queue and when they do,
+  # it will fork off a child process to do the acutal processing. This is
+  # managed via the Servolux::Piper class.
+  #
   class Worker
+    include Logable
 
-    MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
+    # The names of the queues this worker is attached to.
+    attr_reader :queue_names
 
-    def initialize
-      log("worker initialized")
-      log("worker running exp. backoff algorith max_attempts=#{MAX_LOCK_ATTEMPTS}")
-      @running = true
-
-      @queue = QC::Queue.new(ENV["QUEUE"])
-      log("worker table=#{@queue.database.table_name}")
-
-      @fork_worker = ENV["QC_FORK_WORKER"] == "true"
-      log("worker fork=#{@fork_worker}")
-
-      @listening_worker = ENV["QC_LISTENING_WORKER"] == "true"
-      log("worker listen=#{@listening_worker}")
-
-      handle_signals
+    # Create a new worker process that connects to the given database and starts
+    # monitoring the given queues for job messages.
+    def initialize( db_url, *qnames )
+      @queue_names = cleanup_queue_names( qnames )
+      @db_url      = db_url
     end
 
-    def running?
-      @running
+    # The main method of the worker. It runs the lifecycle of the worker.
+    #
+    # timeout - how long to wait on each queue to see if there ate notification
+    #           of work
+    #
+    # The worker's lifecycle is:
+    #
+    # 1. startup  : This connects to the session and creates a new consumer
+    #               for each queue on the list
+    # 2. loop     : Message are receved from the queues and converted to jobs
+    #               and run in child processes
+    # 3. shutdown : any child processes are cleaned up, and then this process
+    #               shuts down its conumes, the session and exits.
+    #
+    def work( timeout = 1.0 )
+      @timeout = timeout
+      startup
+      work_loop
+      shutdown
     end
 
-    def fork_worker?
-      @fork_worker
+    # do pre loop items 
+    def startup
+      procline "Starting up"
+      @session   = ::QueueClassic::Session.new( @db_url )
+      @consumers = @queue_names.map { |qn| @session.consumer_for( qn ) }
     end
 
-    def can_listen?
-      @listening_worker
-    end
-
-    def handle_signals
-      %W(INT TERM).each do |sig|
-        trap(sig) do
-          if running?
-            @running = false
-            log("worker running=#{@running}")
-          else
-            raise Interrupt
+    # What should be done every iteration of work
+    #
+    # work loop will loop over each consumer and burn down the first queue that
+    # has messages in it. It will then restart on the first queue in the list
+    #
+    def work_loop
+      loop do
+        @consumers.each do |consumer|
+          procline "waiting for message from #{consumer.consumer_id}"
+          count = consumer.each_message( :wait, @timeout ) do |msg|
+            work_payload( msg.payload )
           end
+
+          # if we did work on this queue, ones that have higher priority
+          # my have jobs, so we return from the itereation to try a higher
+          # priority queue.
+          break if count > 0
         end
       end
     end
 
-    def setup_child
-      log("forked worker running setup")
+    # after loop items
+    def shutdown
+      procline "Shutting down"
+      @session.close
     end
 
-    def start
-      log("worker starting")
-      while running?
-        log("worker running...")
-        if fork_worker?
-          fork_and_work
-        else
-          work
-        end
+    #######
+    private
+    #######
+
+    # Lifted straight from resque
+    # Sets the procline and logs it
+    def procline( s )
+      $0 = "queue_classic: #{s}"
+      logger.info $0
+    end
+
+
+    # Process a message, assuming it is a Job
+    #
+    # If the message cannot be converted to a Job return that as such
+    #
+    # Return the message about the message processing
+    def work_payload( payload )
+      job   = ::QueueClassic::RunnablePayload.new( payload )
+      piper = ::Servolux::Piper.new
+
+      piper.child  { child( piper, job ) }
+      final_message = piper.parent { parent( piper ) }
+
+      piper.close
+      return final_message
+    rescue ::QueueClassic::RunnablePayload::Error => e
+      logger.error "payload #{payload} is not a valid pyaload : #{e}"
+      e.message
+    end
+
+    # What to do in the parent
+    #
+    def parent(piper)
+      procline "Forked job to #{piper.pid} at #{Time.now.strftime("%Y-%m-%d %H:%M:%S")}"
+      Process.wait(piper.pid)
+      msg = StringIO.new
+      while d = piper.gets do
+        msg.write( d )
       end
+      puts "child message: #{msg.string}"
+      return msg.string
     end
 
-    def fork_and_work
-      @cpid = fork { setup_child; work }
-      log("worker forked pid=#{@cpid}")
-      Process.wait(@cpid)
+    # What to do in the child
+    #
+    def child(piper, job)
+      procline "Processing #{job} since #{Time.now.strftime("%Y-%m-%d %H:%M:%S")}"
+      piper.puts job.run
+    rescue Object => o
+      piper.puts o
+    ensure
+      exit!
     end
 
-    def work
-      log("worker start working")
-      if job = lock_job
-        log("worker locked job=#{job.id}")
-        begin
-          job.work
-          log("worker finished job=#{job.id}")
-        rescue Object => e
-          log("worker failed job=#{job.id} exception=#{e.inspect}")
-          handle_failure(job,e)
-        ensure
-          @queue.delete(job)
-          log("worker deleted job=#{job.id}")
-        end
-      end
-    end
+    # Resolve the queue names into seemingly good names
+    #
+    # qnames - the list of queue names to resolve
+    #
+    # A valid queue name is a non-empty string that is not 'default'
+    #
+    def cleanup_queue_names( qnames )
+      return [ ::QueueClassic::Queue.default_name ] if qnames.nil?
 
-    def lock_job
-      log("worker attempting a lock")
-      attempts = 0
-      job = nil
-      until job
-        job = @queue.dequeue
-        if job.nil?
-          log("worker missed lock attempt=#{attempts}")
-          attempts += 1
-          if attempts < MAX_LOCK_ATTEMPTS
-            seconds = 2**attempts
-            wait(seconds)
-            log("worker tries again")
-            next
-          else
-            log("worker reached max attempts. max=#{MAX_LOCK_ATTEMPTS}")
-            break
-          end
-        else
-          log("worker successfully locked job")
-        end
-      end
-      job
-    end
+      qnames = qnames.map       { |q| q.to_s.strip  }
+      qnames = qnames.delete_if { |q| q.length == 0 }
 
-    def wait(t)
-      if can_listen?
-        log("worker waiting on LISTEN")
-        @queue.database.listen
-        @queue.database.wait_for_notify(t)
-        @queue.database.unlisten
-        @queue.database.drain_notify
-        log("worker finished LISTEN")
-      else
-        log("worker sleeps seconds=#{t}")
-        Kernel.sleep(t)
-      end
-    end
+      return [ ::QueueClassic::Queue.default_name ] if qnames.empty?
 
-    #override this method to do whatever you want
-    def handle_failure(job,e)
-      puts "!"
-      puts "! \t FAIL"
-      puts "! \t \t #{job.inspect}"
-      puts "! \t \t #{e.inspect}"
-      puts "!"
+      return qnames
     end
-
-    def log(msg)
-      Logger.puts(msg)
-    end
-
   end
 end

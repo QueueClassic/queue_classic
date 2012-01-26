@@ -12,7 +12,7 @@ practice I have not found any such problems. In fact:</p>
 <p><em>enqueue</em></p>
 
 <pre><code class="sql">
-  queue_classic_test=# EXPLAIN ANALYZE INSERT INTO queue_classic_jobs (details) VALUES ('test');
+  queue_classic_test=# EXPLAIN ANALYZE INSERT INTO queue_classic_jobs (details) VALUES (&#39;test&#39;);
 
   QUERY PLAN
   ------------------------------------------------------------------------------------------
@@ -25,7 +25,7 @@ practice I have not found any such problems. In fact:</p>
 <p><em>dequeue</em></p>
 
 <pre><code class="sql">
-  queue_classic_test=# EXPLAIN ANALYZE select * from lock_head('queue_classic_jobs');
+  queue_classic_test=# EXPLAIN ANALYZE select * from lock_head(&#39;queue_classic_jobs&#39;);
 
   QUERY PLAN
   -------------------------------------------------------------------------------------------------------------

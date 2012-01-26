@@ -1,13 +1,22 @@
-$: << File.expand_path("lib")
-$: << File.expand_path("test")
-
-ENV['DATABASE_URL'] ||= 'postgres:///queue_classic_test'
-
 require 'queue_classic'
-require 'database_helpers'
+require 'minitest/autorun'
+require 'queue_classic/bootstrap'
 
-require 'minitest/unit'
-MiniTest::Unit.autorun
+module DatabaseHelpers
+  def database_url
+    'postgres:///queue_classic_test'
+  end
+
+  def setup_db
+    bs = QueueClassic::Bootstrap.setup( database_url )
+    bs.close
+  end
+
+  def teardown_db
+    bs = QueueClassic::Bootstrap.teardown( database_url )
+    bs.close
+  end
+end
 
 def context(*args, &block)
   return super unless (name = args.first) && block

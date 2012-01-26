@@ -1,27 +1,39 @@
+require 'queue_classic'
+
 namespace :jobs do
-
   desc 'Alias for qc:work'
-  task :work  => 'qc:work'
-
+  task :work => 'qc:work'
 end
 
 namespace :qc do
-
-  desc 'Start a new worker for the (default or QUEUE) queue'
-  task :work  => :environment do
-    QC::Worker.new.start
+  def enviro_queues
+    queues = (ENV['QUEUES'] || ENV['QUEUE']).to_s.split(",")
   end
 
-  desc 'Returns the number of jobs in the (default or QUEUE) queue'
+  desc 'Start a new worker attaching to the QC_DATABASE_URL server and QUEUE or QUEUES queues'
+  task :work => :environment do
+    worker = QueueClassic::Worker.new( ENV['QC_DATABASE_URL'], *enviro_queues() )
+    worker.work
+  end
+
+  desc 'Returns the number of jobs in the (default or QUEUE or QUEUES) queue'
   task :jobs => :environment do
-    puts QC::Queue.new(ENV['QUEUE']).length
+    session = QueueClassic::Session.new( ENV['QC_DATABASE_URL'] )
+    session.queues.sort_by { |q| q.name }.each do |q|
+      p_stats = q.counts.map { |k,v| "#{k}: #{"%6d" % v}" }.sort
+      puts "QUEUE: #{q.name.rjust(8)} => #{p_stats.join(' ')}"
+    end
   end
 
-  desc 'Ensure the database has the necessary functions for QC'
-  task :load_functions => :environment do
-    db = QC::Database.new
-    db.load_functions
-    db.disconnect
+  desc "Install queue_classic into an existing database"
+  task :setup => :environment do
+    require 'queue_classic/bootstrap'
+    QueueClassic::Bootstrap.setup( ENV['QC_DATABASE_URL'] )
   end
 
+  desc "Uninstall queue_classic from the database"
+  task :teardown => :environment do
+    require 'queue_classic/bootstrap'
+    QueueClassic::Bootstrap.teardown( ENV['QC_DATABASE_URL'] )
+  end
 end

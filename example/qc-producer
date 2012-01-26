@@ -1,0 +1,30 @@
+#!/usr/bin/env ruby
+
+load File.expand_path( '../options.rb', __FILE__ )
+#
+# This is an example producer that puts generic messages on the queue and spits
+# out some performance numbers as it does the inserts
+#
+
+cli = ExampleCLI.new
+cli.parser.parse!
+
+# Allocate a session to start
+session  = QueueClassic::Session.new( cli.options.db_url )
+
+# and create a producer that is attached to the session for that queue
+producer = session.producer_for( cli.options.queue )
+timer    = ::Hitimes::TimedMetric.new("producer")
+
+puts "#{producer.producer_id}: Started!"
+# Insert messages into the queue until done
+cli.options.count.times do |x|
+  timer.measure do
+    producer.put( "message #{x}" )
+  end
+
+  # output some stats ever so often
+  if timer.count % 1000  == 0then
+    puts "#{producer.producer_id}: count #{ "%6d" % timer.count } rate #{ "%0.6f" % timer.rate } mps"
+  end
+end

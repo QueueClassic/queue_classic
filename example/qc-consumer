@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+load File.expand_path( '../options.rb', __FILE__ )
+#
+# This is an example consumer that pulls generic messages off the queue and
+# disposes of them and outputs some metrics as it does so.
+#
+
+cli = ExampleCLI.new
+cli.parser.parse!
+
+# Allocate a session to start
+session  = QueueClassic::Session.new( cli.options.db_url )
+
+# and create a consumer that is attached to the session for that queue
+consumer = session.consumer_for( cli.options.queue )
+timer    = ::Hitimes::TimedMetric.new("consumer")
+
+puts "#{consumer.consumer_id}: Started! (Ctrl-C to stop)"
+trap('INT') do
+  exit
+end
+
+# outer loop is waiting for notifications, once the notifications are reached,
+# we'll just loop continually over the messages until we are done and then go
+# back to waiting for notifications
+#
+# NOTICE:::
+# This is done in this manner mainly to get timings. If you were to do this for
+# real, look at job-consumer and Consumer#each_message for a more idiomatic
+# approach.
+puts "#{consumer.consumer_id}: waiting 10 sec for notifications"
+while msg = consumer.reserve( :wait, 10 ) do
+  consumer.finalize( msg, 'finalized' )
+  puts "#{consumer.consumer_id}: processing..."
+  loop do
+    timer.measure do
+      msg = consumer.reserve
+      consumer.finalize( msg, 'finalized' ) if msg
+    end
+
+    if timer.count % 1000 == 0 then
+      puts "#{consumer.consumer_id}: mean #{timer.mean} rate #{timer.rate} count #{timer.count}"
+    end
+
+    if not msg then
+      puts "#{consumer.consumer_id}: waiting 10 sec for notifications"
+      break
+    end
+  end
+end
+puts "#{consumer.consumer_id}: mean #{timer.mean} rate #{timer.rate} count #{timer.count}"
