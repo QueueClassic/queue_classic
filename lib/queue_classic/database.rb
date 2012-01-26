@@ -27,6 +27,10 @@ module QC
       execute("SET application_name = 'queue_classic'")
     end
 
+    def escape(string)
+      connection.escape(string)
+    end
+
     def notify
       log("NOTIFY")
       execute("NOTIFY #{@channel_name}")
