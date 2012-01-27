@@ -6,6 +6,7 @@ require 'uri'
 
 $: << File.expand_path(__FILE__, 'lib')
 
+require 'queue_classic/okjson'
 require 'queue_classic/durable_array'
 require 'queue_classic/database'
 require 'queue_classic/worker'

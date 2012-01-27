@@ -14,5 +14,4 @@ Gem::Specification.new do |s|
   s.require_paths = %w[lib]
 
   s.add_dependency 'pg', "~> 0.11.0"
-  s.add_dependency 'json', "~> 1.6.1"
 end

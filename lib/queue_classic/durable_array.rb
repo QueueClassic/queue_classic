@@ -8,7 +8,7 @@ module QC
     end
 
     def <<(details)
-      string = @database.escape(JSON.dump(details))
+      string = @database.escape(OkJson.encode(details))
       execute("INSERT INTO #{@table_name} (details) VALUES (E'#{string}');")
       @database.notify if ENV["QC_LISTENING_WORKER"] == "true"
     end
