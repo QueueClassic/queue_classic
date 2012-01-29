@@ -169,6 +169,13 @@ module QC
      EOD
     end
 
+    def unload_functions
+      execute(<<-EOD)
+        DROP FUNCTION IF EXISTS lock_head(tname varchar);
+        DROP FUNCTION IF EXISTS lock_head(tname name, top_boundary integer);
+      EOD
+    end
+
     def log(msg)
       Logger.puts(["database", msg].join(" "))
     end
