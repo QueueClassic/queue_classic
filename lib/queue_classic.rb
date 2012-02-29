@@ -1,18 +1,18 @@
-require 'pg'
+require "pg"
 
-require 'logger'
-require 'json'
-require 'uri'
+require "logger"
+require "json"
+require "uri"
 
-$: << File.expand_path(__FILE__, 'lib')
+$: << File.expand_path(__FILE__, "lib")
 
-require 'queue_classic/okjson'
-require 'queue_classic/durable_array'
-require 'queue_classic/database'
-require 'queue_classic/worker'
-require 'queue_classic/logger'
-require 'queue_classic/queue'
-require 'queue_classic/job'
+require "queue_classic/okjson"
+require "queue_classic/durable_array"
+require "queue_classic/database"
+require "queue_classic/worker"
+require "queue_classic/logger"
+require "queue_classic/queue"
+require "queue_classic/job"
 
 module QC
   VERBOSE = ENV["VERBOSE"] || ENV["QC_VERBOSE"]
