@@ -101,18 +101,9 @@ $ export QC_DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
 $ rake
 ```
 
-### Building Documentation
-
-If you are adding new features, please document them in the doc directory. Also,
-once you have the markdown in place, please run: ruby doc/build.rb to make HTML
-for the docs.
-
 ## Other Resources
 
-###[Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
-
-###[Documentation](https://github.com/ryandotsmith/queue_classic/tree/master/doc)
-
-###[Example Rails App](https://github.com/ryandotsmith/queue_classic_example)
-
-###[Slide Deck](http://dl.dropbox.com/u/1579953/talks/queue_classic.pdf)
+* [Discussion Group](http://groups.google.com/group/queue_classic "discussion group")
+* [Documentation](https://github.com/ryandotsmith/queue_classic/tree/master/doc)
+* [Example Rails App](https://github.com/ryandotsmith/queue_classic_example)
+* [Slide Deck](http://dl.dropbox.com/u/1579953/talks/queue_classic.pdf)
