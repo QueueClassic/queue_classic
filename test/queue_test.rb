@@ -68,4 +68,11 @@ context "Queue" do
     assert_equal 'param', dequeued_job.params
   end
 
+  test "Queues have their own array" do
+    refute_equal(Class.new(QC::Queue).array, Class.new(QC::Queue).array)
+  end
+
+  test "Queues have their own database" do
+    refute_equal(Class.new(QC::Queue).database, Class.new(QC::Queue).database)
+  end
 end
