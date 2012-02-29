@@ -14,7 +14,7 @@ context "Job" do
   test "signature returns the class and method" do
     job = QC::Job.new(
       "id" => 1,
-      "details" => {:job => "Class.method", :params => []}.to_json,
+      "details" => QC::OkJson.encode({"job" => "Class.method", "params" => []}),
       "locked_at" => nil
     )
     assert_equal "Class.method", job.signature
@@ -23,7 +23,7 @@ context "Job" do
   test "method returns the class method" do
     job = QC::Job.new(
       "id" => 1,
-      "details" => {:job => "Class.method", :params => []}.to_json,
+      "details" => QC::OkJson.encode({"job" => "Class.method", "params" => []}),
       "locked_at" => nil
     )
     assert_equal "method", job.method
@@ -33,7 +33,7 @@ context "Job" do
     class WhoHa; end
     job = QC::Job.new(
       "id" => 1,
-      "details" => {:job => "WhoHa.method", :params => []}.to_json,
+      "details" => QC::OkJson.encode({"job" => "WhoHa.method", "params" => []}),
       "locked_at" => nil
     )
     assert_equal WhoHa, job.klass
@@ -47,7 +47,7 @@ context "Job" do
 
     job = QC::Job.new(
       "id" => 1,
-      "details" => {:job => "Mod::K.method", :params => []}.to_json,
+      "details" => QC::OkJson.encode({"job" => "Mod::K.method", "params" => []}),
       "locked_at" => nil
     )
     assert_equal Mod::K, job.klass
@@ -56,7 +56,7 @@ context "Job" do
   test "params returns empty array when nil" do
      job = QC::Job.new(
       "id" => 1,
-      "details" => {:job => "Mod::K.method", :params => nil}.to_json,
+      "details" => QC::OkJson.encode({"job" => "Mod::K.method", "params" => nil}),
       "locked_at" => nil
     )
     assert_equal [], job.params
@@ -65,7 +65,7 @@ context "Job" do
   test "params returns 1 items when there is 1 param" do
     job = QC::Job.new(
       "id" => 1,
-      "details" => {:job => "Mod::K.method", :params => ["arg"]}.to_json,
+      "details" => QC::OkJson.encode({"job" => "Mod::K.method", "params" => ["arg"]}),
       "locked_at" => nil
     )
     assert_equal "arg", job.params
@@ -74,7 +74,7 @@ context "Job" do
   test "params retuns many items when there are many params" do
     job = QC::Job.new(
       "id" => 1,
-      "details" => {:job => "Mod::K.method", :params => ["arg","arg"]}.to_json,
+      "details" => QC::OkJson.encode({"job" => "Mod::K.method", "params" => ["arg","arg"]}),
       "locked_at" => nil
     )
     assert_equal ["arg","arg"], job.params

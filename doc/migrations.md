@@ -2,12 +2,11 @@
 
 ## Sequel
 
-
 ### Jobs Table
 ```ruby
 Sequel.migration do
   up do
-    create_table :queue_classic_jobs do 
+    create_table :queue_classic_jobs do
       primary_key :id
       String :details
       Time   :locked_at
