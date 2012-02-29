@@ -25,10 +25,12 @@
 
 <h3>Database Migration</h3>
 
+<p>First, we create the table that maintains the queue (queue<em>classic</em>jobs).</p>
+
 <pre><code class="ruby">
 class CreateJobsTable &lt; ActiveRecord::Migration
 
-  def self.up
+  def change
     create_table :queue_classic_jobs do |t|
       t.text :details
       t.timestamp :locked_at
@@ -36,17 +38,47 @@ class CreateJobsTable &lt; ActiveRecord::Migration
     add_index :queue_classic_jobs, :id
   end
 
-  def self.down
-    drop_table :queue_classic_jobs
+end
+
+</code></pre>
+
+<p>Then, we create the functions that QC depends on.
+You can either call the provided rake tasks or create/drop the functions directly.</p>
+
+<pre><code class="ruby">
+class AddQueueClassicFunctions &lt; ActiveRecord::Migration
+
+  def up
+    `rake qc:load_functions`
+  end
+
+  def down
+    `rake qc:remove_functions`
   end
 
 end
 
 </code></pre>
 
-<h3>Load PL/pgSQL Functions</h3>
+<p>OR...</p>
 
-<pre><code class="bash">
-  rake qc:load_functions
+<pre><code class="ruby">
+class AddQueueClassicFunctions &lt; ActiveRecord::Migration
+
+  def up
+    # Note: this uses AR connection, not QC connection
+    QC::Database.sql_functions.each do |function_moniker, contents|
+      execute(&quot;CREATE OR REPLACE FUNCTION #{function_moniker} #{contents}&quot;)
+    end
+  end
+
+  def down
+    # Note: this uses AR connection, not QC connection
+    QC::Database.sql_function_monikers.each do |function_moniker|
+      execute &quot;DROP FUNCTION IF EXISTS #{function_moniker} CASCADE&quot;
+    end
+  end
+
+end
 
 </code></pre>

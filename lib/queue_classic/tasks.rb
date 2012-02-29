@@ -24,4 +24,10 @@ namespace :qc do
     db.disconnect
   end
 
+  task :remove_functions => :environment do
+    db = QC::Database.new
+    db.remove_functions
+    db.disconnect
+  end
+
 end
