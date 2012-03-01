@@ -12,6 +12,10 @@ class QueueTest < QCTest
     assert_equal(expected, QC.lock)
   end
 
+  def test_lock_when_empty
+    assert_nil(QC.lock)
+  end
+
   def test_count
     QC.enqueue("Klass.method")
     assert_equal(1, QC.count)

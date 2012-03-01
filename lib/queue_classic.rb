@@ -25,6 +25,7 @@ module QC
   TABLE_NAME = ENV["QUEUE"] || "queue_classic_jobs"
   TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
   LISTENING_WORKER = !ENV["QC_LISTENING_WORKER"].nil?
+  FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
   MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
   Conn.execute("SET application_name = 'queue_classic'")

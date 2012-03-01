@@ -10,12 +10,13 @@ module QC
 
     def first(table, top_bound)
       q = "SELECT * FROM lock_head($1, $2)"
-      r = Conn.execute(q,table, top_bound)
-      {
-        :id     => r["id"],
-        :method => r["method"],
-        :args   => OkJson.decode(r["args"])
-      }
+      if r = Conn.execute(q, table, top_bound)
+        {
+          :id     => r["id"],
+          :method => r["method"],
+          :args   => OkJson.decode(r["args"])
+        }
+      end
     end
 
     def count(table)
