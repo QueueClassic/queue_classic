@@ -1,66 +1,37 @@
 module QC
-  module AbstractQueue
+  class Queue
+
+    attr_reader :table, :top_bound
+
+    def initialize(table, top_bound, notify=false)
+      @table = table
+      @chan = @table if notify
+      @top_bound = top_bound
+    end
 
     def enqueue(job,*params)
       if job.respond_to?(:signature) and job.respond_to?(:params)
         params = *job.params
         job = job.signature
       end
-      array << {"job" => job, "params" => params}
+      json = OkJson.encode({"job" => job, "params" => params})
+      Queries.insert(table, json, chan)
     end
 
     def dequeue
-      array.first
-    end
-
-    def query(signature)
-      array.search_details_column(signature)
+      Queries.first(table, top_bound)
     end
 
     def delete(job)
-      array.delete(job)
+      Queries.delete(table, job.id)
     end
 
     def delete_all
-      array.each {|j| delete(j) }
+      Queries.delete_all(table)
     end
 
     def length
-      array.count
-    end
-
-  end
-end
-
-module  QC
-  class Queue
-
-    include AbstractQueue
-    extend AbstractQueue
-
-    def self.array
-      default_queue.array
-    end
-
-    def self.database
-      default_queue.database
-    end
-
-    def self.default_queue
-      @queue ||= new(nil)
-    end
-
-    def initialize(queue_name)
-      @database = Database.new(queue_name)
-      @array = DurableArray.new(@database)
-    end
-
-    def array
-      @array
-    end
-
-    def database
-      @database
+      Queries.count(table)
     end
 
   end

@@ -9,19 +9,26 @@ namespace :qc do
 
   desc 'Start a new worker for the (default or QUEUE) queue'
   task :work  => :environment do
-    QC::Worker.new.start
+    QC::Worker.new(
+      QC::TABLE_NAME,
+      QC::TOP_BOUND,
+      QC::LISTENING_WORKER,
+      QC::MAX_LOCK_ATTEMPTS
+    ).start
   end
 
   desc 'Returns the number of jobs in the (default or QUEUE) queue'
-  task :jobs => :environment do
-    puts QC::Queue.new(ENV['QUEUE']).length
+  task :length => :environment do
+    puts QC::Worker.new(
+      QC::TABLE_NAME,
+      QC::TOP_BOUND,
+      QC::LISTENING_WORKER,
+      QC::MAX_LOCK_ATTEMPTS
+    ).length
   end
 
   desc 'Ensure the database has the necessary functions for QC'
   task :load_functions => :environment do
-    db = QC::Database.new
-    db.load_functions
-    db.disconnect
   end
 
 end
