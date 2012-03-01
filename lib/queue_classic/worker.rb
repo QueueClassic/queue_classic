@@ -72,8 +72,9 @@ module QC
       if job = lock_job
         log("worker locked job=#{job[:id]}")
         begin
-          call(job)
-          log("worker finished job=#{job[:id]}")
+          call(job).tap do
+            log("worker finished job=#{job[:id]}")
+          end
         rescue Object => e
           log("worker failed job=#{job[:id]} exception=#{e.inspect}")
           handle_failure(job, e)
@@ -113,7 +114,7 @@ module QC
       args = job[:args]
       klass = eval(job[:method].split(".").first)
       message = job[:method].split(".").last
-      klass.send(message, args)
+      klass.send(message, *args)
     end
 
     def wait(t)

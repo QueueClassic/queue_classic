@@ -1,8 +1,10 @@
 require File.expand_path("../helper.rb", __FILE__)
 
-class TestNotifier
-  def self.deliver(args={})
-  end
+module TestObject
+  extend self
+  def no_args; return nil; end
+  def one_arg(a); return a; end
+  def two_args(a,b); return [a,b]; end
 end
 
 # This not only allows me to test what happens
@@ -25,7 +27,7 @@ end
 class WorkerTest < QCTest
 
   def test_work
-    QC.enqueue("TestNotifier.deliver")
+    QC.enqueue("TestObject.no_args")
     worker = TestWorker.new("queue_classic_jobs", 1, false, false, 1)
     assert_equal(1, QC.count)
     worker.work
@@ -34,14 +36,38 @@ class WorkerTest < QCTest
   end
 
   def test_failed_job
-    QC.enqueue("TestNotifier.no_method")
+    QC.enqueue("TestObject.not_a_method")
     worker = TestWorker.new("queue_classic_jobs", 1, false, false, 1)
     worker.work
     assert_equal(1, worker.failed_count)
   end
 
+  def test_work_with_no_args
+    QC.enqueue("TestObject.no_args")
+    worker = TestWorker.new("queue_classic_jobs", 1, false, false, 1)
+    r = worker.work
+    assert_nil(r)
+    assert_equal(0, worker.failed_count)
+  end
+
+  def test_work_with_one_arg
+    QC.enqueue("TestObject.one_arg", "1")
+    worker = TestWorker.new("queue_classic_jobs", 1, false, false, 1)
+    r = worker.work
+    assert_equal("1", r)
+    assert_equal(0, worker.failed_count)
+  end
+
+  def test_work_with_two_args
+    QC.enqueue("TestObject.two_args", "1", 2)
+    worker = TestWorker.new("queue_classic_jobs", 1, false, false, 1)
+    r = worker.work
+    assert_equal(["1", 2], r)
+    assert_equal(0, worker.failed_count)
+  end
+
   def test_worker_ueses_one_conn
-    QC.enqueue("TestNotifier.deliver")
+    QC.enqueue("TestObject.no_args")
     worker = TestWorker.new("queue_classic_jobs", 1, false, false, 1)
     worker.work
     assert_equal(
