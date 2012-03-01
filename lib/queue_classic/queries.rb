@@ -8,7 +8,7 @@ module QC
       Conn.notify(chan) if chan
     end
 
-    def first(table, top_bound)
+    def lock_head(table, top_bound)
       q = "SELECT * FROM lock_head($1, $2)"
       if r = Conn.execute(q, table, top_bound)
         {

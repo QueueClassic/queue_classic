@@ -14,7 +14,7 @@ module QC
     end
 
     def lock
-      Queries.first(table, top_bound)
+      Queries.lock_head(table, top_bound)
     end
 
     def delete(id)
