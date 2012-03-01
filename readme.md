@@ -1,5 +1,6 @@
 # queue_classic
-v1.0.0
+
+v2.0.0
 
 queue_classic is a PostgreSQL-backed queueing library that is focused on
 concurrent job locking, minimizing database load & providing a simple &
@@ -23,10 +24,29 @@ I wrote queue_classic to solve a production problem.  My problem was that I need
 queueing system that wouldn't fall over should I decide to press it nor should it freak out
 if I attached 100 workers to it. However, my problem didn't warrant adding an additional service.
 I was already using PostgreSQL to manage my application's data, why not use PostgreSQL to pass some messages?
-PostgreSQL was already handling thousands of reads and writes per second anyways. Why not add 35 more
+PostgreSQL was already handling thousands of reads and writes per second anyways, why not add 35 more
 reads/writes per second to my established performance metric?
 
-queue_classic handles over **3,000,000** jobs per day. It does this on Heroku's Ronin Database.
+### Success Stories
+
+#### Heroku Postgres
+
+The Heroku Postgres team uses queue_classic to monitor the health of
+customer databases. They process 200 jobs per second using a [fugu](https://postgres.heroku.com/pricing)
+database. They chose queue_classic because of it's simplicity and reliability.
+
+#### Cloudapp
+
+Larry uses cloudapp to send push notifications and collect file meta-data from S3.
+Cloudapp processes nearly 14 jobs per second.
+
+```
+I haven't even touched QC since setting it up.
+No complaints at all about unreceived emails or non-incrementing view counters.
+The best queue is the one you don't have to hand hold.
+```
+
+-- Larry Marburger
 
 ## Quick Start
 
