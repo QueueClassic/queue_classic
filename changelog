@@ -1,3 +1,11 @@
+Version 1.0.1
+- using OkJson instead of any sort of rubygem
+- remove html from docs
+- use parameterised queries
+- don't set application name by default
+- injection attack bug fixed in lock_head()
+- notificaiton get sent on seperate chans for disjoint queues
+
 Version 1.0.0rc1
 - Removed json gem and relying on ruby 1.9.2's stdlib
 - Added better documentation
