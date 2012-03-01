@@ -6,13 +6,13 @@ require "uri"
 $: << File.expand_path(__FILE__, "lib")
 
 require "queue_classic/okjson"
-require "queue_classic/worker"
 require "queue_classic/conn"
 require "queue_classic/queries"
 require "queue_classic/queue"
-require "queue_classic/job"
+require "queue_classic/worker"
 
 module QC
+
   Root = File.expand_path(File.dirname(__FILE__))
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
   DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
@@ -21,6 +21,7 @@ module QC
   Log.level = (ENV["QC_LOG_LEVEL"] || Logger::DEBUG).to_i
   Log.info("program=queue_classic log=true")
 
+  DB_URL = ENV["QC_DATABASE_URL"] || ENV["DATABASE_URL"]
   TABLE_NAME = ENV["QUEUE"] || "queue_classic_jobs"
   TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
   LISTENING_WORKER = !ENV["QC_LISTENING_WORKER"].nil?

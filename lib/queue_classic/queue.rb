@@ -1,7 +1,7 @@
 module QC
   class Queue
 
-    attr_reader :table, :top_bound
+    attr_reader :table, :top_bound, :chan
 
     def initialize(table, top_bound, notify=false)
       @table = table
@@ -9,28 +9,23 @@ module QC
       @top_bound = top_bound
     end
 
-    def enqueue(job,*params)
-      if job.respond_to?(:signature) and job.respond_to?(:params)
-        params = *job.params
-        job = job.signature
-      end
-      json = OkJson.encode({"job" => job, "params" => params})
-      Queries.insert(table, json, chan)
+    def enqueue(method, *args)
+      Queries.insert(table, method, args, chan)
     end
 
-    def dequeue
+    def lock
       Queries.first(table, top_bound)
     end
 
-    def delete(job)
-      Queries.delete(table, job.id)
+    def delete(id)
+      Queries.delete(table, id)
     end
 
     def delete_all
       Queries.delete_all(table)
     end
 
-    def length
+    def count
       Queries.count(table)
     end
 

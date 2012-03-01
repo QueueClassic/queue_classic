@@ -11,47 +11,44 @@ end
 # you want.
 class TestWorker < QC::Worker
   attr_accessor :failed_count
-  def initialize
+
+  def initialize(*args)
+    super(*args)
     @failed_count = 0
-    super
   end
+
   def handle_failure(job,e)
     @failed_count += 1
   end
 end
 
-context "Worker" do
+class WorkerTest < QCTest
 
-  setup do
-    @database = init_db
-    @worker = TestWorker.new
+  def test_work
+    QC.enqueue("TestNotifier.deliver")
+    worker = TestWorker.new("queue_classic_jobs", 1, false, false, 1)
+    assert_equal(1, QC.count)
+    worker.work
+    assert_equal(0, QC.count)
+    assert_equal(0, worker.failed_count)
   end
 
-  teardown do
-    @database.disconnect
+  def test_failed_job
+    QC.enqueue("TestNotifier.no_method")
+    worker = TestWorker.new("queue_classic_jobs", 1, false, false, 1)
+    worker.work
+    assert_equal(1, worker.failed_count)
   end
 
-  test "working a job" do
-    QC::Queue.enqueue "TestNotifier.deliver", {}
-
-    assert_equal(1, QC::Queue.length)
-    @worker.work
-    assert_equal(0, QC::Queue.length)
-    assert_equal(0, @worker.failed_count)
-  end
-
-  test "resuce failed job" do
-    QC::Queue.enqueue "TestNotifier.no_method", {}
-
-    @worker.work
-    assert_equal 1, @worker.failed_count
-  end
-
-  test "only makes one connection" do
-    QC.enqueue "TestNotifier.deliver", {}
-    @worker.work
-    assert_equal 1, @database.execute("SELECT count(*) from pg_stat_activity")[0]["count"].to_i,
+  def test_worker_ueses_one_conn
+    QC.enqueue("TestNotifier.deliver")
+    worker = TestWorker.new("queue_classic_jobs", 1, false, false, 1)
+    worker.work
+    assert_equal(
+      1,
+      QC::Conn.execute("SELECT count(*) from pg_stat_activity")["count"].to_i,
       "Multiple connections -- Are there other connections in other terminals?"
+    )
   end
 
 end

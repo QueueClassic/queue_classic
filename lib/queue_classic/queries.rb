@@ -6,12 +6,11 @@ module QC
       s = "INSERT INTO #{table} (method, args) VALUES ($1, $2)"
       res = Conn.execute(s, method, OkJson.encode(args))
       Conn.notify(chan) if chan
-      res["id"]
     end
 
-    def first(table, offset)
+    def first(table, top_bound)
       q = "SELECT * FROM lock_head($1, $2)"
-      r = Conn.execute([q, table, offset])
+      r = Conn.execute(q,table, top_bound)
       {
         :id     => r["id"],
         :method => r["method"],
@@ -21,11 +20,11 @@ module QC
 
     def count(table)
       r = Conn.execute("SELECT COUNT(*) FROM #{table}")
-      r.pop["count"].to_i
+      r["count"].to_i
     end
 
     def delete(table, id)
-      Conn.execute(["DELETE FROM #{table} where id = $1", id])
+      Conn.execute("DELETE FROM #{table} where id = $1", id)
     end
 
     def delete_all(table)

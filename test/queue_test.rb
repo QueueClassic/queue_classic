@@ -1,78 +1,43 @@
 require File.expand_path("../helper.rb", __FILE__)
-require 'ostruct'
 
-context "Queue" do
+class QueueTest < QCTest
 
-  setup { @database = init_db }
-
-  test "Queue class responds to enqueue" do
-    QC::Queue.enqueue("Klass.method")
+  def test_enqueue
+    QC.enqueue("Klass.method")
   end
 
-  test "Queue class has a default table name" do
-    default_table_name = QC::Database.new.table_name
-    assert_equal default_table_name, QC::Queue.database.table_name
+  def test_lock
+    QC.enqueue("Klass.method")
+    expected = {:id=>"1", :method=>"Klass.method", :args=>[]}
+    assert_equal(expected, QC.lock)
   end
 
-  test "Queue class responds to dequeue" do
-    QC::Queue.enqueue("Klass.method")
-    assert_equal "Klass.method", QC::Queue.dequeue.signature
+  def test_count
+    QC.enqueue("Klass.method")
+    assert_equal(1, QC.count)
   end
 
-  test "Queue class responds to delete" do
-    QC::Queue.enqueue("Klass.method")
-    job = QC::Queue.dequeue
-    QC::Queue.delete(job)
+  def test_delete
+    QC.enqueue("Klass.method")
+    assert_equal(1, QC.count)
+    QC.delete(QC.lock[:id])
+    assert_equal(0, QC.count)
   end
 
-  test "Queue class responds to delete_all" do
-    2.times { QC::Queue.enqueue("Klass.method") }
-    job1,job2 = QC::Queue.dequeue, QC::Queue.dequeue
-    QC::Queue.delete_all
+  def test_delete_all
+    QC.enqueue("Klass.method")
+    QC.enqueue("Klass.method")
+    assert_equal(2, QC.count)
+    QC.delete_all
+    assert_equal(0, QC.count)
   end
 
-  test "Queue class return the length of the queue" do
-    2.times { QC::Queue.enqueue("Klass.method") }
-    assert_equal 2, QC::Queue.length
+  def test_queue_instance
+    queue = QC::Queue.new("queue_classic_jobs", 1, false)
+    queue.enqueue("Klass.method")
+    assert_equal(1, queue.count)
+    queue.delete(queue.lock[:id])
+    assert_equal(0, queue.count)
   end
 
-  test "Queue class finds jobs using query method" do
-    QC::Queue.enqueue("Something.hard_to_find")
-    jobs = QC::Queue.query("Something.hard_to_find")
-    assert_equal 1, jobs.length
-    assert_equal "Something.hard_to_find", jobs.first.signature
-  end
-
-  test "queue instance responds to enqueue" do
-    QC::Queue.enqueue("Something.hard_to_find")
-    tmp_db = init_db(:custom_queue_name)
-    @queue = QC::Queue.new(:custom_queue_name)
-    @queue.enqueue "Klass.method"
-    @queue.database.disconnect
-  end
-
-  test "queue only uses 1 connection per class" do
-    QC::Queue.length
-    QC::Queue.enqueue "Klass.method"
-    QC::Queue.delete QC::Queue.dequeue
-    QC::Queue.enqueue "Klass.method"
-    QC::Queue.dequeue
-    assert_equal 1, @database.execute("SELECT count(*) from pg_stat_activity")[0]["count"].to_i
-  end
-
-  test "Queue class enqueues a job" do
-    job = OpenStruct.new :signature => 'Klass.method', :params => ['param']
-    QC::Queue.enqueue(job)
-    dequeued_job = QC::Queue.dequeue
-    assert_equal "Klass.method", dequeued_job.signature
-    assert_equal 'param', dequeued_job.params
-  end
-
-  test "Queues have their own array" do
-    refute_equal(Class.new(QC::Queue).array, Class.new(QC::Queue).array)
-  end
-
-  test "Queues have their own database" do
-    refute_equal(Class.new(QC::Queue).database, Class.new(QC::Queue).database)
-  end
 end

@@ -89,7 +89,7 @@ module QC
       attempts = 0
       job = nil
       until job
-        job = @queue.dequeue
+        job = @queue.lock
         if job.nil?
           log("worker missed lock attempt=#{attempts}")
           attempts += 1

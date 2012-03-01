@@ -22,7 +22,7 @@ BEGIN
     || ') limited'
   INTO job_count;
 
-  SELECT TRUNC(random() * top_boundary + 1)
+  SELECT TRUNC(random() * (top_boundary - 1))
   INTO relative_top;
 
   IF job_count < top_boundary THEN

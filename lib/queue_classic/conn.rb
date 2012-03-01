@@ -6,7 +6,10 @@ module QC
       log("executing #{stmt.inspect}, #{params.inspect}")
       begin
         params = nil if params.empty?
-        connection.exec(stmt, params)
+        r = connection.exec(stmt, params)
+        result = []
+        r.each {|t| result << t}
+        result.length > 1 ? result : result.pop
       rescue PGError => e
         log("execute exception=#{e.inspect}")
         raise
@@ -83,7 +86,7 @@ module QC
     end
 
     def db_url
-      URI.parse(ENV["QC_DATABASE_URL"] || ENV["DATABASE_URL"])
+      URI.parse(DB_URL)
     end
 
     def log(msg)
