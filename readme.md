@@ -1,6 +1,6 @@
 # queue_classic
 
-v2.0.0
+v2.0.0rc1
 
 queue_classic is a PostgreSQL-backed queueing library that is focused on
 concurrent job locking, minimizing database load & providing a simple &
@@ -18,29 +18,27 @@ queue_classic features:
 
 ## Proven
 
-I wrote queue_classic to solve a production problem.  My problem was that I needed a
-queueing system that wouldn't fall over should I decide to press it nor should it freak out
-if I attached 100 workers to it. However, my problem didn't warrant adding an additional service.
-I was already using PostgreSQL to manage my application's data, why not use PostgreSQL to pass some messages?
-PostgreSQL was already handling thousands of reads and writes per second anyways, why not add 35 more
-reads/writes per second to my established performance metric?
+Queue_classic was designed out of necessity. I needed a message queue that was
+fast, reliable, and low maintenance. It was built upon PostgreSQL out of a motivation
+of not wanting to add a redis or 0MQ service to my network of services. It boasts
+a small API and very few features. It was designed to be simple. Thus, if you need
+advanced queueing features, queue_classic is not for you; try 0MQ, rabbitmq, or redis.
+But if you are already running a PostgreSQL database, and you need a simple mechanism to
+distribute jobs to worker processes, then queue_classic is exactly what you need to be using.
 
-### Success Stories
-
-#### Heroku Postgres
+### Heroku Postgres
 
 The Heroku Postgres team uses queue_classic to monitor the health of
 customer databases. They process 200 jobs per second using a [fugu](https://postgres.heroku.com/pricing)
 database. They chose queue_classic because of it's simplicity and reliability.
 
-#### Cloudapp
+### Cloudapp
 
 Larry uses queue_classic to deliver cloudapp's push notifications and to collect file meta-data from S3.
 Cloudapp processes nearly 14 jobs per second.
 
 ```
 I haven't even touched QC since setting it up.
-No complaints at all about unreceived emails or non-incrementing view counters.
 The best queue is the one you don't have to hand hold.
 
 -- Larry Marburger
@@ -389,6 +387,8 @@ to do inside `handle_failure()`.
 
 ### Running Synchronously for tests
 
+Author: [@em_csquared](https://twitter.com/#!/em_csquared)
+
 I was tesing some code that started out handling some work in a web request and
 wanted to move that work over to a queue.  After completing a red-green-refactor
 I did not want my tests to have to worry about workers or even hit the database.
@@ -396,15 +396,17 @@ I did not want my tests to have to worry about workers or even hit the database.
 Turns out its easy to get QueueClassic to just work in a synchronous way with:
 
 ```ruby
-  def QC.enqueue(function_call, *args)
-    eval("#{function_call} *args")
-  end
+def QC.enqueue(function_call, *args)
+  eval("#{function_call} *args")
+end
 ```
 
 Now you can test QueueClassic as if it was calling your method directly!
 
 
 ### Dispatching new jobs to workers without new code
+
+Author: [@ryandotsmith (ace hacker)](https://twitter.com/#!/ryandotsmith)
 
 The other day I found myself in a position in which I needed to delete a few
 thousand records. The tough part of this situation is that I needed to ensure
@@ -417,13 +419,15 @@ case I wanted to call `Invoice.destroy(id)` a few thousand times. I fired up a
 heroku console session and executed this line:
 
 ```ruby
-  Invoice.find(:all, :select => "id", :conditions => "some condition").map {|i| QC.enqueue("Invoice.destroy", i.id) }
+Invoice.find(:all, :select => "id", :conditions => "some condition").map {|i| QC.enqueue("Invoice.destroy", i.id) }
 ```
 
 With the help of 20 workers I was able to destroy all of these records
 (preserving their callbacks) in a few minutes.
 
 ### Enqueueing batches of jobs
+
+Author: [@ryandotsmith (ace hacker)](https://twitter.com/#!/ryandotsmith)
 
 I have seen several cases where the application will enqueue jobs in batches. For instance, you may be sending
 1,000 emails out. In this case, it would be foolish to do 1,000 individual transaction. Instead, you want to open
@@ -457,6 +461,8 @@ end
 ```
 
 ### Scheduling Jobs
+
+Author: [@ryandotsmith (ace hacker)](https://twitter.com/#!/ryandotsmith)
 
 Many popular queueing solution provide support for scheduling. Features like
 Redis-Scheduler and the run_at column in DJ are very important to the web
