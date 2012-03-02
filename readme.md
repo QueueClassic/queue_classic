@@ -35,7 +35,7 @@ database. They chose queue_classic because of it's simplicity and reliability.
 
 #### Cloudapp
 
-Larry uses cloudapp to send push notifications and collect file meta-data from S3.
+Larry uses queue_classic to deliver cloudapp's push notifications and to collect file meta-data from S3.
 Cloudapp processes nearly 14 jobs per second.
 
 ```
@@ -191,7 +191,7 @@ Users of queue_classic will be producing jobs (enqueue) or consuming jobs (lock 
 You certainly don't need the queue_classic rubygem to put a job in the queue.
 
 ```bash
-$ psql queue_classic_test -c "INSERT INTO queue_classic_jobs (method, args) VALUES ('Kernel.puts', '[\"hi\"]');"
+$ psql queue_classic_test -c "INSERT INTO queue_classic_jobs (method, args) VALUES ('Kernel.puts', '[\"hello world\"]');"
 ```
 
 However, the rubygem will take care of converting your args to JSON and it will also dispatch
@@ -207,10 +207,16 @@ The Ruby API for producing jobs is pretty simple:
 QC.enqueue("Time.now")
 
 # This method has 1 argument.
-QC.enqueue("Kernel.puts", "hi")
+QC.enqueue("Kernel.puts", "hello world")
+
+# This method has 2 arguments.
+QC.enqueue("Kernel.printf", "hello %s", "world")
 
 # This method has a hash argument.
-QC.enqueue("MyClass.process", {"credit_card" => "4111"})
+QC.enqueue("Kernel.puts", {"hello" => "world"})
+
+# This method has a hash argument.
+QC.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
 The basic idea is that all arguments should be easily encoded to json. OkJson
@@ -224,7 +230,8 @@ OkJson.encode({:test => "test"})
 OkJson.encode({"test" => "test"})
 ```
 
-To see more information on usage, take a look at the test files in the source code.
+To see more information on usage, take a look at the test files in the source code. Also,
+read up on [OkJson](https://github.com/kr/okjson)
 
 ### Consumer
 
@@ -240,9 +247,9 @@ $ bundle exec rake qc:work
 
 #### Bin File
 
-This is the approach that I take when building simple ruby programs and sinatra apps.
-Start by making a bin directory in your project's root directory. Then add a file called
-worker.
+The approach that I take when building simple ruby programs and sinatra apps is to
+create an executable file that starts the worker. Start by making a bin directory
+in your project's root directory. Then add a file called worker.
 
 **bin/worker**
 
@@ -259,27 +266,27 @@ worker = QC::Worker.new(table_name, top_bound, fork_worker, listening_worker, ma
 worker.start
 ```
 
+#### Sublcass QC::Worker
+
 Now that we have seen how to run a worker process, let's take a look at how to customize a worker.
-The class: `QC::Worker` will probably suit most of your needs; however, there are some mechanisms
+The class `QC::Worker` will probably suit most of your needs; however, there are some mechanisms
 that you will want to override. For instance, if you are using a forking worker, you will need to
 open a new database connection in the child process that is doing your work. Also, you may want to
-define how a failed job should behave. The default failed handler will simply print the job to $stdout.
-You can certainly define a failure method that will enqueue the job again, or move it to another table, etc....
-
-#### Sublcass QC::Worker
+define how a failed job should behave. The default failed handler will simply print the job to stdout.
+You can define a failure method that will enqueue the job again, or move it to another table, etc....
 
 ```ruby
 require "queue_classic"
 
 class MyWorker < QC::Worker
 
+  # retry the job
   def handle_failure(job, exception)
-    #retry the job
     @queue.enque(job[:method], job[:args])
   end
 
+  # the forked proc needs a new db connection
   def setup_child
-    # the forked proc needs a new db connection
     ActiveRecord::Base.establish_connection
   end
 
@@ -287,10 +294,7 @@ end
 ```
 
 Notice that we have access to the `@queue` instance variable. Read the tests
-and the worker class for more information.
-
-Now that we have created a new worker, we can run this worker using our bin file:
-
+and the worker class for more information on what you can do inside of the worker.
 
 **bin/worker**
 
@@ -322,7 +326,7 @@ for a detailed descriptor of how to subclass the worker.
 ##### Algorithm
 
 When we ask the worker to start, it will enter a loop with a stop condition
-dependent upon a method named `running?`. While in the method, the worker will
+dependent upon a method named `running?` . While in the method, the worker will
 attempt to select and lock a job. If it can not on its first attempt, it will
 use an exponential back-off technique to try again.
 
