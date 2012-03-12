@@ -1,5 +1,7 @@
 module QC
-  # Copyright 2011 Keith Rarick
+# encoding: UTF-8
+#
+# Copyright 2011, 2012 Keith Rarick
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -261,6 +263,12 @@ module OkJson
   def unquote(q)
     q = q[1...-1]
     a = q.dup # allocate a big enough string
+    rubydoesenc = false
+    # In ruby >= 1.9, a[w] is a codepoint, not a byte.
+    if a.class.method_defined?(:force_encoding)
+      a.force_encoding('UTF-8')
+      rubydoesenc = true
+    end
     r, w = 0, 0
     while r < q.length
       c = q[r]
@@ -298,7 +306,12 @@ module OkJson
               end
             end
           end
-          w += ucharenc(a, w, uchar)
+          if rubydoesenc
+            a[w] = '' << uchar
+            w += 1
+          else
+            w += ucharenc(a, w, uchar)
+          end
         else
           raise Error, "invalid escape char #{q[r]} in \"#{q}\""
         end
@@ -308,6 +321,8 @@ module OkJson
         # Copy anything else byte-for-byte.
         # Valid UTF-8 will remain valid UTF-8.
         # Invalid UTF-8 will remain invalid UTF-8.
+        # In ruby >= 1.9, c is a codepoint, not a byte,
+        # in which case this is still what we want.
         a[w] = c
         r += 1
         w += 1
@@ -442,6 +457,10 @@ module OkJson
     t = StringIO.new
     t.putc(?")
     r = 0
+
+    # In ruby >= 1.9, s[r] is a codepoint, not a byte.
+    rubydoesenc = s.class.method_defined?(:encoding)
+
     while r < s.length
       case s[r]
       when ?"  then t.print('\\"')
@@ -456,27 +475,33 @@ module OkJson
         case true
         when Spc <= c && c <= ?~
           t.putc(c)
-        when true
+        when rubydoesenc
+          u = c.ord
+          surrenc(t, u)
+        else
           u, size = uchardec(s, r)
           r += size - 1 # we add one more at the bottom of the loop
-          if u < 0x10000
-            t.print('\\u')
-            hexenc4(t, u)
-          else
-            u1, u2 = unsubst(u)
-            t.print('\\u')
-            hexenc4(t, u1)
-            t.print('\\u')
-            hexenc4(t, u2)
-          end
-        else
-          # invalid byte; skip it
+          surrenc(t, u)
         end
       end
       r += 1
     end
     t.putc(?")
     t.string
+  end
+
+
+  def surrenc(t, u)
+    if u < 0x10000
+      t.print('\\u')
+      hexenc4(t, u)
+    else
+      u1, u2 = unsubst(u)
+      t.print('\\u')
+      hexenc4(t, u1)
+      t.print('\\u')
+      hexenc4(t, u2)
+    end
   end
 
 

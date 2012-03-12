@@ -1,5 +1,6 @@
 # queue_classic
-v1.0.0
+
+v1.0.2
 
 queue_classic is a PostgreSQL-backed queueing library that is focused on
 concurrent job locking, minimizing database load & providing a simple &

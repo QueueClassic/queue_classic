@@ -1,3 +1,6 @@
+Version 1.0.2
+- update to latest okjson as the current has bugs
+
 Version 1.0.1
 - using OkJson instead of any sort of rubygem
 - remove html from docs
