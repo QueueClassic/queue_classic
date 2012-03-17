@@ -1,32 +1,31 @@
 module QC
   class Queue
 
-    attr_reader :table, :top_bound, :chan
+    attr_reader :name, :chan
 
-    def initialize(table, top_bound, notify=false)
-      @table = table
-      @chan = @table if notify
-      @top_bound = top_bound
+    def initialize(name, notify=false)
+      @name = name
+      @chan = @name if notify
     end
 
     def enqueue(method, *args)
-      Queries.insert(table, method, args, chan)
+      Queries.insert(name, method, args, chan)
     end
 
-    def lock
-      Queries.lock_head(table, top_bound)
+    def lock(top_bound=TOP_BOUND)
+      Queries.lock_head(name, top_bound)
     end
 
     def delete(id)
-      Queries.delete(table, id)
+      Queries.delete(id)
     end
 
-    def delete_all
-      Queries.delete_all(table)
+    def delete_all(q_name=nil)
+      Queries.delete_all(q_name)
     end
 
-    def count
-      Queries.count(table)
+    def count(q_name=nil)
+      Queries.count(q_name)
     end
 
   end

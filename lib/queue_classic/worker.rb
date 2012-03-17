@@ -1,12 +1,15 @@
 module QC
   class Worker
 
-    def initialize(table, top_bound, fork_worker, listening_worker, max_attempts)
+    def initialize(q_name, top_bound, fork_worker, listening_worker, max_attempts)
       log("worker initialized")
       @running = true
 
-      @queue = Queue.new(table, top_bound)
-      log("worker table=#{table}")
+      @queue = Queue.new(q_name)
+      log("worker queue=#{@queue.name}")
+
+      @top_bound = top_bound
+      log("worker top_bound=#{@top_bound}")
 
       @fork_worker = fork_worker
       log("worker fork=#{@fork_worker}")
@@ -45,6 +48,9 @@ module QC
       end
     end
 
+    # This method should be overriden if
+    # your worker is forking and you need to
+    # re-establish database connectoins
     def setup_child
       log("forked worker running setup")
     end
@@ -90,7 +96,7 @@ module QC
       attempts = 0
       job = nil
       until job
-        job = @queue.lock
+        job = @queue.lock(@top_bound)
         if job.nil?
           log("worker missed lock attempt=#{attempts}")
           attempts += 1

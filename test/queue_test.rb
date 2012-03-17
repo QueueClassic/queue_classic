@@ -37,7 +37,7 @@ class QueueTest < QCTest
   end
 
   def test_queue_instance
-    queue = QC::Queue.new("queue_classic_jobs", 1, false)
+    queue = QC::Queue.new("queue_classic_jobs", false)
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
     queue.delete(queue.lock[:id])

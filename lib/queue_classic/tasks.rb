@@ -1,10 +1,10 @@
 namespace :jobs do
-  desc 'Alias for qc:work'
-  task :work  => 'qc:work'
+  desc "Alias for qc:work"
+  task :work  => "qc:work"
 end
 
 namespace :qc do
-  desc 'Start a new worker for the (default or QUEUE) queue'
+  desc "Start a new worker for the (default or $QUEUE) queue"
   task :work  => :environment do
     QC::Worker.new(
       QC::TABLE_NAME,
@@ -15,7 +15,7 @@ namespace :qc do
     ).start
   end
 
-  desc 'Returns the number of jobs in the (default or QUEUE) queue'
+  desc "Returns the number of jobs in the (default or QUEUE) queue"
   task :length => :environment do
     puts QC::Worker.new(
       QC::TABLE_NAME,
@@ -26,12 +26,12 @@ namespace :qc do
     ).length
   end
 
-  desc 'Ensure the database has the necessary functions for QC'
+  desc "Ensure the database has the necessary functions for QC"
   task :load_functions => :environment do
     QC::Queries.load_functions
   end
 
-  desc 'Remove queue_classic functions from database.'
+  desc "Remove queue_classic functions from database."
   task :load_functions => :environment do
     QC::Queries.drop_functions
   end

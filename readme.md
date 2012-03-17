@@ -55,7 +55,7 @@ database migration.
 
 ```bash
 $ createdb queue_classic_test
-$ psql queue_classic_test -c "CREATE TABLE queue_classic_jobs (id serial, method varchar(255), args text, locked_at timestamp);"
+$ psql queue_classic_test -c "CREATE TABLE queue_classic_jobs (id serial, q_name varchar(255), method varchar(255), args text, locked_at timestamp);"
 $ export QC_DATABASE_URL="postgres://username:password@localhost/queue_classic_test"
 $ gem install queue_classic
 $ ruby -r queue_classic -e "QC::Queries.load_functions"
@@ -93,6 +93,7 @@ class CreateJobsTable < ActiveRecord::Migration
 
   def self.up
     create_table :queue_classic_jobs do |t|
+      t.strict :q_name
       t.string :method
       t.text :args
       t.timestamp :locked_at
@@ -120,6 +121,7 @@ Sequel.migration do
   up do
     create_table :queue_classic_jobs do
       primary_key :id
+      String :q_name
       String :details
       Time   :locked_at
     end
@@ -180,16 +182,18 @@ $QC_MAX_LOCK_ATTEMPTS
 # Default: queue_classic_jobs
 $QUEUE
 ```
+
 ## Usage
 
-Users of queue_classic will be producing jobs (enqueue) or consuming jobs (lock then delete).
+Users of queue_classic will be producing jobs (enqueue) or
+consuming jobs (lock then delete).
 
 ### Producer
 
 You certainly don't need the queue_classic rubygem to put a job in the queue.
 
 ```bash
-$ psql queue_classic_test -c "INSERT INTO queue_classic_jobs (method, args) VALUES ('Kernel.puts', '[\"hello world\"]');"
+$ psql queue_classic_test -c "INSERT INTO queue_classic_jobs (q_name, method, args) VALUES ('default', 'Kernel.puts', '[\"hello world\"]');"
 ```
 
 However, the rubygem will take care of converting your args to JSON and it will also dispatch
@@ -231,6 +235,37 @@ OkJson.encode({"test" => "test"})
 To see more information on usage, take a look at the test files in the source code. Also,
 read up on [OkJson](https://github.com/kr/okjson)
 
+#### Multiple Queues
+
+The table containing the jobs has a column named *q_name*. This column
+is the abstraction queue_classic uses to represent multiple queues. This allows
+the programmer to place triggers and indecies on distinct queues.
+
+```ruby
+# attach to the priority_queue. this will insert
+# jobs with the column q_name = 'priority_queue'
+p_queue = QC::Queue.new("priority_queue")
+
+# This method has no arguments.
+p_queue.enqueue("Time.now")
+
+# This method has 1 argument.
+p_queue.enqueue("Kernel.puts", "hello world")
+
+# This method has 2 arguments.
+p_queue.enqueue("Kernel.printf", "hello %s", "world")
+
+# This method has a hash argument.
+p_queue.enqueue("Kernel.puts", {"hello" => "world"})
+
+# This method has a hash argument.
+p_queue.enqueue("Kernel.puts", ["hello", "world"])
+```
+
+This code example shows how to produce jobs into a custom queue,
+to consume jobs from the customer queue be sure and set the `$QUEUE`
+var to the q_name in the worker's UNIX environment.
+
 ### Consumer
 
 Now that you have some jobs in your queue, you probably want to work them.
@@ -239,8 +274,15 @@ then you can enter the following command to start a worker:
 
 #### Rake Task
 
+To work jobs from the default queue:
+
 ```bash
 $ bundle exec rake qc:work
+```
+To work jobs from a custom queue:
+
+```bash
+$ QUEUE="p_queue" bundle exec rake qc:work
 ```
 
 #### Bin File
@@ -260,7 +302,7 @@ trap('TERM') {exit}
 
 require "your_app"
 require "queue_classic"
-worker = QC::Worker.new(table_name, top_bound, fork_worker, listening_worker, max_attempts)
+worker = QC::Worker.new(q_name, top_bound, fork_worker, listening_worker, max_attempts)
 worker.start
 ```
 
@@ -307,7 +349,7 @@ require "your_app"
 require "queue_classic"
 require "my_worker"
 
-worker = MyWorker.new(table_name, top_bound, fork_worker, listening_worker, max_attempts)
+worker = MyWorker.new(q_name, top_bound, fork_worker, listening_worker, max_attempts)
 worker.start
 ```
 

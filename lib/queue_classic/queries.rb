@@ -2,15 +2,15 @@ module QC
   module Queries
     extend self
 
-    def insert(table, method, args, chan=nil)
-      s = "INSERT INTO #{table} (method, args) VALUES ($1, $2)"
-      res = Conn.execute(s, method, OkJson.encode(args))
+    def insert(q_name, method, args, chan=nil)
+      s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
+      res = Conn.execute(s, q_name, method, OkJson.encode(args))
       Conn.notify(chan) if chan
     end
 
-    def lock_head(table, top_bound)
-      q = "SELECT * FROM lock_head($1, $2)"
-      if r = Conn.execute(q, table, top_bound)
+    def lock_head(q_name, top_bound)
+      s = "SELECT * FROM lock_head($1, $2)"
+      if r = Conn.execute(s, q_name, top_bound)
         {
           :id     => r["id"],
           :method => r["method"],
@@ -19,17 +19,21 @@ module QC
       end
     end
 
-    def count(table)
-      r = Conn.execute("SELECT COUNT(*) FROM #{table}")
+    def count(q_name=nil)
+      s = "SELECT COUNT(*) FROM #{TABLE_NAME}"
+      s << " WHERE q_name = $1" if q_name
+      r = Conn.execute(*[s, q_name].compact)
       r["count"].to_i
     end
 
-    def delete(table, id)
-      Conn.execute("DELETE FROM #{table} where id = $1", id)
+    def delete(id)
+      Conn.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)
     end
 
-    def delete_all(table)
-      Conn.execute("DELETE FROM #{table}")
+    def delete_all(q_name=nil)
+      s = "DELETE FROM #{TABLE_NAME}"
+      s << "WHERE q_name = $1" if q_name
+      Conn.execute(*[s, q_name].compact)
     end
 
     def load_functions

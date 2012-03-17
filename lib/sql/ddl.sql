@@ -3,7 +3,7 @@
 -- have identical columns to queue_classic_jobs.
 -- When QC supports queues with columns other than the default, we will have to change this.
 
-CREATE OR REPLACE FUNCTION lock_head(tname name, top_boundary integer)
+CREATE OR REPLACE FUNCTION lock_head(q_name varchar, top_boundary integer)
 RETURNS SETOF queue_classic_jobs AS $$
 DECLARE
   unlocked integer;
@@ -15,8 +15,8 @@ BEGIN
   -- for more workers. Would love to see some optimization here...
 
   EXECUTE 'SELECT count(*) FROM '
-    || '(SELECT * FROM '
-    || quote_ident(tname)
+    || '(SELECT * FROM queue_classic_jobs WHERE q_name = '
+    || quote_literal(q_name)
     || ' LIMIT '
     || quote_literal(top_boundary)
     || ') limited'
@@ -31,9 +31,10 @@ BEGIN
 
   LOOP
     BEGIN
-      EXECUTE 'SELECT id FROM '
-        || quote_ident(tname)
+      EXECUTE 'SELECT id FROM queue_classic_jobs '
         || ' WHERE locked_at IS NULL'
+        || ' AND q_name = '
+        || quote_literal(q_name)
         || ' ORDER BY id ASC'
         || ' LIMIT 1'
         || ' OFFSET ' || quote_literal(relative_top)
@@ -46,8 +47,7 @@ BEGIN
     END;
   END LOOP;
 
-  RETURN QUERY EXECUTE 'UPDATE '
-    || quote_ident(tname)
+  RETURN QUERY EXECUTE 'UPDATE queue_classic_jobs '
     || ' SET locked_at = (CURRENT_TIMESTAMP)'
     || ' WHERE id = $1'
     || ' AND locked_at is NULL'
