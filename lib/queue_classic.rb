@@ -17,20 +17,21 @@ module QC
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
   DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
 
-  Log = Logger.new($stdout)
-  Log.level = (ENV["QC_LOG_LEVEL"] || Logger::DEBUG).to_i
-  Log.info("program=queue_classic log=true")
-
   DB_URL =
     ENV["QC_DATABASE_URL"] ||
     ENV["DATABASE_URL"]    ||
     raise(ArgumentError, "missing QC_DATABASE_URL or DATABASE_URL")
 
+  # export QC_LOG_LEVEL=`ruby -r "logger" -e "puts Logger::ERROR"`
+  LOG_LEVEL = (ENV["QC_LOG_LEVEL"] || Logger::DEBUG).to_i
+
   # You can use the APP_NAME to query for
   # postgres related process information in the
   # pg_stat_activity table. Don't set this unless
   # you are using PostgreSQL > 9.0
-  APP_NAME = ENV["QC_APP_NAME"]
+  if APP_NAME = ENV["QC_APP_NAME"]
+    Conn.execute("SET application_name = '#{APP_NAME}'")
+  end
 
   # Why do you want to change the table name?
   # Just deal with the default OK?
@@ -55,20 +56,24 @@ module QC
 
   # Set this variable if you wish for
   # the worker to fork a UNIX process for
-  # each locked job. Remember to restablish
-  # any database connectoins. See the worker
+  # each locked job. Remember to re-establish
+  # any database connections. See the worker
   # for more details.
   FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
 
-  # The worker uses an exponential backoff
+  # The worker uses an exponential back-off
   # algorithm to lock a job. This value will be used
   # as the max exponent.
   MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
-  if APP_NAME
-    Conn.execute("SET application_name = '#{APP_NAME}'")
-  end
 
+  # Setup the logger
+  Log = Logger.new($stdout)
+  Log.level = LOG_LEVEL
+  Log.info("program=queue_classic log=true")
+
+  # Defer method calls on the QC module to the
+  # default queue. This facilitates QC.enqueue()
   def self.method_missing(sym, *args, &block)
     default_queue.send(sym, *args, &block)
   end

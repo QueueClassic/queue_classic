@@ -139,49 +139,9 @@ end
 
 ## Configure
 
-```bash
-# Log level.
-# export QC_LOG_LEVEL=`ruby -r "logger" -e "puts Logger::ERROR"`
-$QC_LOG_LEVEL
-
-# Specifies the database that queue_classic will rely upon.
-# queue_classic will try and use QC_DATABASE_URL before it uses DATABASE_URL.
-$QC_DATABASE_URL
-$DATABASE_URL
-
-# Fuzzy-FIFO
-# For strict FIFO set to 1. Otherwise, worker will
-# attempt to lock a job in this top region.
-# Default: 9
-$QC_TOP_BOUND
-
-# If you want your worker to fork a new
-# UNIX process for each job, set this var to 'true'
-#
-# Default: false
-$QC_FORK_WORKER
-
-# The worker uses an exp backoff algorithm
-# if you want high throughput don't use Kernel.sleep
-# use LISTEN/NOTIFY sleep. When set to true, the worker's
-# sleep will be preempted by insertion into the queue.
-#
-# Default: false
-$QC_LISTENING_WORKER
-
-# The worker uses an exp backoff algorithm. The base of
-# the exponent is 2. This var determines the max power of the exp.
-#
-# Default: 5 which implies max sleep time of 2^(5-1) => 16 seconds
-$QC_MAX_LOCK_ATTEMPTS
-
-# This var is important for consumers of the queue.
-# If you have configured many queues, this var will
-# instruct the worker to bind to a particular queue.
-#
-# Default: queue_classic_jobs
-$QUEUE
-```
+All configuration takes place in the form of environment vars.
+See [queue_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/two/lib/queue_classic.rb#L29-66)
+for a list of options.
 
 ## Usage
 
