@@ -1,26 +1,30 @@
 $: << File.expand_path("lib")
 $: << File.expand_path("test")
 
-ENV['DATABASE_URL'] ||= 'postgres:///queue_classic_test'
+ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
 
-require 'queue_classic'
-require 'database_helpers'
-
-require 'minitest/unit'
+require "queue_classic"
+require "minitest/unit"
 MiniTest::Unit.autorun
 
-def context(*args, &block)
-  return super unless (name = args.first) && block
-  klass = Class.new(MiniTest::Unit::TestCase) do
-    def self.test(name, &block)
-      define_method("test_#{name.gsub(/\W/,'_')}", &block) if block
-    end
-    def self.xtest(*args) end
-    def self.setup(&block) define_method(:setup, &block) end
-    def self.teardown(&block) define_method(:teardown, &block) end
-  end
-  (class << klass; self end).send(:define_method, :name) { name.gsub(/\W/,'_') }
+QC::Log.level = Logger::ERROR
 
-  klass.send :include, DatabaseHelpers
-  klass.class_eval &block
+class QCTest < MiniTest::Unit::TestCase
+
+  def setup
+    init_db
+  end
+
+  def teardown
+    QC.delete_all
+  end
+
+  def init_db(table_name="queue_classic_jobs")
+    QC::Conn.execute("SET client_min_messages TO 'warning'")
+    QC::Conn.execute("DROP TABLE IF EXISTS #{table_name} CASCADE")
+    QC::Conn.execute("CREATE TABLE #{table_name} (id serial, q_name varchar(255), method varchar(255), args text, locked_at timestamptz)")
+    QC::Queries.load_functions
+    QC::Conn.disconnect
+  end
+
 end

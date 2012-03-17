@@ -1,4 +1,12 @@
-require 'rake/testtask'
+$:.unshift("lib")
+
+require "rake/testtask"
+require "./lib/queue_classic"
+require "./lib/queue_classic/tasks"
+
+task :environment do
+end
+
 task :default => ['test']
 Rake::TestTask.new do |t|
   t.libs << 'test'

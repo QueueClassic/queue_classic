@@ -1,66 +1,31 @@
 module QC
-  module AbstractQueue
-
-    def enqueue(job,*params)
-      if job.respond_to?(:signature) and job.respond_to?(:params)
-        params = *job.params
-        job = job.signature
-      end
-      array << {"job" => job, "params" => params}
-    end
-
-    def dequeue
-      array.first
-    end
-
-    def query(signature)
-      array.search_details_column(signature)
-    end
-
-    def delete(job)
-      array.delete(job)
-    end
-
-    def delete_all
-      array.each {|j| delete(j) }
-    end
-
-    def length
-      array.count
-    end
-
-  end
-end
-
-module  QC
   class Queue
 
-    include AbstractQueue
-    extend AbstractQueue
+    attr_reader :name, :chan
 
-    def self.array
-      default_queue.array
+    def initialize(name, notify=false)
+      @name = name
+      @chan = @name if notify
     end
 
-    def self.database
-      default_queue.database
+    def enqueue(method, *args)
+      Queries.insert(name, method, args, chan)
     end
 
-    def self.default_queue
-      @queue ||= new(nil)
+    def lock(top_bound=TOP_BOUND)
+      Queries.lock_head(name, top_bound)
     end
 
-    def initialize(queue_name)
-      @database = Database.new(queue_name)
-      @array = DurableArray.new(@database)
+    def delete(id)
+      Queries.delete(id)
     end
 
-    def array
-      @array
+    def delete_all(q_name=nil)
+      Queries.delete_all(q_name)
     end
 
-    def database
-      @database
+    def count(q_name=nil)
+      Queries.count(q_name)
     end
 
   end

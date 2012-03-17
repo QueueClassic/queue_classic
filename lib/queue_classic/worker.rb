@@ -1,21 +1,24 @@
 module QC
   class Worker
 
-    MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
-
-    def initialize
+    def initialize(q_name, top_bound, fork_worker, listening_worker, max_attempts)
       log("worker initialized")
-      log("worker running exp. backoff algorith max_attempts=#{MAX_LOCK_ATTEMPTS}")
       @running = true
 
-      @queue = QC::Queue.new(ENV["QUEUE"])
-      log("worker table=#{@queue.database.table_name}")
+      @queue = Queue.new(q_name)
+      log("worker queue=#{@queue.name}")
 
-      @fork_worker = ENV["QC_FORK_WORKER"] == "true"
+      @top_bound = top_bound
+      log("worker top_bound=#{@top_bound}")
+
+      @fork_worker = fork_worker
       log("worker fork=#{@fork_worker}")
 
-      @listening_worker = ENV["QC_LISTENING_WORKER"] == "true"
+      @listening_worker = listening_worker
       log("worker listen=#{@listening_worker}")
+
+      @max_attempts = max_attempts
+      log("max lock attempts =#{@max_attempts}")
 
       handle_signals
     end
@@ -45,6 +48,9 @@ module QC
       end
     end
 
+    # This method should be overriden if
+    # your worker is forking and you need to
+    # re-establish database connectoins
     def setup_child
       log("forked worker running setup")
     end
@@ -70,16 +76,17 @@ module QC
     def work
       log("worker start working")
       if job = lock_job
-        log("worker locked job=#{job.id}")
+        log("worker locked job=#{job[:id]}")
         begin
-          job.work
-          log("worker finished job=#{job.id}")
+          call(job).tap do
+            log("worker finished job=#{job[:id]}")
+          end
         rescue Object => e
-          log("worker failed job=#{job.id} exception=#{e.inspect}")
-          handle_failure(job,e)
+          log("worker failed job=#{job[:id]} exception=#{e.inspect}")
+          handle_failure(job, e)
         ensure
-          @queue.delete(job)
-          log("worker deleted job=#{job.id}")
+          @queue.delete(job[:id])
+          log("worker deleted job=#{job[:id]}")
         end
       end
     end
@@ -89,17 +96,17 @@ module QC
       attempts = 0
       job = nil
       until job
-        job = @queue.dequeue
+        job = @queue.lock(@top_bound)
         if job.nil?
           log("worker missed lock attempt=#{attempts}")
           attempts += 1
-          if attempts < MAX_LOCK_ATTEMPTS
+          if attempts < @max_attempts
             seconds = 2**attempts
             wait(seconds)
             log("worker tries again")
             next
           else
-            log("worker reached max attempts. max=#{MAX_LOCK_ATTEMPTS}")
+            log("worker reached max attempts. max=#{@max_attempts}")
             break
           end
         else
@@ -109,13 +116,20 @@ module QC
       job
     end
 
+    def call(job)
+      args = job[:args]
+      klass = eval(job[:method].split(".").first)
+      message = job[:method].split(".").last
+      klass.send(message, *args)
+    end
+
     def wait(t)
       if can_listen?
         log("worker waiting on LISTEN")
-        @queue.database.listen
-        @queue.database.wait_for_notify(t)
-        @queue.database.unlisten
-        @queue.database.drain_notify
+        Conn.listen
+        Conn.wait_for_notify(t)
+        Conn.unlisten
+        Conn.drain_notify
         log("worker finished LISTEN")
       else
         log("worker sleeps seconds=#{t}")
@@ -133,7 +147,7 @@ module QC
     end
 
     def log(msg)
-      Logger.puts(msg)
+      Log.info(msg)
     end
 
   end
