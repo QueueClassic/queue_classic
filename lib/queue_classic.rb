@@ -32,7 +32,12 @@ module QC
   # you are using PostgreSQL > 9.0
   APP_NAME = ENV["QC_APP_NAME"]
 
-  TABLE_NAME = ENV["QC_TABLE_NAME"] || "queue_classic_jobs"
+  # Why do you want to change the table name?
+  # Just deal with the default OK?
+  # If you do want to change this, you will
+  # need to update the PL/pgSQL lock_head() function.
+  # Come on. Don't do it.... Just stick with the default.
+  TABLE_NAME = "queue_classic_jobs"
 
   # Each row in the table will have a column that
   # notes the queue. You can point your workers
