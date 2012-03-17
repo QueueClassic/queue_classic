@@ -509,6 +509,22 @@ clock: clockwork clock.rb
 
 ## Upgrading From Older Versions
 
+### 1.X to 2.X
+
+#### Database Schema Changes
+
+* all queues are in 1 table with a q_name column
+* table includes a method column and an args column
+
+#### Producer Changes
+
+* initializing a Queue instance takes a column name instead of a table name
+
+#### Consumer Changes
+
+* all of the worker configuratoin is passed in through the initializer
+* rake task uses data from env vars to initialize a worker
+
 ### 0.2.X to 0.3.X
 
 * Deprecated QC.queue_length in favor of QC.length
