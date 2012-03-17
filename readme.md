@@ -177,7 +177,7 @@ QC.enqueue("Kernel.printf", "hello %s", "world")
 # This method has a hash argument.
 QC.enqueue("Kernel.puts", {"hello" => "world"})
 
-# This method has a hash argument.
+# This method has a array argument.
 QC.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
@@ -218,21 +218,24 @@ p_queue.enqueue("Kernel.printf", "hello %s", "world")
 # This method has a hash argument.
 p_queue.enqueue("Kernel.puts", {"hello" => "world"})
 
-# This method has a hash argument.
+# This method has a array argument.
 p_queue.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
 This code example shows how to produce jobs into a custom queue,
-to consume jobs from the customer queue be sure and set the `$QUEUE`
+to consume jobs from the custome queue be sure and set the `$QUEUE`
 var to the q_name in the worker's UNIX environment.
 
 ### Consumer
 
-Now that you have some jobs in your queue, you probably want to work them.
-Let's find out how... If you are using a Rakefile and have included `queue_classic/tasks`
-then you can enter the following command to start a worker:
+There are several approaches to working jobs. The first is to include
+a task file provided by queue_classic and the other approach is to
+write a custom bin file.
 
 #### Rake Task
+
+Be sure to include `queue_classic` and `queue_classic/tasks`
+in your primary Rakefile.
 
 To work jobs from the default queue:
 
@@ -247,9 +250,8 @@ $ QUEUE="p_queue" bundle exec rake qc:work
 
 #### Bin File
 
-The approach that I take when building simple ruby programs and sinatra apps is to
-create an executable file that starts the worker. Start by making a bin directory
-in your project's root directory. Then add a file called worker.
+Start by making a bin directory in your project's root directory.
+Then add an executable file called worker.
 
 **bin/worker**
 
