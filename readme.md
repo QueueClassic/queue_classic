@@ -140,7 +140,7 @@ end
 ## Configure
 
 All configuration takes place in the form of environment vars.
-See [queue_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/lib/queue_classic.rb#L29-66)
+See [queue_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/master/lib/queue_classic.rb#L29-66)
 for a list of options.
 
 ## Usage
