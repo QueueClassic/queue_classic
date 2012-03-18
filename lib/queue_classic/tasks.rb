@@ -32,7 +32,7 @@ namespace :qc do
   end
 
   desc "Remove queue_classic functions from database."
-  task :load_functions => :environment do
+  task :drop_functions => :environment do
     QC::Queries.drop_functions
   end
 end
