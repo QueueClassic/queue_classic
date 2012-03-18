@@ -13,7 +13,7 @@ require "queue_classic/worker"
 
 module QC
 
-  Root = File.expand_path(File.dirname(__FILE__))
+  Root = File.expand_path("..", File.dirname(__FILE__))
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
   DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
 
