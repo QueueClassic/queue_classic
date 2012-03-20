@@ -93,7 +93,7 @@ class CreateJobsTable < ActiveRecord::Migration
 
   def self.up
     create_table :queue_classic_jobs do |t|
-      t.strict :q_name
+      t.string :q_name
       t.string :method
       t.text :args
       t.timestamp :locked_at
