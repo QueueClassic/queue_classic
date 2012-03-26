@@ -30,7 +30,7 @@ distribute jobs to worker processes, then queue_classic is exactly what you need
 
 The Heroku Postgres team uses queue_classic to monitor the health of
 customer databases. They process 200 jobs per second using a [fugu](https://postgres.heroku.com/pricing)
-database. They chose queue_classic because of it's simplicity and reliability.
+database. They chose queue_classic because of its simplicity and reliability.
 
 ### Cloudapp
 
@@ -320,7 +320,7 @@ worker.start
 ##### General Idea
 
 The worker class (QC::Worker) is designed to be extended via inheritance. Any of
-it's methods should be considered for extension. There are a few in particular
+its methods should be considered for extension. There are a few in particular
 that act as stubs in hopes that the user will override them. Such methods
 include: `handle_failure() and setup_child()`. See the section near the bottom
 for a detailed descriptor of how to subclass the worker.
