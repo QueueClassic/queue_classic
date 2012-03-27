@@ -93,17 +93,17 @@ module QC
 
     def lock_job
       log("worker attempting a lock")
-      attempts = 1
+      attempts = 0
       job = nil
       until job
         job = @queue.lock(@top_bound)
         if job.nil?
           log("worker missed lock attempt=#{attempts}")
-          attempts += 1
           if attempts < @max_attempts
             seconds = 2**attempts
             wait(seconds)
             log("worker tries again")
+            attempts += 1
             next
           else
             log("worker reached max attempts. max=#{@max_attempts}")
