@@ -93,7 +93,7 @@ module QC
 
     def lock_job
       log("worker attempting a lock")
-      attempts = 0
+      attempts = 1
       job = nil
       until job
         job = @queue.lock(@top_bound)
