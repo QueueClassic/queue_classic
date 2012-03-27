@@ -5,7 +5,7 @@ module QC
       log("worker initialized")
       @running = true
 
-      @queue = Queue.new(q_name)
+      @queue = Queue.new(q_name, listening_worker)
       log("worker queue=#{@queue.name}")
 
       @top_bound = top_bound
@@ -126,9 +126,9 @@ module QC
     def wait(t)
       if can_listen?
         log("worker waiting on LISTEN")
-        Conn.listen
+        Conn.listen(@queue.chan)
         Conn.wait_for_notify(t)
-        Conn.unlisten
+        Conn.unlisten(@queue.chan)
         Conn.drain_notify
         log("worker finished LISTEN")
       else

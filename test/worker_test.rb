@@ -75,6 +75,15 @@ class WorkerTest < QCTest
     assert_equal(0, worker.failed_count)
   end
 
+  def test_worker_listens_on_chan
+    p_queue = QC::Queue.new("priority_queue")
+    p_queue.enqueue("TestObject.two_args", "1", 2)
+    worker = TestWorker.new("priority_queue", 1, false, true, 1)
+    r = worker.work
+    assert_equal(["1", 2], r)
+    assert_equal(0, worker.failed_count)
+  end
+
   def test_worker_ueses_one_conn
     QC.enqueue("TestObject.no_args")
     worker = TestWorker.new("default", 1, false, false, 1)
