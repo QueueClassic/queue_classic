@@ -18,17 +18,17 @@ module QC
 
     def notify(chan)
       log("NOTIFY")
-      execute("NOTIFY #{chan}")
+      execute('NOTIFY "' + chan + '"') #quotes matter
     end
 
     def listen(chan)
       log("LISTEN")
-      execute("LISTEN #{chan}")
+      execute('LISTEN "' + chan + '"') #quotes matter
     end
 
     def unlisten(chan)
       log("UNLISTEN")
-      execute("UNLISTEN #{chan}")
+      execute('UNLISTEN "' + chan + '"') #quotes matter
     end
 
     def drain_notify
