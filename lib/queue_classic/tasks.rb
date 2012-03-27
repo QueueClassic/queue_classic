@@ -7,7 +7,7 @@ namespace :qc do
   desc "Start a new worker for the (default or $QUEUE) queue"
   task :work  => :environment do
     QC::Worker.new(
-      QC::TABLE_NAME,
+      QC::QUEUE,
       QC::TOP_BOUND,
       QC::FORK_WORKER,
       QC::LISTENING_WORKER,
@@ -18,7 +18,7 @@ namespace :qc do
   desc "Returns the number of jobs in the (default or QUEUE) queue"
   task :length => :environment do
     puts QC::Worker.new(
-      QC::TABLE_NAME,
+      QC::QUEUE,
       QC::TOP_BOUND,
       QC::FORK_WORKER,
       QC::LISTENING_WORKER,
@@ -32,7 +32,7 @@ namespace :qc do
   end
 
   desc "Remove queue_classic functions from database."
-  task :load_functions => :environment do
+  task :drop_functions => :environment do
     QC::Queries.drop_functions
   end
 end
