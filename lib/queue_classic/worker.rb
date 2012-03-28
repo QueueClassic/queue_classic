@@ -1,7 +1,20 @@
 module QC
   class Worker
 
-    def initialize(q_name, top_bound, fork_worker, listening_worker, max_attempts)
+    def initialize(*args)
+      if args.length == 5
+        q_name, top_bound, fork_worker, listening_worker, max_attempts = *args
+      elsif args.length <= 1
+        opts = args.first || {}
+        q_name           = opts[:q_name]           || QC::QUEUE
+        top_bound        = opts[:top_bound]        || QC::TOP_BOUND
+        fork_worker      = opts[:fork_worker]      || QC::FORK_WORKER
+        listening_worker = opts[:listening_worker] || QC::LISTENING_WORKER
+        max_attempts     = opts[:max_attempts]     || QC::MAX_LOCK_ATTEMPTS
+      else
+        raise ArgumentError, 'wrong number of arguments (expected no args, an options hash, or 5 separate args)'
+      end
+      
       log("worker initialized")
       @running = true
 
