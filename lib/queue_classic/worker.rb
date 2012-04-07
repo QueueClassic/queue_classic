@@ -14,7 +14,7 @@ module QC
       else
         raise ArgumentError, 'wrong number of arguments (expected no args, an options hash, or 5 separate args)'
       end
-      
+
       log("worker initialized")
       @running = true
 
