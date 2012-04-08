@@ -1,9 +1,11 @@
 source :rubygems
 
-gem 'rake'
+gem "rake"
 
 gemspec
 
 group :test do
-  gem 'ruby-debug19'
+  gem "ruby-debug19"
+  gem "turn"
+  gem "minitest"
 end

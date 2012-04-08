@@ -3,9 +3,11 @@ module QC
     extend self
 
     def insert(q_name, method, args, chan=nil)
-      s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
-      res = Conn.execute(s, q_name, method, OkJson.encode(args))
-      Conn.notify(chan) if chan
+      QC.log_yield(:action => "insert_job") do
+        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
+        res = Conn.execute(s, q_name, method, OkJson.encode(args))
+        Conn.notify(chan) if chan
+      end
     end
 
     def lock_head(q_name, top_bound)

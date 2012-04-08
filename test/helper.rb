@@ -7,8 +7,6 @@ require "queue_classic"
 require "minitest/unit"
 MiniTest::Unit.autorun
 
-QC::Log.level = Logger::ERROR
-
 class QCTest < MiniTest::Unit::TestCase
 
   def setup

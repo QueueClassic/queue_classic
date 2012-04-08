@@ -14,6 +14,7 @@ queue_classic features:
 * Forking workers
 * Postgres' rock-solid locking mechanism
 * Fuzzy-FIFO support [academic paper](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf)
+* Instrumentation via log output
 * Long term support
 
 ## Proven
@@ -386,6 +387,17 @@ exception tracker. (i.e. Hoptoad, Exceptional) To that end, Queue_classic offers
 a method that you can override. This method will be passed 2 arguments: the
 exception instance and the job. Here are a few examples of things you might want
 to do inside `handle_failure()`.
+
+## Instrumentation
+
+QC will log elapsed time, errors and general usage in the form of data.
+To customize the output of the log data, override `QC.log` and `QC.log_yield`.
+By default, QC uses a simple wrapper around $stdout to put the log data in k=v
+format. For instance:
+
+```
+lib=queue_classic level=info action=insert_job elapsed=16
+```
 
 ## Tips and Tricks
 

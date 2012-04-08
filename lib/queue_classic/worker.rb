@@ -15,25 +15,23 @@ module QC
         raise ArgumentError, 'wrong number of arguments (expected no args, an options hash, or 5 separate args)'
       end
 
-      log("worker initialized")
       @running = true
-
       @queue = Queue.new(q_name, listening_worker)
-      log("worker queue=#{@queue.name}")
-
       @top_bound = top_bound
-      log("worker top_bound=#{@top_bound}")
-
       @fork_worker = fork_worker
-      log("worker fork=#{@fork_worker}")
-
       @listening_worker = listening_worker
-      log("worker listen=#{@listening_worker}")
-
       @max_attempts = max_attempts
-      log("max lock attempts =#{@max_attempts}")
-
       handle_signals
+
+      log(
+        :level => :debug,
+        :action => "worker_initialized",
+        :queue => q_name,
+        :top_bound => top_bound,
+        :fork_worker => fork_worker,
+        :listening_worker => listening_worker,
+        :max_attempts => max_attempts
+      )
     end
 
     def running?
@@ -53,7 +51,7 @@ module QC
         trap(sig) do
           if running?
             @running = false
-            log("worker running=#{@running}")
+            log(:level => :debug, :action => "handle_signal", :running => @running)
           else
             raise Interrupt
           end
@@ -65,13 +63,10 @@ module QC
     # your worker is forking and you need to
     # re-establish database connectoins
     def setup_child
-      log("forked worker running setup")
     end
 
     def start
-      log("worker starting")
       while running?
-        log("worker running...")
         if fork_worker?
           fork_and_work
         else
@@ -82,48 +77,44 @@ module QC
 
     def fork_and_work
       @cpid = fork { setup_child; work }
-      log("worker forked pid=#{@cpid}")
+      log(:level => :debug, :action => :fork, :pid => @cpid)
       Process.wait(@cpid)
     end
 
     def work
-      log("worker start working")
       if job = lock_job
-        log("worker locked job=#{job[:id]}")
-        begin
-          call(job).tap do
-            log("worker finished job=#{job[:id]}")
+        QC.log_yield(:level => :info, :action => "work_job", :job => job[:id]) do
+          begin
+            call(job)
+          rescue Object => e
+            log(:level => :debug, :action => "failed_work", :job => job[:id], :error => e.inspect)
+            handle_failure(job, e)
+          ensure
+            @queue.delete(job[:id])
+            log(:level => :debug, :action => "delete_job", :job => job[:id])
           end
-        rescue Object => e
-          log("worker failed job=#{job[:id]} exception=#{e.inspect}")
-          handle_failure(job, e)
-        ensure
-          @queue.delete(job[:id])
-          log("worker deleted job=#{job[:id]}")
         end
       end
     end
 
     def lock_job
-      log("worker attempting a lock")
+      log(:level => :debug, :action => "lock_job")
       attempts = 0
       job = nil
       until job
         job = @queue.lock(@top_bound)
         if job.nil?
-          log("worker missed lock attempt=#{attempts}")
+          log(:level => :debug, :action => "failed_lock", :attempts => attempts)
           if attempts < @max_attempts
             seconds = 2**attempts
             wait(seconds)
-            log("worker tries again")
             attempts += 1
             next
           else
-            log("worker reached max attempts. max=#{@max_attempts}")
             break
           end
         else
-          log("worker successfully locked job")
+          log(:level => :debug, :action => "finished_lock", :job => job[:id])
         end
       end
       job
@@ -138,14 +129,14 @@ module QC
 
     def wait(t)
       if can_listen?
-        log("worker waiting on LISTEN")
+        log(:level => :debug, :action => "listen_wait", :wait => t)
         Conn.listen(@queue.chan)
         Conn.wait_for_notify(t)
         Conn.unlisten(@queue.chan)
         Conn.drain_notify
-        log("worker finished LISTEN")
+        log(:level => :debug, :action => "finished_listening")
       else
-        log("worker sleeps seconds=#{t}")
+        log(:level => :debug, :action => "sleep_wait", :wait => t)
         Kernel.sleep(t)
       end
     end
@@ -159,8 +150,8 @@ module QC
       puts "!"
     end
 
-    def log(msg)
-      Log.info(msg)
+    def log(data)
+      QC.log(data)
     end
 
   end

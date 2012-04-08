@@ -3,7 +3,7 @@ module QC
     extend self
 
     def execute(stmt, *params)
-      log("executing #{stmt.inspect}, #{params.inspect}")
+      log(:level => :debug, :action => "exec_sql", :sql => stmt.inspect)
       begin
         params = nil if params.empty?
         r = connection.exec(stmt, params)
@@ -11,38 +11,36 @@ module QC
         r.each {|t| result << t}
         result.length > 1 ? result : result.pop
       rescue PGError => e
-        log("execute exception=#{e.inspect}")
+        log(:error => e.inspect)
         raise
       end
     end
 
     def notify(chan)
-      log("NOTIFY")
+      log(:level => :debug, :action => "NOTIFY")
       execute('NOTIFY "' + chan + '"') #quotes matter
     end
 
     def listen(chan)
-      log("LISTEN")
+      log(:level => :debug, :action => "LISTEN")
       execute('LISTEN "' + chan + '"') #quotes matter
     end
 
     def unlisten(chan)
-      log("UNLISTEN")
+      log(:level => :debug, :action => "UNLISTEN")
       execute('UNLISTEN "' + chan + '"') #quotes matter
     end
 
     def drain_notify
       until connection.notifies.nil?
-        log("draining notifications")
+        log(:level => :debug, :action => "drain_notifications")
       end
     end
 
     def wait_for_notify(t)
-      log("waiting for notify timeout=#{t}")
       connection.wait_for_notify(t) do |event, pid, msg|
-        log("received notification #{event}")
+        log(:level => :debug, :action => "received_notification")
       end
-      log("done waiting for notify")
     end
 
     def transaction
@@ -70,7 +68,7 @@ module QC
     end
 
     def connect
-      log("establishing connection")
+      log(:level => :debug, :action => "establish_conn")
       conn = PGconn.connect(
         db_url.host,
         db_url.port || 5432,
@@ -80,7 +78,7 @@ module QC
         db_url.password
       )
       if conn.status != PGconn::CONNECTION_OK
-        log("connection error=#{conn.error}")
+        log(:level => :error, :message => conn.error)
       end
       conn
     end
@@ -90,7 +88,7 @@ module QC
     end
 
     def log(msg)
-      Log.info(msg)
+      QC.log(msg)
     end
 
   end

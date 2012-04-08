@@ -1,10 +1,9 @@
 require "pg"
-
-require "logger"
 require "uri"
 
 $: << File.expand_path(__FILE__, "lib")
 
+require "queue_classic/scrolls"
 require "queue_classic/okjson"
 require "queue_classic/conn"
 require "queue_classic/queries"
@@ -12,6 +11,8 @@ require "queue_classic/queue"
 require "queue_classic/worker"
 
 module QC
+  # ENV["QC_LOG_LEVEL"] is used in Scrolls
+  Scrolls::Log.start
 
   Root = File.expand_path("..", File.dirname(__FILE__))
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
@@ -21,9 +22,6 @@ module QC
     ENV["QC_DATABASE_URL"] ||
     ENV["DATABASE_URL"]    ||
     raise(ArgumentError, "missing QC_DATABASE_URL or DATABASE_URL")
-
-  # export QC_LOG_LEVEL=`ruby -r "logger" -e "puts Logger::ERROR"`
-  LOG_LEVEL = (ENV["QC_LOG_LEVEL"] || Logger::DEBUG).to_i
 
   # You can use the APP_NAME to query for
   # postgres related process information in the
@@ -66,12 +64,6 @@ module QC
   # as the max exponent.
   MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
-
-  # Setup the logger
-  Log = Logger.new($stdout)
-  Log.level = LOG_LEVEL
-  Log.info("program=queue_classic log=true")
-
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
   def self.method_missing(sym, *args, &block)
@@ -82,6 +74,23 @@ module QC
     @default_queue ||= begin
       Queue.new(QUEUE, LISTENING_WORKER)
     end
+  end
+
+  def self.log_yield(data)
+    begin
+      t0 = Time.now
+      yield
+    rescue => e
+      log({:level => :error, :error => e.class, :message => e.message.strip}.merge(data))
+      raise
+    ensure
+      t = Integer((Time.now - t0)*1000)
+      log(data.merge(:elapsed => t)) unless e
+    end
+  end
+
+  def self.log(data)
+    Scrolls.log({:lib => :queue_classic}.merge(data))
   end
 
 end
