@@ -84,7 +84,11 @@ module QC
     end
 
     def db_url
-      URI.parse(DB_URL)
+      db_url =
+        ENV["QC_DATABASE_URL"] ||
+        ENV["DATABASE_URL"]    ||
+        raise(ArgumentError, "missing QC_DATABASE_URL or DATABASE_URL")
+      URI.parse(db_url)
     end
 
     def log(msg)

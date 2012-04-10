@@ -18,10 +18,6 @@ module QC
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
   DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
 
-  DB_URL =
-    ENV["QC_DATABASE_URL"] ||
-    ENV["DATABASE_URL"]    ||
-    raise(ArgumentError, "missing QC_DATABASE_URL or DATABASE_URL")
 
   # You can use the APP_NAME to query for
   # postgres related process information in the
