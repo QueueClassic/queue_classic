@@ -9,6 +9,12 @@ module QC
         Conn.notify(chan) if chan
       end
     end
+    def install_plpgsql
+      Conn.execute(%{ DROP LANGUAGE IF EXISTS plpgsql CASCADE;})
+      Conn.execute(%{ CREATE OR REPLACE FUNCTION plpgsql_call_handler() 
+                         RETURNS language_handler AS '$libdir/plpgsql' LANGUAGE C;})
+      Conn.execute(%{ CREATE TRUSTED LANGUAGE plpgsql HANDLER "plpgsql_call_handler"; })
+    end
 
     def lock_head(q_name, top_bound)
       s = "SELECT * FROM lock_head($1, $2)"

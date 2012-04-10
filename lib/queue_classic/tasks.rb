@@ -30,6 +30,9 @@ namespace :qc do
   task :load_functions => :environment do
     QC::Queries.load_functions
   end
+  task :install_plpgsql => :environment do
+    QC::Queries.install_plpgsql
+  end
 
   desc "Remove queue_classic functions from database."
   task :drop_functions => :environment do
