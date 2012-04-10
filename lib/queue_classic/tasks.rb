@@ -30,6 +30,7 @@ namespace :qc do
   task :load_functions => :environment do
     QC::Queries.load_functions
   end
+  desc "Install the plpgsql language"
   task :install_plpgsql => :environment do
     QC::Queries.install_plpgsql
   end
