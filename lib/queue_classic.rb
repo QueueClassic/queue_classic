@@ -89,6 +89,7 @@ module QC
   end
 
   def self.with_connection(connection, &blk)
+    original_connection = QC::Conn.connection
     if !connection.respond_to?(:exec) && connection.respond_to?(:execute)
       connection.instance_eval do
         def exec(sql, params = nil)
@@ -98,6 +99,8 @@ module QC
     end
     QC::Conn.connection = connection
     yield
+  ensure
+    QC::Conn.connection = original_connection
   end
 
 end
