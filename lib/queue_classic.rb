@@ -88,4 +88,16 @@ module QC
     Scrolls.log({:lib => :queue_classic}.merge(data))
   end
 
+  def self.with_connection(connection, &blk)
+    if !connection.respond_to?(:exec) && connection.respond_to?(:execute)
+      connection.instance_eval do
+        def exec(sql, params = nil)
+          @connection.exec(sql, params)
+        end
+      end
+    end
+    QC::Conn.connection = connection
+    yield
+  end
+
 end

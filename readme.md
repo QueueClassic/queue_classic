@@ -101,13 +101,17 @@ class CreateJobsTable < ActiveRecord::Migration
     end
     add_index :queue_classic_jobs, :id
     require "queue_classic"
-    QC::Queries.load_functions
+    QC.with_connection self.connection do
+      QC::Queries.load_functions
+    end
   end
 
   def self.down
     drop_table :queue_classic_jobs
     require "queue_classic"
-    QC::Queries.drop_functions
+    QC.with_connection self.connection do
+      QC::Queries.drop_functions
+    end
   end
 
 end

@@ -62,6 +62,10 @@ module QC
       @connection ||= connect
     end
 
+    def connection=(conn)
+      @connection = conn
+    end
+
     def disconnect
       connection.finish
       @connection = nil
