@@ -58,9 +58,9 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION lock_head(tname varchar)
+CREATE OR REPLACE FUNCTION lock_head(q_name varchar)
 RETURNS SETOF queue_classic_jobs AS $$
 BEGIN
-  RETURN QUERY EXECUTE 'SELECT * FROM lock_head($1,10)' USING tname;
+  RETURN QUERY EXECUTE 'SELECT * FROM lock_head($1,10)' USING q_name;
 END;
 $$ LANGUAGE plpgsql;
