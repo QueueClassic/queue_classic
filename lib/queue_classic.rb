@@ -1,9 +1,9 @@
+require "scrolls"
 require "pg"
 require "uri"
 
 $: << File.expand_path(__FILE__, "lib")
 
-require "queue_classic/scrolls"
 require "queue_classic/okjson"
 require "queue_classic/conn"
 require "queue_classic/queries"
@@ -11,7 +11,7 @@ require "queue_classic/queue"
 require "queue_classic/worker"
 
 module QC
-  # ENV["QC_LOG_LEVEL"] is used in Scrolls
+  # ENV["LOG_LEVEL"] is used in Scrolls
   Scrolls::Log.start
 
   Root = File.expand_path("..", File.dirname(__FILE__))
