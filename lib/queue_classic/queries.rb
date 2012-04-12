@@ -44,6 +44,7 @@ module QC
         Conn.execute(file.read)
       end
       file.close
+      Conn.disconnect
     end
 
     def drop_functions
@@ -52,6 +53,7 @@ module QC
         Conn.execute(file.read)
       end
       file.close
+      Conn.disconnect
     end
 
   end
