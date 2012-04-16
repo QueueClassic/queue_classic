@@ -2,6 +2,29 @@ module QC
   module Queries
     extend self
 
+    def load_qc
+      self.create_worker_table
+      self.load_functions
+    end
+
+    def unload_qc
+      self.drop_functions 
+      self.drop_worker_table
+    end
+
+    def create_worker_table
+      Conn.transaction do
+        Conn.execute(File.read(CreateWorkerTable))
+      end
+    end
+
+    def drop_worker_table
+      s = 'DROP TABLE IF EXISTS queue_classic_jobs'
+      Conn.transaction do
+        Conn.execute(s)
+      end
+    end
+
     def insert(q_name, method, args, chan=nil)
       QC.log_yield(:action => "insert_job") do
         s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
@@ -39,20 +62,15 @@ module QC
     end
 
     def load_functions
-      file = File.open(SqlFunctions)
       Conn.transaction do
-        Conn.execute(file.read)
+        Conn.execute(File.read(SqlFunctions))
       end
-      file.close
     end
 
     def drop_functions
-      file = File.open(DropSqlFunctions)
       Conn.transaction do
-        Conn.execute(file.read)
+        Conn.execute(File.read(DropSqlFunctions))
       end
-      file.close
     end
-
   end
 end
