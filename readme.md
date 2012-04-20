@@ -55,11 +55,10 @@ database migration.
 ### Quick Start
 
 ```bash
-$ createdb queue_classic_test
-$ psql queue_classic_test -c "CREATE TABLE queue_classic_jobs (id serial, q_name varchar(255), method varchar(255), args text, locked_at timestamp);"
-$ export QC_DATABASE_URL="postgres://username:password@localhost/queue_classic_test"
 $ gem install queue_classic
-$ ruby -r queue_classic -e "QC::Queries.load_functions"
+$ createdb queue_classic_test
+$ export QC_DATABASE_URL="postgres://username:password@localhost/queue_classic_test"
+$ ruby -r queue_classic -e "QC::Queries.load_qc"
 $ ruby -r queue_classic -e "QC.enqueue('Kernel.puts', 'hello world')"
 $ ruby -r queue_classic -e "QC::Worker.new.start"
 ```
@@ -90,7 +89,25 @@ ENV["DATABASE_URL"] = "postgres://username:password@localhost/database_name"
 **db/migrations/add_queue_classic.rb**
 
 ```ruby
-class CreateJobsTable < ActiveRecord::Migration
+require 'queue_classic'
+
+class AddQueueClassic < ActiveRecord::Migration
+
+  def self.up
+    QC::Queries.load_qc
+  end
+
+  def self.down
+    QC::Queries.unload_qc
+  end
+
+end
+```
+
+The old way:
+
+```ruby
+class AddQueueClassic < ActiveRecord::Migration
 
   def self.up
     create_table :queue_classic_jobs do |t|
@@ -116,6 +133,22 @@ end
 ### Sequel Setup
 
 **db/migrations/1_add_queue_classic.rb**
+
+```ruby
+require 'queue_classic'
+
+Sequel.migration do
+  up do
+    QC::Queries.load_qc
+  end
+
+  down do
+    QC::Queries.unload_qc
+  end
+end
+```
+
+The old way:
 
 ```ruby
 Sequel.migration do
