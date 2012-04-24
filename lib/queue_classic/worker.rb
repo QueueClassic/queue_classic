@@ -1,6 +1,8 @@
 module QC
   class Worker
 
+    attr_reader :queue
+
     def initialize(*args)
       if args.length == 5
         q_name, top_bound, fork_worker, listening_worker, max_attempts = *args

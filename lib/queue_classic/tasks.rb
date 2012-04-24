@@ -6,33 +6,21 @@ end
 namespace :qc do
   desc "Start a new worker for the (default or $QUEUE) queue"
   task :work  => :environment do
-    QC::Worker.new(
-      QC::QUEUE,
-      QC::TOP_BOUND,
-      QC::FORK_WORKER,
-      QC::LISTENING_WORKER,
-      QC::MAX_LOCK_ATTEMPTS
-    ).start
+    QC::Worker.new.start
   end
 
   desc "Returns the number of jobs in the (default or QUEUE) queue"
-  task :length => :environment do
-    puts QC::Worker.new(
-      QC::QUEUE,
-      QC::TOP_BOUND,
-      QC::FORK_WORKER,
-      QC::LISTENING_WORKER,
-      QC::MAX_LOCK_ATTEMPTS
-    ).length
+  task :count => :environment do
+    QC::Worker.new.queue.count
   end
 
-  desc "Ensure the database has the necessary functions for QC"
-  task :load_functions => :environment do
-    QC::Queries.load_functions
+  desc "Setup queue_classic tables and funtions in database"
+  task :create => :environment do
+    QC::Setup.create
   end
 
-  desc "Remove queue_classic functions from database."
-  task :drop_functions => :environment do
-    QC::Queries.drop_functions
+  desc "Remove queue_classic tables and functions from database."
+  task :drop => :environment do
+    QC::Setup.drop
   end
 end

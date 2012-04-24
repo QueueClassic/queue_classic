@@ -1,6 +1,6 @@
 # queue_classic
 
-v2.0.0rc12
+v2.0.0rc13
 
 queue_classic is a PostgreSQL-backed queueing library that is focused on
 concurrent job locking, minimizing database load & providing a simple &
@@ -10,7 +10,7 @@ queue_classic features:
 
 * Support for multiple queues with heterogeneous workers
 * Utilization of Postgres' PUB/SUB
-* JSON encoding for jobs
+* JSON encoding
 * Forking workers
 * Postgres' rock-solid locking mechanism
 * Fuzzy-FIFO support [academic paper](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf)
@@ -19,7 +19,7 @@ queue_classic features:
 
 ## Proven
 
-Queue_classic was designed out of necessity. I needed a message queue that was
+queue_classic was designed out of necessity. I needed a message queue that was
 fast, reliable, and low maintenance. It was built upon PostgreSQL out of a motivation
 of not wanting to add a redis or 0MQ service to my network of services. It boasts
 a small API and very few features. It was designed to be simple. Thus, if you need
@@ -58,9 +58,9 @@ database migration.
 $ gem install queue_classic
 $ createdb queue_classic_test
 $ export QC_DATABASE_URL="postgres://username:password@localhost/queue_classic_test"
-$ ruby -r queue_classic -e "QC::Queries.load_qc"
+$ ruby -r queue_classic -e "QC::Setup.create"
 $ ruby -r queue_classic -e "QC.enqueue('Kernel.puts', 'hello world')"
-$ ruby -r queue_classic -e "QC::Worker.new.start"
+$ ruby -r queue_classic -e "QC::Worker.new.work"
 ```
 
 ### Ruby on Rails Setup
@@ -94,37 +94,11 @@ require 'queue_classic'
 class AddQueueClassic < ActiveRecord::Migration
 
   def self.up
-    QC::Queries.load_qc
+    QC::Setup.create
   end
 
   def self.down
-    QC::Queries.unload_qc
-  end
-
-end
-```
-
-The old way:
-
-```ruby
-class AddQueueClassic < ActiveRecord::Migration
-
-  def self.up
-    create_table :queue_classic_jobs do |t|
-      t.string :q_name
-      t.string :method
-      t.text :args
-      t.timestamp :locked_at
-    end
-    add_index :queue_classic_jobs, :id
-    require "queue_classic"
-    QC::Queries.load_functions
-  end
-
-  def self.down
-    drop_table :queue_classic_jobs
-    require "queue_classic"
-    QC::Queries.drop_functions
+    QC::Setup.drop
   end
 
 end
@@ -138,36 +112,8 @@ end
 require 'queue_classic'
 
 Sequel.migration do
-  up do
-    QC::Queries.load_qc
-  end
-
-  down do
-    QC::Queries.unload_qc
-  end
-end
-```
-
-The old way:
-
-```ruby
-Sequel.migration do
-  up do
-    create_table :queue_classic_jobs do
-      primary_key :id
-      String :q_name
-      String :details
-      Time   :locked_at
-    end
-    require "queue_classic"
-    QC::Queries.load_functions
-  end
-
-  down do
-    drop_table :queue_classic_jobs
-    require "queue_classic"
-    QC::Queries.drop_functions
-  end
+  up {QC::Setup.create}
+  down {QC::Setup.down}
 end
 ```
 
@@ -211,7 +157,7 @@ QC.enqueue("Kernel.printf", "hello %s", "world")
 # This method has a hash argument.
 QC.enqueue("Kernel.puts", {"hello" => "world"})
 
-# This method has a array argument.
+# This method has an array argument.
 QC.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
@@ -252,7 +198,7 @@ p_queue.enqueue("Kernel.printf", "hello %s", "world")
 # This method has a hash argument.
 p_queue.enqueue("Kernel.puts", {"hello" => "world"})
 
-# This method has a array argument.
+# This method has an array argument.
 p_queue.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
@@ -298,8 +244,7 @@ trap('TERM') {exit}
 
 require "your_app"
 require "queue_classic"
-worker = QC::Worker.new(q_name, top_bound, fork_worker, listening_worker, max_attempts)
-worker.start
+QC::Worker.new.start
 ```
 
 #### Sublcass QC::Worker
@@ -345,8 +290,7 @@ require "your_app"
 require "queue_classic"
 require "my_worker"
 
-worker = MyWorker.new(q_name, top_bound, fork_worker, listening_worker, max_attempts)
-worker.start
+MyWorker.new.start
 ```
 
 #### QC::Worker Details

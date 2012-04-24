@@ -9,6 +9,7 @@ require "queue_classic/conn"
 require "queue_classic/queries"
 require "queue_classic/queue"
 require "queue_classic/worker"
+require "queue_classic/setup"
 
 module QC
   # ENV["LOG_LEVEL"] is used in Scrolls
@@ -17,7 +18,7 @@ module QC
   Root = File.expand_path("..", File.dirname(__FILE__))
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
   DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
-  CreateWorkerTable = File.join(QC::Root, "/sql/create_worker_table.sql")
+  CreateTable = File.join(QC::Root, "/sql/create_table.sql")
 
   # You can use the APP_NAME to query for
   # postgres related process information in the

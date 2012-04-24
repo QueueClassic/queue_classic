@@ -19,9 +19,8 @@ class QCTest < MiniTest::Unit::TestCase
 
   def init_db(table_name="queue_classic_jobs")
     QC::Conn.execute("SET client_min_messages TO 'warning'")
-    QC::Conn.execute("DROP TABLE IF EXISTS #{table_name} CASCADE")
-    QC::Conn.execute("CREATE TABLE #{table_name} (id serial, q_name varchar(255), method varchar(255), args text, locked_at timestamptz)")
-    QC::Queries.load_functions
+    QC::Setup.drop
+    QC::Setup.create
     QC::Conn.disconnect
   end
 
