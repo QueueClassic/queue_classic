@@ -48,8 +48,8 @@ The best queue is the one you don't have to hand hold.
 ## Setup
 
 In addition to installing the rubygem, you will need to prepare your database.
-Database preperation includes creating a table and loading PL/pgSQL functions.
-You can issue the database preperation commands using **PSQL(1)** or place them in a
+Database preparation includes creating a table and loading PL/pgSQL functions.
+You can issue the database preparation commands using **PSQL(1)** or place them in a
 database migration.
 
 ### Quick Start
@@ -69,7 +69,7 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 
 ```ruby
 source :rubygems
-gem "queue_classic", "2.0.0rc1"
+gem "queue_classic", "2.0.0rc14"
 ```
 
 **Rakefile**
@@ -85,6 +85,10 @@ require "queue_classic/tasks"
 # Optional if you have this set in your shell environment or use Heroku.
 ENV["DATABASE_URL"] = "postgres://username:password@localhost/database_name"
 ```
+
+queue_classic requires a database table and a PL/pgSQL function to be loaded
+into your database. You can load the table and the function by running a migration
+or using a rake task.
 
 **db/migrations/add_queue_classic.rb**
 
@@ -103,6 +107,17 @@ class AddQueueClassic < ActiveRecord::Migration
 
 end
 ```
+
+**Rake Task**
+
+```bash
+# Creating the table and functions
+$ bundle exec rake qc:create
+
+# Dropping the table and functions
+$ bundle exec rake qc:drop
+```
+
 
 ### Sequel Setup
 
@@ -179,7 +194,7 @@ read up on [OkJson](https://github.com/kr/okjson)
 
 The table containing the jobs has a column named *q_name*. This column
 is the abstraction queue_classic uses to represent multiple queues. This allows
-the programmer to place triggers and indecies on distinct queues.
+the programmer to place triggers and indexes on distinct queues.
 
 ```ruby
 # attach to the priority_queue. this will insert
@@ -203,7 +218,7 @@ p_queue.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
 This code example shows how to produce jobs into a custom queue,
-to consume jobs from the custome queue be sure and set the `$QUEUE`
+to consume jobs from the custom queue be sure and set the `$QUEUE`
 var to the q_name in the worker's UNIX environment.
 
 ### Consumer
@@ -263,7 +278,7 @@ class MyWorker < QC::Worker
 
   # retry the job
   def handle_failure(job, exception)
-    @queue.enque(job[:method], job[:args])
+    @queue.enqueue(job[:method], job[:args])
   end
 
   # the forked proc needs a new db connection
@@ -382,11 +397,11 @@ lib=queue_classic level=info action=insert_job elapsed=16
 
 Author: [@em_csquared](https://twitter.com/#!/em_csquared)
 
-I was tesing some code that started out handling some work in a web request and
+I was testing some code that started out handling some work in a web request and
 wanted to move that work over to a queue.  After completing a red-green-refactor
 I did not want my tests to have to worry about workers or even hit the database.
 
-Turns out its easy to get QueueClassic to just work in a synchronous way with:
+Turns out its easy to get queue_classic to just work in a synchronous way with:
 
 ```ruby
 def QC.enqueue(function_call, *args)
@@ -394,7 +409,7 @@ def QC.enqueue(function_call, *args)
 end
 ```
 
-Now you can test QueueClassic as if it was calling your method directly!
+Now you can test queue_classic as if it was calling your method directly!
 
 
 ### Dispatching new jobs to workers without new code
@@ -409,7 +424,7 @@ these objects. queue_classic to the rescue! (no pun intended)
 
 The API of queue_classic enables you to quickly dispatch jobs to workers. In my
 case I wanted to call `Invoice.destroy(id)` a few thousand times. I fired up a
-heroku console session and executed this line:
+Heroku console session and executed this line:
 
 ```ruby
 Invoice.find(:all, :select => "id", :conditions => "some condition").map {|i| QC.enqueue("Invoice.destroy", i.id) }
@@ -490,7 +505,7 @@ SalesSummaryGenerator class.
 
 I found this abstraction quite powerful and easy to understand. Like
 queue_classic, the clockwork gem is simple to understand and has 0 dependencies.
-In production, I create a heroku process type called clock. This is typically
+In production, I create a Heroku process type called clock. This is typically
 what my Procfile looks like:
 
 ```
