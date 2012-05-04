@@ -2,9 +2,9 @@
 
 v2.0.0rc14
 
-queue\_classic is a PostgreSQL-backed queueing library that is focused on
-concurrent job locking, minimizing database load & providing a simple &
-intuitive user experience.
+queue\_classic provides PostgreSQL-backed queueing focused on concurrent job
+locking and minimizing database load while providing a simple, intuitive user
+experience.
 
 queue\_classic features:
 
@@ -19,24 +19,24 @@ queue\_classic features:
 
 ## Proven
 
-queue\_classic was designed out of necessity. I needed a message queue that was
-fast, reliable, and low maintenance. It was built upon PostgreSQL out of a motivation
-of not wanting to add a redis or 0MQ service to my network of services. It boasts
-a small API and very few features. It was designed to be simple. Thus, if you need
-advanced queueing features, queue\_classic is not for you; try 0MQ, rabbitmq, or redis.
-But if you are already running a PostgreSQL database, and you need a simple mechanism to
-distribute jobs to worker processes, then queue\_classic is exactly what you need to be using.
+queue\_classic was designed out of the necessity for a fast, reliable, low
+maintenance message queue.  It was built upon PostgreSQL to avoid the necessity
+of adding redis or 0MQ services to my applications. It was designed to be
+simple, with a small API and very few features. For a simple mechanism to
+distribute jobs to worker processes, especially if you are already running
+PostgreSQL, queue\_classic is exactly what you should be using. If you need
+more advanced queueing features, you should investigate 0MQ, rabbitmq, or redis.
 
 ### Heroku Postgres
 
 The Heroku Postgres team uses queue\_classic to monitor the health of
-customer databases. They process 200 jobs per second using a [fugu](https://postgres.heroku.com/pricing)
+customer databases, processng 200 jobs per second using a [fugu](https://postgres.heroku.com/pricing)
 database. They chose queue\_classic because of its simplicity and reliability.
 
 ### Cloudapp
 
-Larry uses queue\_classic to deliver cloudapp's push notifications and to collect file meta-data from S3.
-Cloudapp processes nearly 14 jobs per second.
+Larry uses queue\_classic to deliver cloudapp's push notifications and collect
+file meta-data from S3, processing nearly 14 jobs per second.
 
 ```
 I haven't even touched QC since setting it up.
