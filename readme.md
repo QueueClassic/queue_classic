@@ -405,7 +405,7 @@ Turns out its easy to get queue\_classic to just work in a synchronous way with:
 
 ```ruby
 def QC.enqueue(function_call, *args)
-  eval("#{function_call} *args")
+  eval("#{function_call} *#{args.inspect}")
 end
 ```
 
