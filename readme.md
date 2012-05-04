@@ -86,7 +86,7 @@ require "queue_classic/tasks"
 ENV["DATABASE_URL"] = "postgres://username:password@localhost/database_name"
 ```
 
-queue\_classic requires a database table and a PL/pgSQL function to be loaded
+queue_classic requires a database table and a PL/pgSQL function to be loaded
 into your database. You can load the table and the function by running a migration
 or using a rake task.
 
@@ -155,7 +155,7 @@ However, the rubygem will take care of converting your args to JSON and it will 
 PUB/SUB notifications if the feature is enabled. It will also manage a connection to the database
 that is independent of any other connection you may have in your application. Note: If your
 queue table is in your application's database then your application's process will have 2 connections
-to the database; one for your application and another for queue\_classic.
+to the database; one for your application and another for queue_classic.
 
 The Ruby API for producing jobs is pretty simple:
 
@@ -193,12 +193,12 @@ read up on [OkJson](https://github.com/kr/okjson)
 #### Multiple Queues
 
 The table containing the jobs has a column named *q_name*. This column
-is the abstraction queue\_classic uses to represent multiple queues. This allows
+is the abstraction queue_classic uses to represent multiple queues. This allows
 the programmer to place triggers and indexes on distinct queues.
 
 ```ruby
-# attach to the priority\_queue. this will insert
-# jobs with the column q\_name = 'priority\_queue'
+# attach to the priority_queue. this will insert
+# jobs with the column q_name = 'priority_queue'
 p_queue = QC::Queue.new("priority_queue")
 
 # This method has no arguments.
@@ -224,7 +224,7 @@ var to the q_name in the worker's UNIX environment.
 ### Consumer
 
 There are several approaches to working jobs. The first is to include
-a task file provided by queue\_classic and the other approach is to
+a task file provided by queue_classic and the other approach is to
 write a custom bin file.
 
 #### Rake Task
@@ -504,7 +504,7 @@ Now each day at 01:00 we will be sending the build_daily_report message to our
 SalesSummaryGenerator class.
 
 I found this abstraction quite powerful and easy to understand. Like
-queue\_classic, the clockwork gem is simple to understand and has 0 dependencies.
+queue_classic, the clockwork gem is simple to understand and has 0 dependencies.
 In production, I create a Heroku process type called clock. This is typically
 what my Procfile looks like:
 
@@ -534,7 +534,7 @@ clock: clockwork clock.rb
 ### 0.2.X to 0.3.X
 
 * Deprecated QC.queue_length in favor of QC.length
-* Locking functions need to be loaded into database via `$ rake qc:load\_functions`
+* Locking functions need to be loaded into database via `$ rake qc:load_functions`
 
 Also, the default queue is no longer named jobs,
 it is named queue_classic_jobs. Renaming the table is the only change that needs to be made.
@@ -563,7 +563,7 @@ class RenameJobsTable < ActiveRecord::Migration
 end
 ```
 
-## Hacking on queue\_classic
+## Hacking on queue_classic
 
 ### Dependencies
 
