@@ -11,7 +11,7 @@ namespace :qc do
 
   desc "Returns the number of jobs in the (default or QUEUE) queue"
   task :count => :environment do
-    QC::Worker.new.queue.count
+    puts QC::Worker.new.queue.count
   end
 
   desc "Setup queue_classic tables and funtions in database"
