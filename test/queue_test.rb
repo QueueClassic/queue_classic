@@ -36,6 +36,18 @@ class QueueTest < QCTest
     assert_equal(0, QC.count)
   end
 
+  def test_delete_all_by_queue_name
+    p_queue = QC::Queue.new("priority_queue")
+    s_queue = QC::Queue.new("secondary_queue")
+    p_queue.enqueue("Klass.method")
+    s_queue.enqueue("Klass.method")
+    assert_equal(1, p_queue.count(p_queue.name))
+    assert_equal(1, s_queue.count(s_queue.name))
+    p_queue.delete_all(p_queue.name)
+    assert_equal(0, p_queue.count(p_queue.name))
+    assert_equal(1, s_queue.count(s_queue.name))
+  end
+
   def test_queue_instance
     queue = QC::Queue.new("queue_classic_jobs", false)
     queue.enqueue("Klass.method")
