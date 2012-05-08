@@ -34,7 +34,7 @@ module QC
 
     def delete_all(q_name=nil)
       s = "DELETE FROM #{TABLE_NAME}"
-      s << "WHERE q_name = $1" if q_name
+      s << " WHERE q_name = $1" if q_name
       Conn.execute(*[s, q_name].compact)
     end
 
