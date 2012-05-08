@@ -1,3 +1,5 @@
+task :environment
+
 namespace :jobs do
   desc "Alias for qc:work"
   task :work  => "qc:work"
