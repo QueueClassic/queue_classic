@@ -1,6 +1,6 @@
 # queue_classic
 
-v2.0.0rc14
+v2.0.0
 
 queue_classic provides PostgreSQL-backed queueing focused on concurrent job
 locking and minimizing database load while providing a simple, intuitive user
@@ -69,7 +69,7 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 
 ```ruby
 source :rubygems
-gem "queue_classic", "2.0.0rc14"
+gem "queue_classic", "2.0.0"
 ```
 
 **Rakefile**

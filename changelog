@@ -1,8 +1,9 @@
-Version 2.0.0rc4
-- fix the loading of sql functions
-
-Version 2.0.0rc1
-- TODO
+Version 2.0.0
+- simpler setup via QC::Setup.create (rake qc:create) & QC::Setup.drop (rake
+qc:drop)
+- simpler abstractions in implementation
+- better support for instrumentation via log_yield hook in QC module
+- multiple queues use one table with a queue_name column
 
 Version 1.0.2
 - update to latest okjson as the current has bugs
