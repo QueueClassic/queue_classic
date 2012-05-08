@@ -1,12 +1,12 @@
-# queue\_classic
+# queue_classic
 
 v2.0.0rc14
 
-queue\_classic provides PostgreSQL-backed queueing focused on concurrent job
+queue_classic provides PostgreSQL-backed queueing focused on concurrent job
 locking and minimizing database load while providing a simple, intuitive user
 experience.
 
-queue\_classic features:
+queue_classic features:
 
 * Support for multiple queues with heterogeneous workers
 * Utilization of Postgres' PUB/SUB
@@ -19,23 +19,23 @@ queue\_classic features:
 
 ## Proven
 
-queue\_classic was designed out of the necessity for a fast, reliable, low
+queue_classic was designed out of the necessity for a fast, reliable, low
 maintenance message queue.  It was built upon PostgreSQL to avoid the necessity
 of adding redis or 0MQ services to my applications. It was designed to be
 simple, with a small API and very few features. For a simple mechanism to
 distribute jobs to worker processes, especially if you are already running
-PostgreSQL, queue\_classic is exactly what you should be using. If you need
+PostgreSQL, queue_classic is exactly what you should be using. If you need
 more advanced queueing features, you should investigate 0MQ, rabbitmq, or redis.
 
 ### Heroku Postgres
 
-The Heroku Postgres team uses queue\_classic to monitor the health of
+The Heroku Postgres team uses queue_classic to monitor the health of
 customer databases, processng 200 jobs per second using a [fugu](https://postgres.heroku.com/pricing)
-database. They chose queue\_classic because of its simplicity and reliability.
+database. They chose queue_classic because of its simplicity and reliability.
 
 ### Cloudapp
 
-Larry uses queue\_classic to deliver cloudapp's push notifications and collect
+Larry uses queue_classic to deliver cloudapp's push notifications and collect
 file meta-data from S3, processing nearly 14 jobs per second.
 
 ```
@@ -55,12 +55,12 @@ database migration.
 ### Quick Start
 
 ```bash
-$ gem install queue\_classic
-$ createdb queue\_classic_test
-$ export QC_DATABASE_URL="postgres://username:password@localhost/queue\_classic_test"
-$ ruby -r queue\_classic -e "QC::Setup.create"
-$ ruby -r queue\_classic -e "QC.enqueue('Kernel.puts', 'hello world')"
-$ ruby -r queue\_classic -e "QC::Worker.new.work"
+$ gem install queue_classic
+$ createdb queue_classic_test
+$ export QC_DATABASE_URL="postgres://username:password@localhost/queue_classic_test"
+$ ruby -r queue_classic -e "QC::Setup.create"
+$ ruby -r queue_classic -e "QC.enqueue('Kernel.puts', 'hello world')"
+$ ruby -r queue_classic -e "QC::Worker.new.work"
 ```
 
 ### Ruby on Rails Setup
@@ -69,31 +69,31 @@ $ ruby -r queue\_classic -e "QC::Worker.new.work"
 
 ```ruby
 source :rubygems
-gem "queue\_classic", "2.0.0rc14"
+gem "queue_classic", "2.0.0rc14"
 ```
 
 **Rakefile**
 
 ```ruby
-require "queue\_classic"
-require "queue\_classic/tasks"
+require "queue_classic"
+require "queue_classic/tasks"
 ```
 
-**config/initializers/queue\_classic.rb**
+**config/initializers/queue_classic.rb**
 
 ```ruby
 # Optional if you have this set in your shell environment or use Heroku.
 ENV["DATABASE_URL"] = "postgres://username:password@localhost/database_name"
 ```
 
-queue\_classic requires a database table and a PL/pgSQL function to be loaded
+queue_classic requires a database table and a PL/pgSQL function to be loaded
 into your database. You can load the table and the function by running a migration
 or using a rake task.
 
-**db/migrations/add_queue\_classic.rb**
+**db/migrations/add_queue_classic.rb**
 
 ```ruby
-require 'queue\_classic'
+require 'queue_classic'
 
 class AddQueueClassic < ActiveRecord::Migration
 
@@ -121,10 +121,10 @@ $ bundle exec rake qc:drop
 
 ### Sequel Setup
 
-**db/migrations/1_add_queue\_classic.rb**
+**db/migrations/1_add_queue_classic.rb**
 
 ```ruby
-require 'queue\_classic'
+require 'queue_classic'
 
 Sequel.migration do
   up {QC::Setup.create}
@@ -135,27 +135,27 @@ end
 ## Configure
 
 All configuration takes place in the form of environment vars.
-See [queue\_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/master/lib/queue_classic.rb#L29-66)
+See [queue_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/master/lib/queue_classic.rb#L29-66)
 for a list of options.
 
 ## Usage
 
-Users of queue\_classic will be producing jobs (enqueue) or
+Users of queue_classic will be producing jobs (enqueue) or
 consuming jobs (lock then delete).
 
 ### Producer
 
-You certainly don't need the queue\_classic rubygem to put a job in the queue.
+You certainly don't need the queue_classic rubygem to put a job in the queue.
 
 ```bash
-$ psql queue\_classic_test -c "INSERT INTO queue_classic_jobs (q_name, method, args) VALUES ('default', 'Kernel.puts', '[\"hello world\"]');"
+$ psql queue_classic_test -c "INSERT INTO queue_classic_jobs (q_name, method, args) VALUES ('default', 'Kernel.puts', '[\"hello world\"]');"
 ```
 
 However, the rubygem will take care of converting your args to JSON and it will also dispatch
 PUB/SUB notifications if the feature is enabled. It will also manage a connection to the database
 that is independent of any other connection you may have in your application. Note: If your
 queue table is in your application's database then your application's process will have 2 connections
-to the database; one for your application and another for queue\_classic.
+to the database; one for your application and another for queue_classic.
 
 The Ruby API for producing jobs is pretty simple:
 
@@ -193,12 +193,12 @@ read up on [OkJson](https://github.com/kr/okjson)
 #### Multiple Queues
 
 The table containing the jobs has a column named *q_name*. This column
-is the abstraction queue\_classic uses to represent multiple queues. This allows
+is the abstraction queue_classic uses to represent multiple queues. This allows
 the programmer to place triggers and indexes on distinct queues.
 
 ```ruby
-# attach to the priority\_queue. this will insert
-# jobs with the column q\_name = 'priority\_queue'
+# attach to the priority_queue. this will insert
+# jobs with the column q_name = 'priority_queue'
 p_queue = QC::Queue.new("priority_queue")
 
 # This method has no arguments.
@@ -224,12 +224,12 @@ var to the q_name in the worker's UNIX environment.
 ### Consumer
 
 There are several approaches to working jobs. The first is to include
-a task file provided by queue\_classic and the other approach is to
+a task file provided by queue_classic and the other approach is to
 write a custom bin file.
 
 #### Rake Task
 
-Be sure to include `queue\_classic` and `queue\_classic/tasks`
+Be sure to include `queue_classic` and `queue_classic/tasks`
 in your primary Rakefile.
 
 To work jobs from the default queue:
@@ -258,7 +258,7 @@ trap('INT')  {exit}
 trap('TERM') {exit}
 
 require "your_app"
-require "queue\_classic"
+require "queue_classic"
 QC::Worker.new.start
 ```
 
@@ -272,7 +272,7 @@ define how a failed job should behave. The default failed handler will simply pr
 You can define a failure method that will enqueue the job again, or move it to another table, etc....
 
 ```ruby
-require "queue\_classic"
+require "queue_classic"
 
 class MyWorker < QC::Worker
 
@@ -302,7 +302,7 @@ trap('INT')  {exit}
 trap('TERM') {exit}
 
 require "your_app"
-require "queue\_classic"
+require "queue_classic"
 require "my_worker"
 
 MyWorker.new.start
@@ -315,7 +315,7 @@ MyWorker.new.start
 The worker class (QC::Worker) is designed to be extended via inheritance. Any of
 its methods should be considered for extension. There are a few in particular
 that act as stubs in hopes that the user will override them. Such methods
-include: `handle\_failure() and setup\_child()`. See the section near the bottom
+include: `handle_failure() and setup_child()`. See the section near the bottom
 for a detailed descriptor of how to subclass the worker.
 
 ##### Algorithm
@@ -346,16 +346,16 @@ $ export QC_FORK_WORKER='true'
 
 One last note on forking. It is often the case that after Ruby forks a process,
 some sort of setup needs to be done. For instance, you may want to re-establish
-a database connection, or get a new file descriptor. queue\_classic's worker
+a database connection, or get a new file descriptor. queue_classic's worker
 provides a hook that is called immediately after `Kernel.fork`. To use this hook
-subclass the worker and override `setup\_child()`.
+subclass the worker and override `setup_child()`.
 
 ##### LISTEN/NOTIFY
 
 The exponential back-off algorithm will require our worker to wait if it does
 not succeed in locking a job. How we wait is something that can vary. PostgreSQL
 has a wonderful feature that we can use to wait intelligently. Processes can LISTEN on a channel and be
-alerted to notifications. queue\_classic uses this feature to block until a
+alerted to notifications. queue_classic uses this feature to block until a
 notification is received. If this feature is disabled, the worker will call
 `Kernel.sleep(t)` where t is set by our exponential back-off algorithm. However,
 if we are using LISTEN/NOTIFY then we can enter a type of sleep that can be
@@ -373,22 +373,22 @@ $ export QC_LISTENING_WORKER='true'
 
 ##### Failure
 
-I bet your worker will encounter a job that raises an exception. queue\_classic
+I bet your worker will encounter a job that raises an exception. queue_classic
 thinks that you should know about this exception by means of you established
-exception tracker. (i.e. Hoptoad, Exceptional) To that end, queue\_classic offers
+exception tracker. (i.e. Hoptoad, Exceptional) To that end, queue_classic offers
 a method that you can override. This method will be passed 2 arguments: the
 exception instance and the job. Here are a few examples of things you might want
-to do inside `handle\_failure()`.
+to do inside `handle_failure()`.
 
 ## Instrumentation
 
 QC will log elapsed time, errors and general usage in the form of data.
-To customize the output of the log data, override `QC.log` and `QC.log\_yield`.
+To customize the output of the log data, override `QC.log` and `QC.log_yield`.
 By default, QC uses a simple wrapper around $stdout to put the log data in k=v
 format. For instance:
 
 ```
-lib=queue\_classic level=info action=insert_job elapsed=16
+lib=queue_classic level=info action=insert_job elapsed=16
 ```
 
 ## Tips and Tricks
@@ -401,7 +401,7 @@ I was testing some code that started out handling some work in a web request and
 wanted to move that work over to a queue.  After completing a red-green-refactor
 I did not want my tests to have to worry about workers or even hit the database.
 
-Turns out its easy to get queue\_classic to just work in a synchronous way with:
+Turns out its easy to get queue_classic to just work in a synchronous way with:
 
 ```ruby
 def QC.enqueue(function_call, *args)
@@ -409,7 +409,7 @@ def QC.enqueue(function_call, *args)
 end
 ```
 
-Now you can test queue\_classic as if it was calling your method directly!
+Now you can test queue_classic as if it was calling your method directly!
 
 
 ### Dispatching new jobs to workers without new code
@@ -420,9 +420,9 @@ The other day I found myself in a position in which I needed to delete a few
 thousand records. The tough part of this situation is that I needed to ensure
 the ActiveRecord callbacks were made on these objects thus making a simple SQL
 statement unfeasible. Also, I didn't want to wait all day to select and destroy
-these objects. queue\_classic to the rescue! (no pun intended)
+these objects. queue_classic to the rescue! (no pun intended)
 
-The API of queue\_classic enables you to quickly dispatch jobs to workers. In my
+The API of queue_classic enables you to quickly dispatch jobs to workers. In my
 case I wanted to call `Invoice.destroy(id)` a few thousand times. I fired up a
 Heroku console session and executed this line:
 
@@ -474,10 +474,10 @@ Author: [@ryandotsmith (ace hacker)](https://twitter.com/#!/ryandotsmith)
 
 Many popular queueing solution provide support for scheduling. Features like
 Redis-Scheduler and the run_at column in DJ are very important to the web
-application developer. While queue\_classic does not offer any sort of scheduling
+application developer. While queue_classic does not offer any sort of scheduling
 features, I do not discount the importance of the concept. However, it is my
 belief that a scheduler has no place in a queueing library, to that end I will
-show you how to schedule jobs using queue\_classic and the clockwork gem.
+show you how to schedule jobs using queue_classic and the clockwork gem.
 
 #### Example
 
@@ -504,7 +504,7 @@ Now each day at 01:00 we will be sending the build_daily_report message to our
 SalesSummaryGenerator class.
 
 I found this abstraction quite powerful and easy to understand. Like
-queue\_classic, the clockwork gem is simple to understand and has 0 dependencies.
+queue_classic, the clockwork gem is simple to understand and has 0 dependencies.
 In production, I create a Heroku process type called clock. This is typically
 what my Procfile looks like:
 
@@ -534,13 +534,13 @@ clock: clockwork clock.rb
 ### 0.2.X to 0.3.X
 
 * Deprecated QC.queue_length in favor of QC.length
-* Locking functions need to be loaded into database via `$ rake qc:load\_functions`
+* Locking functions need to be loaded into database via `$ rake qc:load_functions`
 
 Also, the default queue is no longer named jobs,
-it is named queue\_classic\_jobs. Renaming the table is the only change that needs to be made.
+it is named queue_classic_jobs. Renaming the table is the only change that needs to be made.
 
 ```bash
-$ psql your_database -c "ALTER TABLE jobs RENAME TO queue\_classic_jobs;"
+$ psql your_database -c "ALTER TABLE jobs RENAME TO queue_classic_jobs;"
 ```
 
 Or if you are using Rails' Migrations:
@@ -549,21 +549,21 @@ Or if you are using Rails' Migrations:
 class RenameJobsTable < ActiveRecord::Migration
 
   def self.up
-    rename_table :jobs, :queue\_classic_jobs
+    rename_table :jobs, :queue_classic_jobs
     remove_index :jobs, :id
-    add_index :queue\_classic_jobs, :id
+    add_index :queue_classic_jobs, :id
   end
 
   def self.down
-    rename_table :queue\_classic_jobs, :jobs
-    remove_index :queue\_classic_jobs, :id
+    rename_table :queue_classic_jobs, :jobs
+    remove_index :queue_classic_jobs, :id
     add_index :jobs, :id
   end
 
 end
 ```
 
-## Hacking on queue\_classic
+## Hacking on queue_classic
 
 ### Dependencies
 
@@ -575,7 +575,7 @@ end
 
 ```bash
 $ bundle
-$ createdb queue\_classic_test
-$ export QC_DATABASE_URL="postgres://username:pass@localhost/queue\_classic_test"
+$ createdb queue_classic_test
+$ export QC_DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
 $ rake
 ```
