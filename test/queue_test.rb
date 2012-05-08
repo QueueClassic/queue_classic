@@ -41,11 +41,11 @@ class QueueTest < QCTest
     s_queue = QC::Queue.new("secondary_queue")
     p_queue.enqueue("Klass.method")
     s_queue.enqueue("Klass.method")
-    assert_equal(1, p_queue.count(p_queue.name))
-    assert_equal(1, s_queue.count(s_queue.name))
-    p_queue.delete_all(p_queue.name)
-    assert_equal(0, p_queue.count(p_queue.name))
-    assert_equal(1, s_queue.count(s_queue.name))
+    assert_equal(1, p_queue.count)
+    assert_equal(1, s_queue.count)
+    p_queue.delete_all
+    assert_equal(0, p_queue.count)
+    assert_equal(1, s_queue.count)
   end
 
   def test_queue_instance

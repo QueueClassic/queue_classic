@@ -20,12 +20,12 @@ module QC
       Queries.delete(id)
     end
 
-    def delete_all(q_name=nil)
-      Queries.delete_all(q_name)
+    def delete_all
+      Queries.delete_all(@name)
     end
 
-    def count(q_name=nil)
-      Queries.count(q_name)
+    def count
+      Queries.count(@name)
     end
 
   end
