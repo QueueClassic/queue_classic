@@ -444,24 +444,10 @@ database.
 
 To achieve this we will create a helper method:
 
-```ruby
-
-def qc_txn
-  begin
-    QC.database.execute("BEGIN")
-    yield
-    QC.database.execute("COMMIT")
-  rescue Exception
-    QC.database.execute("ROLLBACK")
-    raise
-  end
-end
-```
-
 Now in your application code you can do something like:
 
 ```ruby
-qc_txn do
+QC::Conn.transaction do
   Account.all.each do |act|
     QC.enqueue("Emailer.send_notice", act.id)
   end
