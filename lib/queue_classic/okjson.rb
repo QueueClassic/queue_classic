@@ -1,4 +1,3 @@
-module QC
 # encoding: UTF-8
 #
 # Copyright 2011, 2012 Keith Rarick
@@ -28,6 +27,7 @@ require 'stringio'
 # Some parts adapted from
 # http://golang.org/src/pkg/json/decode.go and
 # http://golang.org/src/pkg/utf8/utf8.go
+module QC
 module OkJson
   extend self
 
