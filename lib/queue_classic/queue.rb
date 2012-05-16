@@ -8,8 +8,12 @@ module QC
       @chan = @name if notify
     end
 
+    def enqueue_with_priority(priority, method, *args)
+      Queries.insert(name, method, args, chan, priority)
+    end
+
     def enqueue(method, *args)
-      Queries.insert(name, method, args, chan)
+      Queries.insert(name, method, args, chan, 1)
     end
 
     def lock(top_bound=TOP_BOUND)
