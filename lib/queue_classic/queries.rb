@@ -2,10 +2,10 @@ module QC
   module Queries
     extend self
 
-    def insert(q_name, method, args, chan=nil)
+    def insert(q_name, method, args, chan=nil, priority=1)
       QC.log_yield(:action => "insert_job") do
-        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
-        res = Conn.execute(s, q_name, method, OkJson.encode(args))
+        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args, priority) VALUES ($1, $2, $3, $4)"
+        res = Conn.execute(s, q_name, method, OkJson.encode(args), priority)
         Conn.notify(chan) if chan
       end
     end

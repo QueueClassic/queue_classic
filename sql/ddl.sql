@@ -35,7 +35,7 @@ BEGIN
         || ' WHERE locked_at IS NULL'
         || ' AND q_name = '
         || quote_literal(q_name)
-        || ' ORDER BY id ASC'
+        || ' ORDER BY priority DESC, id ASC'
         || ' LIMIT 1'
         || ' OFFSET ' || quote_literal(relative_top)
         || ' FOR UPDATE NOWAIT'
