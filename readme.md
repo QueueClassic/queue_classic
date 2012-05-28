@@ -278,7 +278,7 @@ class MyWorker < QC::Worker
 
   # retry the job
   def handle_failure(job, exception)
-    @queue.enqueue(job[:method], job[:args])
+    @queue.enqueue(job[:method], *job[:args])
   end
 
   # the forked proc needs a new db connection
