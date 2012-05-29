@@ -7,6 +7,7 @@ Gem::Specification.new do |s|
   s.summary       = "postgres backed queue"
   s.authors       = ["Ryan Smith (♠ ace hacker)"]
   s.homepage      = "http://github.com/ryandotsmith/queue_classic"
+  s.license       = "MIT"
 
   files = []
   files << "readme.md"
