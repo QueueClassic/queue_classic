@@ -135,7 +135,7 @@ end
 ## Configure
 
 All configuration takes place in the form of environment vars.
-See [queue_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/master/lib/queue_classic.rb#L29-66)
+See [queue_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/master/lib/queue_classic.rb#L23-62)
 for a list of options.
 
 ## Usage
@@ -278,7 +278,7 @@ class MyWorker < QC::Worker
 
   # retry the job
   def handle_failure(job, exception)
-    @queue.enqueue(job[:method], job[:args])
+    @queue.enqueue(job[:method], *job[:args])
   end
 
   # the forked proc needs a new db connection
