@@ -565,3 +565,8 @@ $ createdb queue_classic_test
 $ export QC_DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
 $ rake
 ```
+
+### License
+
+queue_classic is released under the MIT License (http://www.opensource.org/licenses/mit-license.php).
+See the MIT-LICENSE file for details.
