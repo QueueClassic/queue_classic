@@ -569,4 +569,3 @@ $ rake
 ### License
 
 queue_classic is released under the MIT License (http://www.opensource.org/licenses/mit-license.php).
-See the MIT-LICENSE file for details.
