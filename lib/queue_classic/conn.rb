@@ -12,6 +12,11 @@ module QC
         result.length > 1 ? result : result.pop
       rescue PGError => e
         log(:error => e.inspect)
+        begin
+          disconnect
+        rescue PGError
+          @connection = nil   
+        end
         raise
       end
     end
