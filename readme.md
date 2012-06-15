@@ -16,6 +16,7 @@ queue_classic features:
 * Fuzzy-FIFO support [academic paper](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf)
 * Instrumentation via log output
 * Long term support
+* Support for job priorities
 
 ## Proven
 
@@ -148,7 +149,7 @@ consuming jobs (lock then delete).
 You certainly don't need the queue_classic rubygem to put a job in the queue.
 
 ```bash
-$ psql queue_classic_test -c "INSERT INTO queue_classic_jobs (q_name, method, args) VALUES ('default', 'Kernel.puts', '[\"hello world\"]');"
+$ psql queue_classic_test -c "INSERT INTO queue_classic_jobs (q_name, method, args, priority) VALUES ('default', 'Kernel.puts', '[\"hello world\"]', 1);"
 ```
 
 However, the rubygem will take care of converting your args to JSON and it will also dispatch
@@ -174,6 +175,9 @@ QC.enqueue("Kernel.puts", {"hello" => "world"})
 
 # This method has an array argument.
 QC.enqueue("Kernel.puts", ["hello", "world"])
+
+# Enqueue a job with priority 2 (Default is 1)
+QC.enqueue_with_priority(2, "Kernel.puts", "I go first")
 ```
 
 The basic idea is that all arguments should be easily encoded to json. OkJson

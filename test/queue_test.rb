@@ -6,6 +6,10 @@ class QueueTest < QCTest
     QC.enqueue("Klass.method")
   end
 
+  def test_enqueue_with_priority
+    QC.enqueue_with_priority(2, "Klass.method")
+  end
+
   def test_lock
     QC.enqueue("Klass.method")
     expected = {:id=>"1", :method=>"Klass.method", :args=>[]}
