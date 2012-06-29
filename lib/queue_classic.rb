@@ -61,6 +61,13 @@ module QC
   # as the max exponent.
   MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
+  # If you want the PID of the current process 
+  # written to an external file, set this
+  # variable to the desired location.
+  if PIDFILE=ENV["QC_PIDFILE"]
+    File.open(PIDFILE, 'w') { |f| f << Process.pid }
+  end
+
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
   def self.method_missing(sym, *args, &block)
