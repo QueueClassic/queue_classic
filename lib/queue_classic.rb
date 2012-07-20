@@ -12,9 +12,6 @@ require "queue_classic/worker"
 require "queue_classic/setup"
 
 module QC
-  # ENV["LOG_LEVEL"] is used in Scrolls
-  Scrolls::Log.start
-
   Root = File.expand_path("..", File.dirname(__FILE__))
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
   DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
