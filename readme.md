@@ -262,7 +262,7 @@ require "queue_classic"
 QC::Worker.new.start
 ```
 
-#### Sublcass QC::Worker
+#### Subclass QC::Worker
 
 Now that we have seen how to run a worker process, let's take a look at how to customize a worker.
 The class `QC::Worker` will probably suit most of your needs; however, there are some mechanisms
