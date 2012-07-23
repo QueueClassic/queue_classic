@@ -21,11 +21,11 @@ module QC
     end
 
     def delete_all
-      Queries.delete_all(@name)
+      Queries.delete_all(name)
     end
 
     def count
-      Queries.count(@name)
+      Queries.count(name)
     end
 
   end
