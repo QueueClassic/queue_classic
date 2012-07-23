@@ -20,5 +20,5 @@ Gem::Specification.new do |s|
   s.require_paths = %w[lib]
 
   s.add_dependency "pg", "~> 0.14.0"
-  s.add_dependency "scrolls", "~> 0.0.8"
+  s.add_dependency "scrolls", "~> 0.2.1"
 end
