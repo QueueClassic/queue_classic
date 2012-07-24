@@ -2,8 +2,6 @@ require "scrolls"
 require "pg"
 require "uri"
 
-$: << File.expand_path(__FILE__, "lib")
-
 require "queue_classic/okjson"
 require "queue_classic/conn"
 require "queue_classic/queries"
