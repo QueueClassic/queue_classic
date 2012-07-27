@@ -69,7 +69,7 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 
 ```ruby
 source :rubygems
-gem "queue_classic", "2.0.0"
+gem "queue_classic", "2.0.1"
 ```
 
 **Rakefile**
