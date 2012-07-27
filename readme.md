@@ -1,6 +1,6 @@
 # queue_classic
 
-v2.0.0
+v2.0.1
 
 queue_classic provides PostgreSQL-backed queueing focused on concurrent job
 locking and minimizing database load while providing a simple, intuitive user
@@ -128,7 +128,7 @@ require 'queue_classic'
 
 Sequel.migration do
   up {QC::Setup.create}
-  down {QC::Setup.down}
+  down {QC::Setup.drop}
 end
 ```
 
