@@ -66,7 +66,7 @@ module QC
 
   def self.default_queue
     @default_queue ||= begin
-      Queue.new(QUEUE, LISTENING_WORKER)
+      Queue.new(QUEUE)
     end
   end
 
