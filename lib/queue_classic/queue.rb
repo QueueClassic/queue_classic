@@ -3,7 +3,7 @@ module QC
 
     attr_reader :name, :chan
 
-    def initialize(name, notify=false)
+    def initialize(name, notify=QC::LISTENING_WORKER)
       @name = name
       @chan = @name if notify
     end
