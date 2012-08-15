@@ -28,5 +28,9 @@ module QC
       Queries.count(name)
     end
 
+    def job_count(method, *args)
+      Queries.job_count(name, method, args)
+    end
+
   end
 end

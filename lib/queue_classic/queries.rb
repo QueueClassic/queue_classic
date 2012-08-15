@@ -28,6 +28,12 @@ module QC
       r["count"].to_i
     end
 
+    def job_count(q_name, method, args)
+      s = "SELECT COUNT(*) FROM #{TABLE_NAME} WHERE q_name = $1 AND method = $2 AND args = $3"
+      r = Conn.execute(s, q_name, method, OkJson.encode(args))
+      r["count"].to_i
+    end
+
     def delete(id)
       Conn.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)
     end

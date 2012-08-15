@@ -21,6 +21,11 @@ class QueueTest < QCTest
     assert_equal(1, QC.count)
   end
 
+  def test_job_count
+    QC.enqueue("Klass.method")
+    assert_equal(1, QC.job_count("Klass.method"))
+  end
+
   def test_delete
     QC.enqueue("Klass.method")
     assert_equal(1, QC.count)
