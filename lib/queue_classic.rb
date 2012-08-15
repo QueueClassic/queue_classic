@@ -16,6 +16,7 @@ module QC
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
   DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
   CreateTable = File.join(QC::Root, "/sql/create_table.sql")
+  CreateJobCountIndex = File.join(QC::Root, "/sql/create_job_count_index.sql")
 
   # You can use the APP_NAME to query for
   # postgres related process information in the
