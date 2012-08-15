@@ -371,6 +371,12 @@ LISTEN/NOTIFY is disabled by default but can be enabled by setting the following
 $ export QC_LISTENING_WORKER='true'
 ```
 
+##### Job Counts
+
+If you'd like to use `QC.job_count` it is highly recommended that you
+you create an additional index which can be run by using
+`QC::Setup.create_job_count_index`.
+
 ##### Failure
 
 I bet your worker will encounter a job that raises an exception. queue_classic
