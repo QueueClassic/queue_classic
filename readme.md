@@ -82,8 +82,14 @@ require "queue_classic/tasks"
 **config/initializers/queue_classic.rb**
 
 ```ruby
-# Optional if you have this set in your shell environment or use Heroku.
-ENV["DATABASE_URL"] = "postgres://username:password@localhost/database_name"
+# queue_classic will by default look for an environment variable DATABASE_URL
+# or QC_DATABASE_URL for a connection string in the format
+# "postgres://username:password@localhost/database_name".  If you use Heroku,
+# this will already be set.
+#
+# If you don't want to set this variable, you can set the connection in an
+# initializer.
+QC::Conn.connection = ActiveRecord::Base.connection.raw_connection
 ```
 
 queue_classic requires a database table and a PL/pgSQL function to be loaded
