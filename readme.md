@@ -90,7 +90,7 @@ queue_classic requires a database table and a PL/pgSQL function to be loaded
 into your database. You can load the table and the function by running a migration
 or using a rake task.
 
-**db/migrations/add_queue_classic.rb**
+**db/migrate/add_queue_classic.rb**
 
 ```ruby
 require 'queue_classic'
