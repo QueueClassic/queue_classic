@@ -67,6 +67,18 @@ module QC
     def setup_child
     end
 
+    # This method should be overriden if
+    # you wish to do something before a
+    # call method is made on a job
+    def before_call(job)
+    end
+
+    # This method should be overriden if
+    # you wish to do something after a
+    # call method is made on a job
+    def after_call(job)
+    end
+
     def start
       while running?
         if fork_worker?
@@ -87,7 +99,9 @@ module QC
       if job = lock_job
         QC.log_yield(:level => :info, :action => "work_job", :job => job[:id]) do
           begin
+            before_call(job)
             call(job)
+            after_call(job)
           rescue Object => e
             log(:level => :debug, :action => "failed_work", :job => job[:id], :error => e.inspect)
             handle_failure(job, e)
