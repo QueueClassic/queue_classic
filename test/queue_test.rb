@@ -6,6 +6,10 @@ class QueueTest < QCTest
     QC.enqueue("Klass.method")
   end
 
+  def test_respond_to
+    assert_equal(true, QC.respond_to?(:enqueue))
+  end
+
   def test_lock
     QC.enqueue("Klass.method")
     expected = {:id=>"1", :method=>"Klass.method", :args=>[]}
