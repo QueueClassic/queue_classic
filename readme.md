@@ -1,6 +1,6 @@
 # queue_classic
 
-v2.0.0
+v2.0.1
 
 queue_classic provides PostgreSQL-backed queueing focused on concurrent job
 locking and minimizing database load while providing a simple, intuitive user
@@ -69,7 +69,7 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 
 ```ruby
 source :rubygems
-gem "queue_classic", "2.0.0"
+gem "queue_classic", "2.0.1"
 ```
 
 **Rakefile**
@@ -90,7 +90,7 @@ queue_classic requires a database table and a PL/pgSQL function to be loaded
 into your database. You can load the table and the function by running a migration
 or using a rake task.
 
-**db/migrations/add_queue_classic.rb**
+**db/migrate/add_queue_classic.rb**
 
 ```ruby
 require 'queue_classic'
@@ -128,7 +128,7 @@ require 'queue_classic'
 
 Sequel.migration do
   up {QC::Setup.create}
-  down {QC::Setup.down}
+  down {QC::Setup.drop}
 end
 ```
 
