@@ -72,7 +72,7 @@ module QC
       t0 = Time.now
       yield
     rescue => e
-      log({:at => "error", :error e.inspect}.merge(data))
+      log({:at => "error", :error => e.inspect}.merge(data))
       raise
     ensure
       t = Integer((Time.now - t0)*1000)
