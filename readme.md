@@ -556,6 +556,7 @@ end
 * Ruby 1.9.2 (tests work in 1.8.7 but compatibility is not guaranteed or supported)
 * Postgres ~> 9.0
 * Rubygem: pg ~> 0.11.0
+* For JRuby, see [queue_classic_java](https://github.com/bdon/queue_classic_java)
 
 ### Running Tests
 
