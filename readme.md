@@ -30,7 +30,7 @@ more advanced queueing features, you should investigate 0MQ, rabbitmq, or redis.
 ### Heroku Postgres
 
 The Heroku Postgres team uses queue_classic to monitor the health of
-customer databases, processng 200 jobs per second using a [fugu](https://postgres.heroku.com/pricing)
+customer databases, processing 200 jobs per second using a [fugu](https://postgres.heroku.com/pricing)
 database. They chose queue_classic because of its simplicity and reliability.
 
 ### Cloudapp
