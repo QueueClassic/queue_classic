@@ -383,7 +383,7 @@ to do inside `handle_failure()`.
 ## Instrumentation
 
 QC will log elapsed time, errors and general usage in the form of data.
-To customize the output of the log data, override `QC.log` and `QC.log_yield`.
+To customize the output of the log data, override `QC.log(data)` and `QC.log_yield(data)`.
 By default, QC uses a simple wrapper around $stdout to put the log data in k=v
 format. For instance:
 
