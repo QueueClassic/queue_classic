@@ -87,8 +87,7 @@ module QC
       if job = lock_job
         QC.log_yield(:level => :info, :action => "work_job", :job => job[:id]) do
           begin
-            before_call(job)
-            call_return = call(job)
+            before_call(job) ? call_return = call(job) : log(:level => :debug, :action => "never_ran_work", :job => job[:id], :error => "before_call returned false")
             after_call(job)
             call_return
           rescue Object => e

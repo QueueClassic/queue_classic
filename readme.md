@@ -291,7 +291,8 @@ end
 
 Another method to customize a worker would be to have a method called before or after the actual queued 
 process runs. Note while the example uses logging, a more common use would be to tie it into a relationship
-with an object in a rails model in order to instrument it and manage/monitor the queue via rails. 
+with an object in a rails model in order to instrument it and manage/monitor the queue via rails. If the before_call
+returns false, then the call will not run.
 
 ```ruby
 require "queue_classic"
@@ -308,6 +309,7 @@ class MyWorker < QC::Worker
   # call method is made on a job
   def before_call(job)
     self.log({:message => "Beginning job", :job => job})
+    true
   end
 
   # This method should be overridden if
