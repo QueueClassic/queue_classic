@@ -48,27 +48,10 @@ class CallbackTestWorker < QC::Worker
   end
 end
 
-class FailCallbackTestWorker < QC::Worker
-  attr_accessor :failed_count, :before_count, :after_count
-
-  def initialize(*args)
-    super(*args)
-    @failed_count = 0
-    @before_count = 0
-    @after_count = 0
-  end
-
-  def handle_failure(job,e)
-    @failed_count += 1
-  end
-
+class FailCallbackTestWorker < CallbackTestWorker
   def before_call(job)
-    @before_count += 1
+    super
     false
-  end
-
-  def after_call(job)
-    @after_count += 1
   end
 end
 
