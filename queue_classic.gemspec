@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.name          = "queue_classic"
   s.email         = "ryan@heroku.com"
-  s.version       = "2.0.1"
+  s.version       = "2.0.3"
   s.date          = "2012-07-23"
   s.description   = "queue_classic is a queueing library for Ruby apps. (Rails, Sinatra, Etc...) queue_classic features asynchronous job polling, database maintained locks and no ridiculous dependencies. As a matter of fact, queue_classic only requires pg."
   s.summary       = "postgres backed queue"
@@ -20,5 +20,4 @@ Gem::Specification.new do |s|
   s.require_paths = %w[lib]
 
   s.add_dependency "pg", "~> 0.14.0"
-  s.add_dependency "scrolls", "~> 0.2.1"
 end

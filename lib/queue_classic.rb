@@ -1,4 +1,3 @@
-require "scrolls"
 require "pg"
 require "uri"
 
@@ -73,7 +72,7 @@ module QC
       t0 = Time.now
       yield
     rescue => e
-      log({:level => :error, :error => e.class, :message => e.message.strip}.merge(data))
+      log({:at => "error", :error => e.inspect}.merge(data))
       raise
     ensure
       t = Integer((Time.now - t0)*1000)
@@ -82,7 +81,18 @@ module QC
   end
 
   def self.log(data)
-    Scrolls.log({:lib => :queue_classic}.merge(data))
+    result = nil
+    data = {:lib => "queue-classic"}.merge(data)
+    if block_given?
+      start = Time.now
+      result = yield
+      data.merge(:elapsed => Time.now - start)
+    end
+    data.reduce(out=String.new) do |s, tup|
+      s << [tup.first, tup.last].join("=") << " "
+    end
+    puts(out) if ENV["DEBUG"]
+    return result
   end
 
 end
