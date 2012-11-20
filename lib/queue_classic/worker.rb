@@ -86,10 +86,15 @@ module QC
     def work
       if job = lock_job
         QC.log_yield(:level => :info, :action => "work_job", :job => job[:id]) do
-          begin
-            before_call(job) ? call_return = call(job) : log(:level => :debug, :action => "never_ran_work", :job => job[:id], :error => "before_call returned false")
-            after_call(job)
-            call_return
+          begin 
+            if before_call(job) 
+              call_return = call(job)
+              after_call(job)
+              call_return
+            else
+              log(:level => :debug, :action => "never_ran_work", :job => job[:id], :error => "before_call returned false")
+              handle_failure(job, nil)
+            end
           rescue Object => e
             log(:level => :debug, :action => "failed_work", :job => job[:id], :error => e.inspect)
             handle_failure(job, e)
@@ -158,6 +163,7 @@ module QC
     # you wish to do something before a
     # call method is made on a job
     def before_call(job)
+      true
     end
 
     # This method should be overridden if
