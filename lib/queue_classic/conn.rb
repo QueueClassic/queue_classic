@@ -63,6 +63,16 @@ module QC
       @connection ||= connect
     end
 
+    def connection=(connection)
+      unless connection.instance_of? PG::Connection
+        raise(
+          ArgumentError,
+          "connection must be an instance of PG::Connection, but was #{connection.class}"
+        )
+      end
+      @connection = connection
+    end
+
     def disconnect
       connection.finish
     ensure
