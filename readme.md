@@ -96,6 +96,15 @@ queue_classic requires a database table and a PL/pgSQL function to be loaded
 into your database. You can load the table and the function by running a migration
 or using a rake task.
 
+note: if connecting to postgresql server using unix sockets instead of tcp sockets,
+use the percent-encoded path of the socket directory as the host part of `DATABASE_URL`.
+
+```ruby
+# Optional if you have this set in your shell environment or use Heroku.
+# Using socket to connect to the local postgresql listening at unix:/var/run/postgresql
+ENV["DATABASE_URL"] = "postgres://username:password@%Fvar%Frun%Fpostgresql/database_name"
+```
+
 **db/migrate/add_queue_classic.rb**
 
 ```ruby

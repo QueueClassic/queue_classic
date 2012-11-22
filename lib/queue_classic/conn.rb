@@ -82,7 +82,7 @@ module QC
     def connect
       log(:level => :debug, :action => "establish_conn")
       conn = PGconn.connect(
-        db_url.host,
+        db_url.host.gsub(/%2F/i, '/'), # host or percent-encoded socket path
         db_url.port || 5432,
         nil, '', #opts, tty
         db_url.path.gsub("/",""), # database name
