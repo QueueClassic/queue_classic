@@ -81,26 +81,28 @@ module QC
 
     def connect
       log(:level => :debug, :action => "establish_conn")
-      conn = PGconn.connect(
-        db_url.host,
-        db_url.port || 5432,
-        nil, '', #opts, tty
-        db_url.path.gsub("/",""), # database name
-        db_url.user,
-        db_url.password
-      )
-      if conn.status != PGconn::CONNECTION_OK
-        log(:level => :error, :message => conn.error)
+      if db_url.nil? && Object.const_defined?('ActiveRecord')
+        conn = ActiveRecord::Base.connection.raw_connection
+      else
+        conn = PGconn.connect(
+          db_url.host,
+          db_url.port || 5432,
+          nil, '', #opts, tty
+          db_url.path.gsub("/",""), # database name
+          db_url.user,
+          db_url.password
+        )
+        if conn.status != PGconn::CONNECTION_OK
+          log(:level => :error, :message => conn.error)
+        end
       end
       conn
     end
 
     def db_url
       return @db_url if @db_url
-      url = ENV["QC_DATABASE_URL"] ||
-            ENV["DATABASE_URL"]    ||
-            raise(ArgumentError, "missing QC_DATABASE_URL or DATABASE_URL")
-      @db_url = URI.parse(url)
+      url = ENV["QC_DATABASE_URL"] || ENV["DATABASE_URL"]
+      @db_url = URI.parse(url) unless url.nil?
     end
 
     def log(msg)
