@@ -96,7 +96,13 @@ queue_classic requires a database table and a PL/pgSQL function to be loaded
 into your database. You can load the table and the function by running a migration
 or using a rake task.
 
-**db/migrate/add_queue_classic.rb**
+**db/migrations/add_queue_classic.rb**
+
+If you use the migration, and you wish to use commands that reset the database
+from the stored schema (e.g. `rake db:reset`), your application must be
+configured with `config.active_record.schema_format = :sql` in
+`config/application.rb`.  If you don't do this, the PL/pgSQL function that
+queue_classic creates will be lost when you reset the database.
 
 ```ruby
 require 'queue_classic'
