@@ -295,6 +295,39 @@ class MyWorker < QC::Worker
 end
 ```
 
+Another method to customize a worker would be to have a method called before or after the actual queued 
+process runs. Note while the example uses logging, a more common use would be to tie it into a relationship
+with an object in a rails model in order to instrument it and manage/monitor the queue via rails. If the before_call
+returns false, then the call will not run.
+
+```ruby
+require "queue_classic"
+
+class MyWorker < QC::Worker
+
+  # retry the job
+  def handle_failure(job, exception)
+    @queue.enqueue(job[:method], *job[:args])
+  end
+  
+  # This method should be overridden if
+  # you wish to do something before a
+  # call method is made on a job
+  def before_call(job)
+    self.log({:message => "Beginning job", :job => job})
+    true
+  end
+
+  # This method should be overridden if
+  # you wish to do something after a
+  # call method is made on a job
+  def after_call(job)
+    self.log({:message => "Completed job", :job => job})
+  end
+
+end
+```
+
 Notice that we have access to the `@queue` instance variable. Read the tests
 and the worker class for more information on what you can do inside of the worker.
 

@@ -24,6 +24,38 @@ class TestWorker < QC::Worker
   end
 end
 
+class CallbackTestWorker < QC::Worker
+  attr_accessor :failed_count, :before_count, :after_count
+
+  def initialize(*args)
+    super(*args)
+    @failed_count = 0
+    @before_count = 0
+    @after_count = 0
+  end
+
+  def handle_failure(job,e)
+    @failed_count += 1
+  end
+
+  def before_call(job)
+    @before_count += 1
+    true
+  end
+  
+  def after_call(job)
+    @after_count += 1
+  end
+end
+
+class FailCallbackTestWorker < CallbackTestWorker
+  def before_call(job)
+    super
+    false
+  end
+end
+
+
 class WorkerTest < QCTest
 
   def test_work
@@ -93,6 +125,42 @@ class WorkerTest < QCTest
       QC::Conn.execute("SELECT count(*) from pg_stat_activity")["count"].to_i,
       "Multiple connections -- Are there other connections in other terminals?"
     )
+  end
+
+  def test_callback_worker_works
+    QC.enqueue("TestObject.no_args")
+    worker = CallbackTestWorker.new("default", 1, false, false, 1)
+    assert_equal(1, QC.count)
+    worker.work
+    assert_equal(0, QC.count)
+    assert_equal(0, worker.failed_count)
+    assert_equal(1, worker.before_count)
+    assert_equal(1, worker.after_count)
+
+    QC.enqueue("TestObject.not_a_method")
+    worker = CallbackTestWorker.new("default", 1, false, false, 1)
+    worker.work
+    assert_equal(1, worker.failed_count)
+    assert_equal(1, worker.before_count)
+    assert_equal(0, worker.after_count)
+  end
+
+  def test_callback_worker_fails
+    QC.enqueue("TestObject.no_args")
+    worker = FailCallbackTestWorker.new("default", 1, false, false, 1)
+    assert_equal(1, QC.count)
+    worker.work
+    assert_equal(0, QC.count)
+    assert_equal(1, worker.failed_count)
+    assert_equal(1, worker.before_count)
+    assert_equal(0, worker.after_count)
+
+    QC.enqueue("TestObject.not_a_method")
+    worker = FailCallbackTestWorker.new("default", 1, false, false, 1)
+    worker.work
+    assert_equal(1, worker.failed_count)
+    assert_equal(1, worker.before_count)
+    assert_equal(0, worker.after_count)
   end
 
 end
