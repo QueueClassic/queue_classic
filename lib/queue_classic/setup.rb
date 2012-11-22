@@ -36,5 +36,11 @@ module QC
       end
     end
 
+    def create_job_count_index
+      Conn.transaction do
+        Conn.execute(File.read(CreateJobCountIndex))
+      end
+    end
+
   end
 end
