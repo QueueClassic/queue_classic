@@ -252,7 +252,7 @@ $ bundle exec rake qc:work
 To work jobs from a custom queue:
 
 ```bash
-$ QUEUE="p_queue" bundle exec rake qc:work
+$ QUEUE="priority_queue" bundle exec rake qc:work
 ```
 
 #### Bin File
