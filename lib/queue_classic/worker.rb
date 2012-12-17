@@ -103,7 +103,7 @@ module QC
       log(:level => :debug, :action => "lock_job")
       attempts = 0
       job = nil
-      until job
+      until !running? || job
         job = @queue.lock(@top_bound)
         if job.nil?
           log(:level => :debug, :action => "failed_lock", :attempts => attempts)
