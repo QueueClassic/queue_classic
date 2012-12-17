@@ -1,3 +1,6 @@
+Version 2.0.5
+- allow term signal to halt the lock_job function
+
 Version 2.0.4
 - provider a connection setter.
 
