@@ -1,6 +1,6 @@
 # queue_classic
 
-v2.0.4
+v2.0.5
 
 queue_classic provides PostgreSQL-backed queueing focused on concurrent job
 locking and minimizing database load while providing a simple, intuitive user
