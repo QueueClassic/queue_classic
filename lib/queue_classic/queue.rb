@@ -2,7 +2,6 @@ module QC
   class Queue
 
     attr_reader :name, :chan
-
     def initialize(name, notify=QC::LISTENING_WORKER)
       @name = name
       @chan = @name if notify

@@ -2,126 +2,97 @@ module QC
   class Worker
 
     attr_reader :queue
-
-    def initialize(*args)
-      if args.length == 5
-        q_name, top_bound, fork_worker, listening_worker, max_attempts = *args
-      elsif args.length <= 1
-        opts = args.first || {}
-        q_name           = opts[:q_name]           || QC::QUEUE
-        top_bound        = opts[:top_bound]        || QC::TOP_BOUND
-        fork_worker      = opts[:fork_worker]      || QC::FORK_WORKER
-        listening_worker = opts[:listening_worker] || QC::LISTENING_WORKER
-        max_attempts     = opts[:max_attempts]     || QC::MAX_LOCK_ATTEMPTS
-      else
-        raise ArgumentError, 'wrong number of arguments (expected no args, an options hash, or 5 separate args)'
-      end
+    # In the case no arguments are passed to the initializer,
+    # the defaults are pulled from the environment variables.
+    def initialize(args={})
+      @q_name           = args[:q_name]           ||= QC::QUEUE
+      @top_bound        = args[:top_bound]        ||= QC::TOP_BOUND
+      @fork_worker      = args[:fork_worker]      ||= QC::FORK_WORKER
+      @listening_worker = args[:listening_worker] ||= QC::LISTENING_WORKER
+      @max_attempts     = args[:max_attempts]     ||= QC::MAX_LOCK_ATTEMPTS
 
       @running = true
-      @queue = Queue.new(q_name, listening_worker)
-      @top_bound = top_bound
-      @fork_worker = fork_worker
-      @listening_worker = listening_worker
-      @max_attempts = max_attempts
-      handle_signals
-
-      log(
-        :level => :debug,
-        :action => "worker_initialized",
-        :queue => q_name,
-        :top_bound => top_bound,
-        :fork_worker => fork_worker,
-        :listening_worker => listening_worker,
-        :max_attempts => max_attempts
-      )
+      @queue = Queue.new(@q_name, @listening_worker)
+      log(args.merge(:at => "worker_initialized"))
     end
 
-    def running?
-      @running
-    end
-
-    def fork_worker?
-      @fork_worker
-    end
-
-    def can_listen?
-      @listening_worker
-    end
-
-    def handle_signals
-      %W(INT TERM).each do |sig|
-        trap(sig) do
-          if running?
-            @running = false
-            log(:level => :debug, :action => "handle_signal", :running => @running)
-          else
-            raise Interrupt
-          end
-        end
-      end
-    end
-
-    # This method should be overriden if
-    # your worker is forking and you need to
-    # re-establish database connectoins
-    def setup_child
-    end
-
+    # Start a loop and work jobs indefinitely.
+    # Call this method to start the worker.
+    # This is the easiest way to start working jobs.
     def start
-      while running?
-        if fork_worker?
-          fork_and_work
-        else
-          work
-        end
+      while @running
+        @fork_worker ? fork_and_work : work
       end
     end
 
+    # Call this method to stop the worker.
+    # The worker may not stop immediately if the worker
+    # is sleeping.
+    def stop
+      @running = false
+    end
+
+    # This method will tell the ruby process to FORK.
+    # Define setup_child to hook into the forking process.
+    # Using setup_child is good for re-establishing database connections.
     def fork_and_work
-      @cpid = fork { setup_child; work }
-      log(:level => :debug, :action => :fork, :pid => @cpid)
+      @cpid = fork {setup_child; work}
+      log(:at => :fork, :pid => @cpid)
       Process.wait(@cpid)
     end
 
+    # This method will lock a job & evaluate the code defined by the job.
+    # Also, this method will make the best attempt to delete the job
+    # from the queue before returning.
     def work
       if job = lock_job
-        QC.log_yield(:level => :info, :action => "work_job", :job => job[:id]) do
+        QC.log_yield(:at => "work", :job => job[:id]) do
           begin
             call(job)
-          rescue Object => e
-            log(:level => :debug, :action => "failed_work", :job => job[:id], :error => e.inspect)
+          rescue => e
             handle_failure(job, e)
           ensure
             @queue.delete(job[:id])
-            log(:level => :debug, :action => "delete_job", :job => job[:id])
+            log(:at => "delete_job", :job => job[:id])
           end
         end
       end
     end
 
+    # lock_job will attempt to lock a job in the queue's table. It uses an
+    # exponential backoff in the event that a job was not locked. This method
+    # will return a hash when a job is obtained.
+    #
+    # This method will terminate early if the stop method is called or
+    # @max_attempts has been reached.
+    #
+    # It is important that callers delete the job when finished.
+    # *@queue.delete(job[:id])*
     def lock_job
-      log(:level => :debug, :action => "lock_job")
+      log(:at => "lock_job")
       attempts = 0
       job = nil
-      until !running? || job
+      until !@running || job
         job = @queue.lock(@top_bound)
         if job.nil?
-          log(:level => :debug, :action => "failed_lock", :attempts => attempts)
+          log(:at => "failed_lock", :attempts => attempts)
           if attempts < @max_attempts
-            seconds = 2**attempts
-            wait(seconds)
+            wait(2**attempts)
             attempts += 1
             next
           else
             break
           end
         else
-          log(:level => :debug, :action => "finished_lock", :job => job[:id])
+          log(:at => "finished_lock", :job => job[:id])
         end
       end
       job
     end
 
+    # Each job includes a method column. We will use ruby's eval
+    # to grab the ruby object from memory. We send the method to
+    # the object and pass the args.
     def call(job)
       args = job[:args]
       klass = eval(job[:method].split(".").first)
@@ -129,27 +100,35 @@ module QC
       klass.send(message, *args)
     end
 
+    # If @listening_worker is set, the worker will use the database
+    # to sleep. The database approach preferred over a syscall since
+    # the database will break the sleep when new jobs are inserted into
+    # the queue.
     def wait(t)
-      if can_listen?
-        log(:level => :debug, :action => "listen_wait", :wait => t)
+      if @listening_worker
+        log(:at => "listen_wait", :wait => t)
         Conn.listen(@queue.chan)
         Conn.wait_for_notify(t)
         Conn.unlisten(@queue.chan)
         Conn.drain_notify
-        log(:level => :debug, :action => "finished_listening")
+        log(:at => "finished_listening")
       else
-        log(:level => :debug, :action => "sleep_wait", :wait => t)
+        log(:at => "sleep_wait", :wait => t)
         Kernel.sleep(t)
       end
     end
 
-    #override this method to do whatever you want
+    # This method will be called when an exception
+    # is raised during the execution of the job.
     def handle_failure(job,e)
-      puts "!"
-      puts "! \t FAIL"
-      puts "! \t \t #{job.inspect}"
-      puts "! \t \t #{e.inspect}"
-      puts "!"
+      log(:at => "handle_failure")
+    end
+
+    # This method should be overriden if
+    # your worker is forking and you need to
+    # re-establish database connections
+    def setup_child
+      log(:at => "setup_child")
     end
 
     def log(data)

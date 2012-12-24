@@ -1,8 +1,0 @@
-rvm:
-  - 1.8.7
-  - 1.9.2
-  - 1.9.3
-  - jruby
-  - rbx
-before_script:
-  - "psql -c 'create database queue_classic_test;' -U postgres"

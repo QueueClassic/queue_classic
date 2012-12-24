@@ -1,3 +1,9 @@
+Version 2.1.0
+- wrap connection execution in mutex making it thread safe
+- cleanup logging
+- refactor worker class making it more extensible
+- added rdoc style docs for worker class
+
 Version 2.0.5
 - allow term signal to halt the lock_job function
 

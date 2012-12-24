@@ -8,7 +8,10 @@ end
 namespace :qc do
   desc "Start a new worker for the (default or $QUEUE) queue"
   task :work  => :environment do
-    QC::Worker.new.start
+    trap('INT') {exit}
+    trap('TERM') {@worker.stop}
+    @worker = QC::Worker.new
+    @worker.start
   end
 
   desc "Returns the number of jobs in the (default or QUEUE) queue"
