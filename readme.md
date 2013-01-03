@@ -83,7 +83,7 @@ $ bundle exec rake qc:work
 Setup a worker to work a non-default queue.
 
 ```bash
-$ QUEUE="p_queue" bundle exec rake qc:work
+$ QUEUE="priority_queue" bundle exec rake qc:work
 ```
 
 #### Custom Worker
