@@ -12,7 +12,10 @@ class QueueTest < QCTest
 
   def test_lock
     QC.enqueue("Klass.method")
-    expected = {:id=>"1", :method=>"Klass.method", :args=>[]}
+
+    # See helper.rb for more information about the large initial id
+    # number.
+    expected = {:id=>(2**34).to_s, :method=>"Klass.method", :args=>[]}
     assert_equal(expected, QC.lock)
   end
 

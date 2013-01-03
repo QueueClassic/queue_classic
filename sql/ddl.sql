@@ -6,7 +6,7 @@
 CREATE OR REPLACE FUNCTION lock_head(q_name varchar, top_boundary integer)
 RETURNS SETOF queue_classic_jobs AS $$
 DECLARE
-  unlocked integer;
+  unlocked bigint;
   relative_top integer;
   job_count integer;
 BEGIN
