@@ -61,6 +61,11 @@ module QC
     default_queue.send(sym, *args, &block)
   end
 
+  # Ensure QC.respond_to?(:enqueue) equals true (ruby 1.9 only)
+  def self.respond_to_missing?(method_name, include_private = false)
+    default_queue.respond_to?(method_name)
+  end
+
   def self.default_queue
     @default_queue ||= begin
       Queue.new(QUEUE)
