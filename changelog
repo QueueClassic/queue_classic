@@ -1,3 +1,6 @@
+Version 2.1.1
+- update pg gem version
+
 Version 2.1.0
 - wrap connection execution in mutex making it thread safe
 - cleanup logging
