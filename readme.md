@@ -47,7 +47,7 @@ QC.enqueue("Kernel.puts", {"hello" => "world"})
 QC.enqueue("Kernel.puts", ["hello", "world"])
 
 # This method uses a non-default queue.
-p_queue = QC::Queue.new(q_name: "priority_queue")
+p_queue = QC::Queue.new("priority_queue")
 p_queue.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
