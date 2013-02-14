@@ -1,3 +1,8 @@
+Version 2.1.2
+- Use 64bit ints as default data types in PostgreSQL
+- add process method in worker
+- Allow percent-encoded socket paths in DATABASE_URL
+
 Version 2.1.1
 - update pg gem version
 
