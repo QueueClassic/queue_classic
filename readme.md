@@ -110,13 +110,7 @@ worker = MyWorker.new(max_attempts: 10, listening_worker: true)
 loop do
 	job = worker.lock_job
 	Thread.new do
-		begin
-			Timeout::timeout(5) {worker.call(job)}
-		rescue => e
-			handle_failure(job, e)
-		ensure
-			worker.delete(job[:id])
-		end
+	  Timeout::timeout(5) { worker.process(job) }
 	end
 end
 ```

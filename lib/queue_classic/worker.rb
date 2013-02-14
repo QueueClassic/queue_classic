@@ -41,20 +41,11 @@ module QC
       Process.wait(@cpid)
     end
 
-    # This method will lock a job & evaluate the code defined by the job.
-    # Also, this method will make the best attempt to delete the job
-    # from the queue before returning.
+    # This method will lock a job & process the job.
     def work
       if job = lock_job
         QC.log_yield(:at => "work", :job => job[:id]) do
-          begin
-            call(job)
-          rescue => e
-            handle_failure(job, e)
-          ensure
-            @queue.delete(job[:id])
-            log(:at => "delete_job", :job => job[:id])
-          end
+          process(job)
         end
       end
     end
@@ -88,6 +79,21 @@ module QC
         end
       end
       job
+    end
+
+    # A job is processed by evaluating the target code.
+    # Errors are delegated to the handle_failure method.
+    # Also, this method will make the best attempt to delete the job
+    # from the queue before returning.
+    def process(job)
+      begin
+        call(job)
+      rescue => e
+        handle_failure(job, e)
+      ensure
+        @queue.delete(job[:id])
+        log(:at => "delete_job", :job => job[:id])
+      end
     end
 
     # Each job includes a method column. We will use ruby's eval
