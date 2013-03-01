@@ -43,7 +43,9 @@ BEGIN
       EXIT;
     EXCEPTION
       WHEN lock_not_available THEN
-        -- do nothing. loop again and hope we get a lock
+        RAISE NOTICE 'QC could not lock job';
+        EXECUTE 'SELECT pg_sleep(0.5)';
+        -- loop again and hope we get a lock
     END;
   END LOOP;
 
