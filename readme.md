@@ -10,7 +10,7 @@ Features:
 * Support for multiple queues with heterogeneous workers.
 * JSON data format.
 * Forking workers.
-* [Fuzzy-FIFO support](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf)
+* [Fuzzy-FIFO support](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf).
 
 Contents:
 
