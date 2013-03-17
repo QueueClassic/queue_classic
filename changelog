@@ -1,3 +1,6 @@
+Unreleased (in Git)
+-
+
 Version 2.1.2
 - Use 64bit ints as default data types in PostgreSQL
 - add process method in worker
