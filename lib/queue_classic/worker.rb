@@ -12,7 +12,7 @@ module QC
       @max_attempts     = args[:max_attempts]     ||= QC::MAX_LOCK_ATTEMPTS
 
       @running = true
-      @queue = Queue.new(@q_name, @listening_worker)
+      @queue = Queue.new(@q_name)
       log(args.merge(:at => "worker_initialized"))
     end
 
@@ -113,9 +113,9 @@ module QC
     def wait(t)
       if @listening_worker
         log(:at => "listen_wait", :wait => t)
-        Conn.listen(@queue.chan)
+        Conn.listen(@queue.name)
         Conn.wait_for_notify(t)
-        Conn.unlisten(@queue.chan)
+        Conn.unlisten(@queue.name)
         Conn.drain_notify
         log(:at => "finished_listening")
       else
