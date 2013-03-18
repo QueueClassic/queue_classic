@@ -22,11 +22,6 @@ module QC
       end
     end
 
-    def notify(chan)
-      log(:at => "NOTIFY")
-      execute('NOTIFY "' + chan + '"') #quotes matter
-    end
-
     def listen(chan)
       log(:at => "LISTEN")
       execute('LISTEN "' + chan + '"') #quotes matter
