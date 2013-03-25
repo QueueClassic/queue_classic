@@ -1,5 +1,5 @@
 Unreleased (in Git)
--
+- Use MultiJson (Ezekiel Templin: #106)
 
 Version 2.1.2
 - Use 64bit ints as default data types in PostgreSQL
