@@ -51,14 +51,10 @@ p_queue = QC::Queue.new("priority_queue")
 p_queue.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
-QueueClassic uses [OkJson](https://github.com/kr/okjson) to encode the job's payload.
+QueueClassic uses [MultiJSON](https://github.com/intridea/multi_json) to encode the job's payload.
 
 ```ruby
-# OK
-OkJson.encode({"test" => "test"})
-
-# NOT OK
-OkJson.encode({:test => "test"})
+MultiJson.dump({"test" => "test"})
 ```
 
 ### Working Jobs
