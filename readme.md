@@ -181,6 +181,16 @@ $ bundle exec rake qc:drop
 
 All configuration takes place in the form of environment vars. See [queue_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/master/lib/queue_classic.rb#L23-62) for a list of options.
 
+## Logging
+
+By default queue_classic does not talk very much. 
+If you find yourself in a situation where you need to know what's happening inside QC,
+you can enable the debug output by setting the `DEBUG` environment variable:
+
+```
+export DEBUG="true"
+```
+
 ## Hacking on queue_classic
 
 ### Dependencies
