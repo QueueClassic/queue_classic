@@ -14,7 +14,7 @@ Features:
 
 Contents:
 
-* [Documentation](http://rubydoc.info/gems/queue_classic/2.1.1/frames)
+* [Documentation](http://rubydoc.info/gems/queue_classic/2.1.3/frames)
 * [Usage](#usage)
 * [Setup](#setup)
 * [Configuration](#configuration)
@@ -132,7 +132,7 @@ Declare dependencies in Gemfile.
 
 ```ruby
 source :rubygems
-gem "queue_classic", "2.1.1"
+gem "queue_classic", "2.1.3"
 ```
 
 Require these files in your Rakefile so that you can run `rake qc:work`.
