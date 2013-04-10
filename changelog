@@ -1,5 +1,7 @@
 Unreleased
 - QC::Worker#handle_failure logs the job and the error
+- QC.default_queue= to set your own default queue. (can be used
+  in testing to configure a mock queue)
 
 Version 2.1.4
 - update pg dependency to 0.15.1
