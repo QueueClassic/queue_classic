@@ -131,7 +131,7 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 Declare dependencies in Gemfile.
 
 ```ruby
-source :rubygems
+source "http://rubygems.org"
 gem "queue_classic", "2.1.3"
 ```
 
