@@ -1,3 +1,7 @@
+Version 2.1.4
+- update pg dependency to 0.15.1
+- document logging behaviour
+
 Version 2.1.3
 - Use MultiJson (Ezekiel Templin: #106)
 
