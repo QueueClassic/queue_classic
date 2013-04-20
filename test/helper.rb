@@ -4,6 +4,7 @@ $: << File.expand_path("test")
 ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
 
 require "queue_classic"
+require "stringio"
 require "minitest/unit"
 MiniTest::Unit.autorun
 
@@ -48,6 +49,19 @@ END;
 $$;
 EOS
     QC::Conn.disconnect
+  end
+
+  def capture_debug_output
+    original_debug = ENV['DEBUG']
+    original_stdout = $stdout
+
+    ENV['DEBUG'] = "true"
+    $stdout = StringIO.new
+    yield
+    $stdout.string
+  ensure
+    ENV['DEBUG'] = original_debug
+    $stdout = original_stdout
   end
 
 end
