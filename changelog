@@ -1,3 +1,6 @@
+Unreleased
+- QC::Worker#handle_failure logs the job and the error
+
 Version 2.1.4
 - update pg dependency to 0.15.1
 - document logging behaviour

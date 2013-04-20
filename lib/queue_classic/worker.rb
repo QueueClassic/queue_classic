@@ -127,7 +127,7 @@ module QC
     # This method will be called when an exception
     # is raised during the execution of the job.
     def handle_failure(job,e)
-      log(:at => "handle_failure")
+      log(:at => "handle_failure", :job => job, :error => e.inspect)
     end
 
     # This method should be overriden if
