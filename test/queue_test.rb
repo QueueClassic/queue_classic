@@ -72,12 +72,32 @@ class QueueTest < QCTest
     def connection.exec(*args)
       raise PGError
     end
-    assert_raises(PG::Error) { queue.enqueue("Klass.other_method") }    
+    assert_raises(PG::Error) { queue.enqueue("Klass.other_method") }
     assert_equal(1, queue.count)
     queue.enqueue("Klass.other_method")
     assert_equal(2, queue.count)
   rescue PG::Error
     QC::Conn.disconnect
     assert false, "Expected to QC repair after connection error"
+  end
+
+  def test_custom_default_queue
+    queue_class = Class.new do
+      attr_accessor :jobs
+      def enqueue(method, *args)
+        @jobs ||= []
+        @jobs << method
+      end
+    end
+
+    queue_instance = queue_class.new
+    QC.default_queue = queue_instance
+
+    QC.enqueue("Klass.method1")
+    QC.enqueue("Klass.method2")
+
+    assert_equal ["Klass.method1", "Klass.method2"], queue_instance.jobs
+  ensure
+    QC.default_queue = nil
   end
 end
