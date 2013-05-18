@@ -1,4 +1,5 @@
-Unreleased
+Unreleased (in Git)
+- Use postgresql's json type for the args column if json type is available
 - QC::Worker#handle_failure logs the job and the error
 - QC.default_queue= to set your own default queue. (can be used
   in testing to configure a mock queue)
