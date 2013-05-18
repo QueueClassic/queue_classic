@@ -181,6 +181,13 @@ $ bundle exec rake qc:drop
 
 All configuration takes place in the form of environment vars. See [queue_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/master/lib/queue_classic.rb#L23-62) for a list of options.
 
+## JSON
+
+If you are running PostgreSQL 9.2 or higher, queue_classic will use the [json](http://www.postgresql.org/docs/9.2/static/datatype-json.html) datatype for storing arguments. Versions 9.1 and lower will use the 'text' column. If you have installed queue_classic prior to version 2.1.4 and are running PostgreSQL >= 9.2, run the following to switch to using the json type:
+```
+alter table queue_classic_jobs alter column args type json using (args::json);
+```
+
 ## Logging
 
 By default queue_classic does not talk very much.
