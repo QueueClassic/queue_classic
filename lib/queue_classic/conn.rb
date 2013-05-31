@@ -27,26 +27,11 @@ module QC
       execute('NOTIFY "' + chan + '"') #quotes matter
     end
 
-    def listen(chan)
-      log(:at => "LISTEN")
-      execute('LISTEN "' + chan + '"') #quotes matter
-    end
-
-    def unlisten(chan)
-      log(:at => "UNLISTEN")
-      execute('UNLISTEN "' + chan + '"') #quotes matter
-    end
-
-    def drain_notify
-      until connection.notifies.nil?
-        log(:at => "drain_notifications")
-      end
-    end
-
-    def wait_for_notify(t)
-      connection.wait_for_notify(t) do |event, pid, msg|
-        log(:at => "received_notification")
-      end
+    def wait(chan, t)
+      listen(chan)
+      wait_for_notify(t)
+      unlisten(chan)
+      drain_notify
     end
 
     def transaction
@@ -114,8 +99,32 @@ module QC
       @db_url = URI.parse(url)
     end
 
+    private
+
     def log(msg)
       QC.log(msg)
+    end
+
+    def listen(chan)
+      log(:at => "LISTEN")
+      execute('LISTEN "' + chan + '"') #quotes matter
+    end
+
+    def unlisten(chan)
+      log(:at => "UNLISTEN")
+      execute('UNLISTEN "' + chan + '"') #quotes matter
+    end
+
+    def wait_for_notify(t)
+      connection.wait_for_notify(t) do |event, pid, msg|
+        log(:at => "received_notification")
+      end
+    end
+
+    def drain_notify
+      until connection.notifies.nil?
+        log(:at => "drain_notifications")
+      end
     end
 
   end

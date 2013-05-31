@@ -113,15 +113,12 @@ module QC
     def wait(t)
       if @listening_worker
         log(:at => "listen_wait", :wait => t)
-        Conn.listen(@queue.chan)
-        Conn.wait_for_notify(t)
-        Conn.unlisten(@queue.chan)
-        Conn.drain_notify
-        log(:at => "finished_listening")
+        Conn.wait(@queue.chan)
       else
         log(:at => "sleep_wait", :wait => t)
         Kernel.sleep(t)
       end
+      log(:at => "finished_listening")
     end
 
     # This method will be called when an exception
