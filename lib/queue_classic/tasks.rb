@@ -19,7 +19,7 @@ namespace :qc do
     puts QC::Worker.new.queue.count
   end
 
-  desc "Setup queue_classic tables and funtions in database"
+  desc "Setup queue_classic tables and functions in database"
   task :create => :environment do
     QC::Setup.create
   end
