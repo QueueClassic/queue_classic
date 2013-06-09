@@ -85,18 +85,25 @@ module QC
 
     def connect
       log(:at => "establish_conn")
-      conn = PGconn.connect(
-        db_url.host.gsub(/%2F/i, '/'), # host or percent-encoded socket path
-        db_url.port || 5432,
-        nil, '', #opts, tty
-        db_url.path.gsub("/",""), # database name
-        db_url.user,
-        db_url.password
-      )
+      conn = PGconn.connect(*normalize_db_url(db_url))
       if conn.status != PGconn::CONNECTION_OK
         log(:error => conn.error)
       end
       conn
+    end
+
+    def normalize_db_url(url)
+      host = url.host
+      host = host.gsub(/%2F/i, '/') if host
+
+      [
+       host, # host or percent-encoded socket path
+       url.port || 5432,
+       nil, '', #opts, tty
+       url.path.gsub("/",""), # database name
+       url.user,
+       url.password
+      ]
     end
 
     def db_url
