@@ -20,5 +20,4 @@ Gem::Specification.new do |s|
   s.require_paths = %w[lib]
 
   s.add_dependency "pg", "~> 0.15.1"
-  s.add_dependency "multi_json", "~> 1.7.2"
 end

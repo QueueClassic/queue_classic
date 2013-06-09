@@ -1,4 +1,5 @@
 Unreleased (in Git)
+- Use json from the stdlib in place of MultiJson.
 - Use postgresql's json type for the args column if json type is available
 - QC::Worker#handle_failure logs the job and the error
 - QC.default_queue= to set your own default queue. (can be used
