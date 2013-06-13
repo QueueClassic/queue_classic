@@ -51,6 +51,24 @@ class WorkerTest < QCTest
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
   end
 
+  def test_log_yield
+    output = capture_debug_output do
+      QC.log_yield(:action => "test") do
+        0 == 1
+      end
+    end
+    expected_output = /lib=queue-classic action=test elapsed=\d*/
+    assert_match(expected_output, output, "=== debug output ===\n #{output}")
+  end
+
+  def test_log
+    output = capture_debug_output do
+      QC.log(:action => "test")
+    end
+    expected_output = /lib=queue-classic action=test/
+    assert_match(expected_output, output, "=== debug output ===\n #{output}")
+  end
+
   def test_work_with_no_args
     QC.enqueue("TestObject.no_args")
     worker = TestWorker.new
