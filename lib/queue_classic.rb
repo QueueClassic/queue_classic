@@ -95,7 +95,7 @@ module QC
     if block_given?
       start = Time.now
       result = yield
-      data.merge(:elapsed => Time.now - start)
+      data.merge(:elapsed => Integer((Time.now - t0)*1000))
     end
     data.reduce(out=String.new) do |s, tup|
       s << [tup.first, tup.last].join("=") << " "
