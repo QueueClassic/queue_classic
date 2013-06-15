@@ -30,6 +30,8 @@ There are 2 ways to use queue_classic.
 
 ### Producing Jobs
 
+The first argument is a string which represents a ruby object and a method name. The second argument(s) will be passed along as arguments to the method invocation defined by the first argument. The set of arguments will be encoded as JSON in the database.
+
 ```ruby
 # This method has no arguments.
 QC.enqueue("Time.now")
@@ -49,12 +51,6 @@ QC.enqueue("Kernel.puts", ["hello", "world"])
 # This method uses a non-default queue.
 p_queue = QC::Queue.new("priority_queue")
 p_queue.enqueue("Kernel.puts", ["hello", "world"])
-```
-
-QueueClassic uses [MultiJSON](https://github.com/intridea/multi_json) to encode the job's payload.
-
-```ruby
-MultiJson.dump({"test" => "test"})
 ```
 
 ### Working Jobs
