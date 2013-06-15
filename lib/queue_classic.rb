@@ -1,6 +1,6 @@
 require "pg"
 require "uri"
-require "multi_json"
+require "json"
 
 require "queue_classic/conn"
 require "queue_classic/queries"
