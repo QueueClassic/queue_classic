@@ -18,6 +18,7 @@ Contents:
 * [Usage](#usage)
 * [Setup](#setup)
 * [Configuration](#configuration)
+* [Support](#support)
 * [Hacking](#hacking-on-queue_classic)
 * [License](#license)
 
@@ -193,6 +194,19 @@ you can enable the debug output by setting the `DEBUG` environment variable:
 ```
 export DEBUG="true"
 ```
+
+## Support
+
+If you think you have found a bug, feel free to open an issue. Use the following template for the new issue:
+
+1. List Versions: Ruby, PostgreSQL, queue_classic.
+2. Define what you would have expcted to happen.
+3. List what actually happened.
+4. Provide sample codes & commands which will reproduce the problem.
+
+If you have general questions about how to use queue_classic, send a message to the mailing list:
+
+https://groups.google.com/d/forum/queue_classic
 
 ## Hacking on queue_classic
 
