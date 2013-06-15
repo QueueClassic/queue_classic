@@ -196,6 +196,8 @@ export DEBUG="true"
 
 ## Hacking on queue_classic
 
+[![Build Status](https://drone.io/github.com/ryandotsmith/queue_classic/status.png)](https://drone.io/github.com/ryandotsmith/queue_classic/latest)
+
 ### Dependencies
 
 * Ruby 1.9.2 (tests work in 1.8.7 but compatibility is not guaranteed or supported)
