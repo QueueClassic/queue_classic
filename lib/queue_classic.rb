@@ -17,9 +17,7 @@ module QC
   # You can use the APP_NAME to query for
   # postgres related process information in the
   # pg_stat_activity table. 
-  if APP_NAME = ENV["QC_APP_NAME"] || "queue_classic"
-    Conn.execute("SET application_name = '#{APP_NAME}'")
-  end
+  APP_NAME = ENV["QC_APP_NAME"] || "queue_classic"
 
   # Why do you want to change the table name?
   # Just deal with the default OK?
@@ -102,5 +100,4 @@ module QC
     puts(out) if ENV["DEBUG"]
     return result
   end
-
 end
