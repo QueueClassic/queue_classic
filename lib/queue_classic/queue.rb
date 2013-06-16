@@ -1,14 +1,13 @@
 module QC
   class Queue
 
-    attr_reader :name, :chan
-    def initialize(name, notify=QC::LISTENING_WORKER)
-      @name = name
-      @chan = @name if notify
+    attr_reader :name
+    def initialize(name=nil)
+      @name = name || QUEUE
     end
 
     def enqueue(method, *args)
-      Queries.insert(name, method, args, chan)
+      Queries.insert(name, method, args)
     end
 
     def lock(top_bound=TOP_BOUND)

@@ -13,27 +13,19 @@ module QC
     end
 
     def create_table
-      Conn.transaction do
-        Conn.execute(File.read(CreateTable))
-      end
+      Conn.execute(File.read(CreateTable))
     end
 
     def drop_table
-      Conn.transaction do
-        Conn.execute("DROP TABLE IF EXISTS queue_classic_jobs")
-      end
+      Conn.execute("DROP TABLE IF EXISTS queue_classic_jobs")
     end
 
     def create_functions
-      Conn.transaction do
-        Conn.execute(File.read(SqlFunctions))
-      end
+      Conn.execute(File.read(SqlFunctions))
     end
 
     def drop_functions
-      Conn.transaction do
-        Conn.execute(File.read(DropSqlFunctions))
-      end
+      Conn.execute(File.read(DropSqlFunctions))
     end
 
   end

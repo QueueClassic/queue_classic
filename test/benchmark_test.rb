@@ -32,5 +32,4 @@ class BenchmarkTest < QCTest
     assert_equal(0, QC.count)
     assert_in_delta(10, elapsed, 3)
   end
-
 end
