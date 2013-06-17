@@ -1,7 +1,7 @@
 module QC
   class Worker
 
-    attr_reader :queue
+    attr_accessor :queue, :running
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
     def initialize(args={})

@@ -5,10 +5,9 @@ ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
 
 require "queue_classic"
 require "stringio"
-require "minitest/unit"
-MiniTest::Unit.autorun
+require "minitest/autorun"
 
-class QCTest < MiniTest::Unit::TestCase
+class QCTest < Minitest::Test
 
   def setup
     init_db
@@ -48,7 +47,6 @@ BEGIN
 END;
 $$;
 EOS
-    QC::Conn.disconnect
   end
 
   def capture_debug_output
