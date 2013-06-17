@@ -3,22 +3,28 @@ require 'thread'
 module QC
   module Conn
     extend self
-    @exec_mutex = Mutex.new
+
+    #Specify the number of PostgreSQL connection to use.
+    attr_accessor :num_conns
+
+    #The amount of time in seconds to
+    #to wait on the listen/notify chanel.
+    WAIT = 0.5
 
     def execute(stmt, *params)
-      @exec_mutex.synchronize do
-        log(:at => "exec_sql", :sql => stmt.inspect)
-        begin
-          params = nil if params.empty?
-          r = connection.exec(stmt, params)
-          result = []
-          r.each {|t| result << t}
-          result.length > 1 ? result : result.pop
-        rescue PGError => e
-          log(:error => e.inspect)
-          disconnect
-          raise
-        end
+      c = checkout
+      log(:at => "exec_sql", :sql => stmt.inspect)
+      begin
+        params = nil if params.empty?
+        r = c.exec(stmt, params)
+        result = []
+        r.each {|t| result << t}
+        result.length > 1 ? result : result.pop
+      rescue PGError => e
+        log(:error => e.inspect)
+        raise
+      ensure
+        checkin(c)
       end
     end
 
@@ -27,7 +33,7 @@ module QC
       execute('NOTIFY "' + chan + '"') #quotes matter
     end
 
-    def wait(chan, t)
+    def wait(chan, t=WAIT)
       listen(chan)
       wait_for_notify(t)
       unlisten(chan)
@@ -101,6 +107,17 @@ module QC
     end
 
     private
+
+    def checkout
+      @conns ||= begin
+        ::Queue.new.tap {|q| @num_conns.times.map {connect}.each {|c| q << c}}
+      end
+      @conns.shift
+    end
+
+    def checkin(c)
+      @conns << c
+    end
 
     def log(msg)
       QC.log(msg)

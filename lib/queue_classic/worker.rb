@@ -4,25 +4,17 @@ module QC
     attr_accessor :queue, :running
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
-    def initialize(args={})
-      @q_name           = args[:q_name]           ||= QC::QUEUE
-      @top_bound        = args[:top_bound]        ||= QC::TOP_BOUND
-      @fork_worker      = args[:fork_worker]      ||= QC::FORK_WORKER
-      @listening_worker = args[:listening_worker] ||= QC::LISTENING_WORKER
-      @max_attempts     = args[:max_attempts]     ||= QC::MAX_LOCK_ATTEMPTS
-
-      @running = true
-      @queue = Queue.new(@q_name, @listening_worker)
-      log(args.merge(:at => "worker_initialized"))
+    def initialize(queue=nil)
+      @queue = queue || QC.default_queue
+      log(:at => "worker_initialized")
     end
 
     # Start a loop and work jobs indefinitely.
     # Call this method to start the worker.
     # This is the easiest way to start working jobs.
     def start
-      while @running
-        @fork_worker ? fork_and_work : work
-      end
+      @running = true
+      work while @running
     end
 
     # Call this method to stop the worker.
@@ -32,18 +24,9 @@ module QC
       @running = false
     end
 
-    # This method will tell the ruby process to FORK.
-    # Define setup_child to hook into the forking process.
-    # Using setup_child is good for re-establishing database connections.
-    def fork_and_work
-      @cpid = fork {setup_child; work}
-      log(:at => :fork, :pid => @cpid)
-      Process.wait(@cpid)
-    end
-
     # This method will lock a job & process the job.
-    def work
-      if job = lock_job
+    def work(top_bound=TOP_BOUND)
+      if job = lock_job(top_bound)
         QC.log_yield(:at => "work", :job => job[:id]) do
           process(job)
         end
@@ -59,26 +42,16 @@ module QC
     #
     # It is important that callers delete the job when finished.
     # *@queue.delete(job[:id])*
-    def lock_job
+    def lock_job(top_bound)
       log(:at => "lock_job")
-      attempts = 0
-      job = nil
-      until !@running || job
-        job = @queue.lock(@top_bound)
-        if job.nil?
-          log(:at => "failed_lock", :attempts => attempts)
-          if attempts < @max_attempts
-            wait(2**attempts)
-            attempts += 1
-            next
-          else
-            break
-          end
-        else
+      while @running
+        if job = @queue.lock(top_bound)
           log(:at => "finished_lock", :job => job[:id])
+          return job
+        else
+          Conn.wait(@queue.name)
         end
       end
-      job
     end
 
     # A job is processed by evaluating the target code.
@@ -104,21 +77,6 @@ module QC
       klass = eval(job[:method].split(".").first)
       message = job[:method].split(".").last
       klass.send(message, *args)
-    end
-
-    # If @listening_worker is set, the worker will use the database
-    # to sleep. The database approach preferred over a syscall since
-    # the database will break the sleep when new jobs are inserted into
-    # the queue.
-    def wait(t)
-      if @listening_worker
-        log(:at => "listen_wait", :wait => t)
-        Conn.wait(@queue.chan)
-      else
-        log(:at => "sleep_wait", :wait => t)
-        Kernel.sleep(t)
-      end
-      log(:at => "finished_listening")
     end
 
     # This method will be called when an exception

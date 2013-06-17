@@ -35,22 +35,7 @@ module QC
   # There is nothing special about 9....
   TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
 
-  # If you are using PostgreSQL > 9
-  # then you will have access to listen/notify with payload.
-  # Set this value if you wish to make your worker more efficient.
-  LISTENING_WORKER = !ENV["QC_LISTENING_WORKER"].nil?
-
-  # Set this variable if you wish for
-  # the worker to fork a UNIX process for
-  # each locked job. Remember to re-establish
-  # any database connections. See the worker
-  # for more details.
-  FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
-
-  # The worker uses an exponential back-off
-  # algorithm to lock a job. This value will be used
-  # as the max exponent.
-  MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
+  Conn.num_conns = (ENV["QC_NUM_CONNS"] || 1).to_i
 
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
