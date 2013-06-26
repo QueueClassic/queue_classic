@@ -54,7 +54,7 @@ module QC
     end
 
     def connection=(connection)
-      unless connection.instance_of? PG::Connection
+      unless connection.is_a? PG::Connection
         c = connection.class
         err = "connection must be an instance of PG::Connection, but was #{c}"
         raise(ArgumentError, err)
