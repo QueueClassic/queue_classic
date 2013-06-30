@@ -22,9 +22,9 @@ module QC
       end
     end
 
-    def wait(chan, t)
+    def wait(chan)
       listen(chan)
-      wait_for_notify(t)
+      wait_for_notify(WAIT_TIME)
       unlisten(chan)
       drain_notify
     end

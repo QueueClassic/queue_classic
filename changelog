@@ -1,5 +1,6 @@
 Version 3.0.0
 - Remove forking worker.
+- Force listen/notify feature
 
 Version 2.2.0
 - Use json from the stdlib in place of MultiJson.

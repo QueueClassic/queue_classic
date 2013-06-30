@@ -19,6 +19,9 @@ module QC
   # pg_stat_activity table.
   APP_NAME = ENV["QC_APP_NAME"] || "queue_classic"
 
+  # Number of seconds to block on the listen chanel for new jobs.
+  WAIT_TIME = (ENV["QC_LISTEN_TIME"] || 5).to_i
+
   # Why do you want to change the table name?
   # Just deal with the default OK?
   # If you do want to change this, you will
@@ -34,16 +37,6 @@ module QC
   # Set this to 1 for strict FIFO.
   # There is nothing special about 9....
   TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
-
-  # If you are using PostgreSQL > 9
-  # then you will have access to listen/notify with payload.
-  # Set this value if you wish to make your worker more efficient.
-  LISTENING_WORKER = !ENV["QC_LISTENING_WORKER"].nil?
-
-  # The worker uses an exponential back-off
-  # algorithm to lock a job. This value will be used
-  # as the max exponent.
-  MAX_LOCK_ATTEMPTS = (ENV["QC_MAX_LOCK_ATTEMPTS"] || 5).to_i
 
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
