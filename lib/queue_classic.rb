@@ -40,13 +40,6 @@ module QC
   # Set this value if you wish to make your worker more efficient.
   LISTENING_WORKER = !ENV["QC_LISTENING_WORKER"].nil?
 
-  # Set this variable if you wish for
-  # the worker to fork a UNIX process for
-  # each locked job. Remember to re-establish
-  # any database connections. See the worker
-  # for more details.
-  FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
-
   # The worker uses an exponential back-off
   # algorithm to lock a job. This value will be used
   # as the max exponent.
