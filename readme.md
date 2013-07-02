@@ -1,6 +1,6 @@
 # queue_classic
 
-v2.1.4
+v2.2.0
 
 queue_classic provides a simple interface to a PostgreSQL-backed message queue. queue_classic specializes in concurrent locking and minimizing database load while providing a simple, intuitive developer experience. queue_classic assumes that you are already using PostgreSQL in your production environment and that adding another dependency (e.g. redis, beanstalkd, 0mq) is undesirable.
 
@@ -14,7 +14,7 @@ Features:
 
 Contents:
 
-* [Documentation](http://rubydoc.info/gems/queue_classic/2.1.4/frames)
+* [Documentation](http://rubydoc.info/gems/queue_classic/2.2.0/frames)
 * [Usage](#usage)
 * [Setup](#setup)
 * [Configuration](#configuration)
@@ -129,7 +129,7 @@ Declare dependencies in Gemfile.
 
 ```ruby
 source "http://rubygems.org"
-gem "queue_classic", "2.1.4"
+gem "queue_classic", "2.2.0"
 ```
 
 Require these files in your Rakefile so that you can run `rake qc:work`.
