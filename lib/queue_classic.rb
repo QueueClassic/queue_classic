@@ -16,7 +16,7 @@ module QC
 
   # You can use the APP_NAME to query for
   # postgres related process information in the
-  # pg_stat_activity table. 
+  # pg_stat_activity table.
   APP_NAME = ENV["QC_APP_NAME"] || "queue_classic"
 
   # Why do you want to change the table name?

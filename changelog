@@ -1,4 +1,4 @@
-Unreleased (in Git)
+Version 2.2.0
 - Use json from the stdlib in place of MultiJson.
 - Use postgresql's json type for the args column if json type is available
 - QC::Worker#handle_failure logs the job and the error
