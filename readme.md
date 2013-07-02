@@ -87,9 +87,6 @@ This example is probably not production ready; however, it serves as an example 
 require 'timeout'
 require 'queue_classic'
 
-trap('INT') {exit}
-trap('TERM') {worker.stop}
-
 FailedQueue = QC::Queue.new("failed_jobs")
 
 class MyWorker < QC::Worker
@@ -99,6 +96,9 @@ class MyWorker < QC::Worker
 end
 
 worker = MyWorker.new(max_attempts: 10, listening_worker: true)
+
+trap('INT') {exit}
+trap('TERM') {worker.stop}
 
 loop do
 	job = worker.lock_job
