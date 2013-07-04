@@ -5,6 +5,9 @@ module QC
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
     def initialize(args={})
+      @q_name           = args[:q_name]           ||= QC::QUEUE
+      @top_bound        = args[:top_bound]        ||= QC::TOP_BOUND
+      @fork_worker      = args[:fork_worker]      ||= QC::FORK_WORKER
       @running = true
       @queue = Queue.new((args[:q_name] || QUEUE), args[:top_bound])
       log(args.merge(:at => "worker_initialized"))
@@ -14,7 +17,9 @@ module QC
     # Call this method to start the worker.
     # This is the easiest way to start working jobs.
     def start
-      work while @running
+      while @running
+        @fork_worker ? fork_and_work : work
+      end
     end
 
     # Call this method to stop the worker.
@@ -22,6 +27,15 @@ module QC
     # is sleeping.
     def stop
       @running = false
+    end
+
+    # This method will tell the ruby process to FORK.
+    # Define setup_child to hook into the forking process.
+    # Using setup_child is good for re-establishing database connections.
+    def fork_and_work
+      @cpid = fork {setup_child; work}
+      log(:at => :fork, :pid => @cpid)
+      Process.wait(@cpid)
     end
 
     # This method will lock a job & process the job.
@@ -75,6 +89,13 @@ module QC
     # is raised during the execution of the job.
     def handle_failure(job,e)
       log(:at => "handle_failure", :job => job, :error => e.inspect)
+    end
+
+    # This method should be overriden if
+    # your worker is forking and you need to
+    # re-establish database connections
+    def setup_child
+      log(:at => "setup_child")
     end
 
     def log(data)

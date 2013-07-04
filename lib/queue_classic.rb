@@ -38,6 +38,13 @@ module QC
   # There is nothing special about 9....
   TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
 
+  # Set this variable if you wish for
+  # the worker to fork a UNIX process for
+  # each locked job. Remember to re-establish
+  # any database connections. See the worker
+  # for more details.
+  FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
+
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
   def self.method_missing(sym, *args, &block)
