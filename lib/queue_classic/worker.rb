@@ -113,7 +113,7 @@ module QC
     def wait(t)
       if @listening_worker
         log(:at => "listen_wait", :wait => t)
-        Conn.wait(@queue.chan)
+        Conn.wait(@queue.chan, t)
       else
         log(:at => "sleep_wait", :wait => t)
         Kernel.sleep(t)
