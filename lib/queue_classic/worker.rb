@@ -8,11 +8,8 @@ module QC
       @q_name           = args[:q_name]           ||= QC::QUEUE
       @top_bound        = args[:top_bound]        ||= QC::TOP_BOUND
       @fork_worker      = args[:fork_worker]      ||= QC::FORK_WORKER
-      @listening_worker = args[:listening_worker] ||= QC::LISTENING_WORKER
-      @max_attempts     = args[:max_attempts]     ||= QC::MAX_LOCK_ATTEMPTS
-
       @running = true
-      @queue = Queue.new(@q_name)
+      @queue = Queue.new((args[:q_name] || QUEUE), args[:top_bound])
       log(args.merge(:at => "worker_initialized"))
     end
 
@@ -50,33 +47,15 @@ module QC
       end
     end
 
-    # lock_job will attempt to lock a job in the queue's table. It uses an
-    # exponential backoff in the event that a job was not locked. This method
-    # will return a hash when a job is obtained.
-    #
-    # This method will terminate early if the stop method is called or
-    # @max_attempts has been reached.
-    #
-    # It is important that callers delete the job when finished.
-    # *@queue.delete(job[:id])*
+    # Attempt to lock a job in the queue's table.
+    # Return a hash when a job is locked.
+    # Caller responsible for deleting the job when finished.
     def lock_job
       log(:at => "lock_job")
-      attempts = 0
       job = nil
-      until !@running || job
-        job = @queue.lock(@top_bound)
-        if job.nil?
-          log(:at => "failed_lock", :attempts => attempts)
-          if attempts < @max_attempts
-            wait(2**attempts)
-            attempts += 1
-            next
-          else
-            break
-          end
-        else
-          log(:at => "finished_lock", :job => job[:id])
-        end
+      while @running
+        break if job = @queue.lock
+        Conn.wait(@queue.name)
       end
       job
     end
@@ -104,21 +83,6 @@ module QC
       klass = eval(job[:method].split(".").first)
       message = job[:method].split(".").last
       klass.send(message, *args)
-    end
-
-    # If @listening_worker is set, the worker will use the database
-    # to sleep. The database approach preferred over a syscall since
-    # the database will break the sleep when new jobs are inserted into
-    # the queue.
-    def wait(t)
-      if @listening_worker
-        log(:at => "listen_wait", :wait => t)
-        Conn.wait(@queue.chan)
-      else
-        log(:at => "sleep_wait", :wait => t)
-        Kernel.sleep(t)
-      end
-      log(:at => "finished_listening")
     end
 
     # This method will be called when an exception

@@ -1,3 +1,6 @@
+Version 3.0.0
+- Force listen/notify feature
+
 Version 2.2.0
 - Use json from the stdlib in place of MultiJson.
 - Use postgresql's json type for the args column if json type is available
