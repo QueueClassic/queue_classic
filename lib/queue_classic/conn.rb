@@ -22,10 +22,10 @@ module QC
       end
     end
 
-    def wait(chan, t)
-      listen(chan)
-      wait_for_notify(t)
-      unlisten(chan)
+    def wait(chan)
+      execute('LISTEN "' + chan + '"')
+      wait_for_notify(WAIT_TIME)
+      execute('UNLISTEN "' + chan + '"')
       drain_notify
     end
 
@@ -99,16 +99,6 @@ module QC
 
     def log(msg)
       QC.log(msg)
-    end
-
-    def listen(chan)
-      log(:at => "LISTEN")
-      execute('LISTEN "' + chan + '"') #quotes matter
-    end
-
-    def unlisten(chan)
-      log(:at => "UNLISTEN")
-      execute('UNLISTEN "' + chan + '"') #quotes matter
     end
 
     def wait_for_notify(t)

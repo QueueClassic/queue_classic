@@ -95,7 +95,7 @@ class MyWorker < QC::Worker
  	end
 end
 
-worker = MyWorker.new(max_attempts: 10, listening_worker: true)
+worker = MyWorker.new
 
 trap('INT') {exit}
 trap('TERM') {worker.stop}
