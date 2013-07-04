@@ -4,9 +4,8 @@ module QC
 
     def insert(q_name, method, args, chan=nil)
       QC.log_yield(:action => "insert_job") do
-        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
+        s="INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
         res = Conn.execute(s, q_name, method, JSON.dump(args))
-        Conn.notify(chan) if chan
       end
     end
 

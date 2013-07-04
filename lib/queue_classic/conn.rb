@@ -22,11 +22,6 @@ module QC
       end
     end
 
-    def notify(chan)
-      log(:at => "NOTIFY")
-      execute('NOTIFY "' + chan + '"') #quotes matter
-    end
-
     def wait(chan, t)
       listen(chan)
       wait_for_notify(t)

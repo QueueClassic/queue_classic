@@ -56,7 +56,7 @@ class QueueTest < QCTest
   end
 
   def test_queue_instance
-    queue = QC::Queue.new("queue_classic_jobs", false)
+    queue = QC::Queue.new("queue_classic_jobs")
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
     queue.delete(queue.lock[:id])
@@ -64,7 +64,7 @@ class QueueTest < QCTest
   end
 
   def test_repair_after_error
-    queue = QC::Queue.new("queue_classic_jobs", false)
+    queue = QC::Queue.new("queue_classic_jobs")
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
     connection = QC::Conn.connection

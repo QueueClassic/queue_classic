@@ -12,7 +12,7 @@ module QC
       @max_attempts     = args[:max_attempts]     ||= QC::MAX_LOCK_ATTEMPTS
 
       @running = true
-      @queue = Queue.new(@q_name, @listening_worker)
+      @queue = Queue.new(@q_name)
       log(args.merge(:at => "worker_initialized"))
     end
 
