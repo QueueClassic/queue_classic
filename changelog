@@ -1,5 +1,6 @@
 Version 3.0.0
-- Force listen/notify feature
+- Force listen/notify on worker
+- Notifications happen inside PostgreSQL trigger
 
 Version 2.2.0
 - Use json from the stdlib in place of MultiJson.

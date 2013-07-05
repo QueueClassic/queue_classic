@@ -102,8 +102,8 @@ module QC
     end
 
     def wait_for_notify(t)
-      connection.wait_for_notify(t) do |event, pid, msg|
-        log(:at => "received_notification")
+      Array.new.tap do |msgs|
+        connection.wait_for_notify(t) {|event, pid, msg| msgs << msg}
       end
     end
 

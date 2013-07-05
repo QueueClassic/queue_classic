@@ -100,4 +100,17 @@ class QueueTest < QCTest
   ensure
     QC.default_queue = nil
   end
+
+  def test_enqueue_triggers_notify
+    QC::Conn.execute('LISTEN "' + QC::QUEUE + '"')
+    QC::Conn.send(:drain_notify)
+
+    msgs = QC::Conn.send(:wait_for_notify, 0.25)
+    assert_equal(0, msgs.length)
+
+    QC.enqueue("Klass.method")
+    msgs = QC::Conn.send(:wait_for_notify, 0.25)
+    assert_equal(1, msgs.length)
+  end
+
 end
