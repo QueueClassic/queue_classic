@@ -1,3 +1,7 @@
+require 'queue_classic'
+require 'queue_classic/conn'
+require 'json'
+
 module QC
   class Queue
 

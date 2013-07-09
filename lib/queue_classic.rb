@@ -1,12 +1,3 @@
-require "pg"
-require "uri"
-require "json"
-
-require "queue_classic/conn"
-require "queue_classic/queue"
-require "queue_classic/worker"
-require "queue_classic/setup"
-
 module QC
   Root = File.expand_path("..", File.dirname(__FILE__))
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
@@ -93,3 +84,7 @@ module QC
     return result
   end
 end
+
+require "queue_classic/queue"
+require "queue_classic/worker"
+require "queue_classic/setup"

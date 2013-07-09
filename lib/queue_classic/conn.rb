@@ -1,4 +1,6 @@
 require 'thread'
+require 'uri'
+require 'pg'
 
 module QC
   module Conn

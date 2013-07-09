@@ -1,3 +1,7 @@
+require 'queue_classic'
+require 'queue_classic/queue'
+require 'queue_classic/conn'
+
 module QC
   class Worker
 
@@ -6,7 +10,7 @@ module QC
     # the defaults are pulled from the environment variables.
     def initialize(args={})
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
-      @queue = Queue.new((args[:q_name] || QC::QUEUE), args[:top_bound])
+      @queue = QC::Queue.new((args[:q_name] || QC::QUEUE), args[:top_bound])
       log(args.merge(:at => "worker_initialized"))
       @running = true
     end
