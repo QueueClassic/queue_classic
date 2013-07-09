@@ -17,7 +17,7 @@ class QCTest < Minitest::Test
     QC.delete_all
   end
 
-  def init_db(table_name="queue_classic_jobs")
+  def init_db
     QC::Conn.execute("SET client_min_messages TO 'warning'")
     QC::Setup.drop
     QC::Setup.create
