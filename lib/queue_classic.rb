@@ -1,9 +1,4 @@
 module QC
-  Root = File.expand_path("..", File.dirname(__FILE__))
-  SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
-  DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
-  CreateTable = File.join(QC::Root, "/sql/create_table.sql")
-
   # You can use the APP_NAME to query for
   # postgres related process information in the
   # pg_stat_activity table.
