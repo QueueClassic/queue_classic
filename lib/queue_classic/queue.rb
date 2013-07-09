@@ -8,23 +8,37 @@ module QC
     end
 
     def enqueue(method, *args)
-      Queries.insert(name, method, args)
+      QC.log_yield(:action => "insert_job") do
+        s="INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
+        res = Conn.execute(s, name, method, JSON.dump(args))
+      end
     end
 
     def lock
-      Queries.lock_head(name, top_bound)
+      s = "SELECT * FROM lock_head($1, $2)"
+      if r = Conn.execute(s, name, top_bound)
+        {
+          :id     => r["id"],
+          :method => r["method"],
+          :args   => JSON.parse(r["args"])
+        }
+      end
+
     end
 
     def delete(id)
-      Queries.delete(id)
+      Conn.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)
     end
 
     def delete_all
-      Queries.delete_all(name)
+      s = "DELETE FROM #{TABLE_NAME} WHERE q_name = $1"
+      Conn.execute(s, name)
     end
 
     def count
-      Queries.count(name)
+      s = "SELECT COUNT(*) FROM #{TABLE_NAME} WHERE q_name = $1"
+      r = Conn.execute(s, name)
+      r["count"].to_i
     end
 
   end

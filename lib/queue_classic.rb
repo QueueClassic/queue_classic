@@ -3,7 +3,6 @@ require "uri"
 require "json"
 
 require "queue_classic/conn"
-require "queue_classic/queries"
 require "queue_classic/queue"
 require "queue_classic/worker"
 require "queue_classic/setup"
