@@ -31,9 +31,9 @@ module QC
     # Define setup_child to hook into the forking process.
     # Using setup_child is good for re-establishing database connections.
     def fork_and_work
-      @cpid = fork {setup_child; work}
-      log(:at => :fork, :pid => @cpid)
-      Process.wait(@cpid)
+      cpid = fork {setup_child; work}
+      log(:at => :fork, :pid => cpid)
+      Process.wait(cpid)
     end
 
     # This method will lock a job & process the job.
