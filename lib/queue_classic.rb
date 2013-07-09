@@ -2,6 +2,7 @@ module QC
   Root = File.expand_path("..", File.dirname(__FILE__))
   SqlFunctions = File.join(QC::Root, "/sql/ddl.sql")
   DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
+  DropTable = File.join(QC::Root, "/sql/drop_table.sql")
   CreateTable = File.join(QC::Root, "/sql/create_table.sql")
 
   # You can use the APP_NAME to query for
@@ -11,6 +12,9 @@ module QC
 
   # Number of seconds to block on the listen chanel for new jobs.
   WAIT_TIME = (ENV["QC_LISTEN_TIME"] || 5).to_i
+
+  # Number of seconds to wait before updating the worker timestamp
+  WORKER_UPDATE_TIME = (ENV["QC_WORKER_UPDATE_TIME"] || 5).to_i
 
   # Why do you want to change the table name?
   # Just deal with the default OK?

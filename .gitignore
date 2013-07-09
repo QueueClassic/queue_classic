@@ -7,3 +7,4 @@ etc/
 .env
 Gemfile.lock
 tips-and-tricks.md
+tags

@@ -9,7 +9,7 @@ module QC
 
     def self.drop
       Conn.transaction do
-        Conn.execute("DROP TABLE IF EXISTS queue_classic_jobs CASCADE")
+        Conn.execute(File.read(DropTable))
         Conn.execute(File.read(DropSqlFunctions))
       end
     end

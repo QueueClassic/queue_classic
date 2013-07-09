@@ -1,16 +1,18 @@
 require 'queue_classic'
 require 'queue_classic/queue'
 require 'queue_classic/conn'
+require 'socket'
 
 module QC
   class Worker
 
-    attr_accessor :queue, :running
+    attr_accessor :queue, :running, :id, :cas_thread
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
     def initialize(args={})
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
       @queue = QC::Queue.new((args[:q_name] || QC::QUEUE), args[:top_bound])
+      register_worker
       log(args.merge(:at => "worker_initialized"))
       @running = true
     end
@@ -29,6 +31,8 @@ module QC
     # is sleeping.
     def stop
       @running = false
+      @cas_thread.join
+      @cas_thread = nil
     end
 
     # This method will tell the ruby process to FORK.
@@ -53,7 +57,7 @@ module QC
     # Return a hash when a job is locked.
     # Caller responsible for deleting the job when finished.
     def lock_job
-      log(:at => "lock_job")
+      log(:at => "lock_job", :cas_status => @cas_thread.try(:status))
       job = nil
       while @running
         break if job = @queue.lock
@@ -104,5 +108,29 @@ module QC
       QC.log(data)
     end
 
+    def register_worker
+      sql = "INSERT INTO queue_classic_workers (q_name, host, pid) VALUES ($1, $2, $3) RETURNING id"
+      res = Conn.execute(sql, queue.name, Socket.gethostname, $$)
+      self.id = res.fetch('id')
+      Conn.cas_connection
+      @cas_thread = Thread.new do
+        begin
+          log(:at => "cas_thread_start")
+          while @running 
+            log(:cas_at => "loop!!!!!!!!!!!!!!!")
+            sleep QC::WORKER_UPDATE_TIME
+            touch_worker
+          end
+        rescue Exception => e
+          log(:cas_exception => e.message)
+        end
+      end
+    end
+
+    def touch_worker
+      log(:at => "touch_worker")
+      sql = "UPDATE queue_classic_workers SET last_seen = NOW() WHERE id = $1"
+      Conn.cas_connection.execute(sql, id)
+    end
   end
 end
