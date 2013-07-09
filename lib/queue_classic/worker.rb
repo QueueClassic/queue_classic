@@ -5,12 +5,10 @@ module QC
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
     def initialize(args={})
-      @q_name           = args[:q_name]           ||= QC::QUEUE
-      @top_bound        = args[:top_bound]        ||= QC::TOP_BOUND
-      @fork_worker      = args[:fork_worker]      ||= QC::FORK_WORKER
-      @running = true
-      @queue = Queue.new((args[:q_name] || QUEUE), args[:top_bound])
+      @fork_worker = args[:fork_worker] || QC::FORK_WORKER
+      @queue = Queue.new((args[:q_name] || QC::QUEUE), args[:top_bound])
       log(args.merge(:at => "worker_initialized"))
+      @running = true
     end
 
     # Start a loop and work jobs indefinitely.
