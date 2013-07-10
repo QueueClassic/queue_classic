@@ -3,7 +3,7 @@ module QC
     Root = File.expand_path("../..", File.dirname(__FILE__))
     SqlFunctions = File.join(Root, "/sql/ddl.sql")
     CreateTable = File.join(Root, "/sql/create_table.sql")
-    DropSqlFunctions = File.join(QC::Root, "/sql/drop_ddl.sql")
+    DropSqlFunctions = File.join(Root, "/sql/drop_ddl.sql")
 
     def self.create
       Conn.execute(File.read(CreateTable))
