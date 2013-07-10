@@ -9,19 +9,12 @@ require "minitest/autorun"
 
 class QCTest < Minitest::Test
 
-  def setup
-    init_db
-  end
-
-  def teardown
-    QC.delete_all
-  end
-
   def init_db
-    QC::Conn.execute("SET client_min_messages TO 'warning'")
-    QC::Setup.drop
-    QC::Setup.create
-    QC::Conn.execute(File.read('./test/helper.sql'))
+    p = QC::Pool.new
+    QC::Setup.drop(p)
+    QC::Setup.create(p)
+    p.use {|c| c.execute(File.read('./test/helper.sql'))}
+    p.drain!
   end
 
   def capture_debug_output
