@@ -83,3 +83,4 @@ end
 require "queue_classic/queue"
 require "queue_classic/worker"
 require "queue_classic/setup"
+require "queue_classic/railtie" if defined?(Rails)
