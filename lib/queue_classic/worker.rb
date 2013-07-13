@@ -10,7 +10,13 @@ module QC
     # the defaults are pulled from the environment variables.
     def initialize(args={})
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
-      @queue = QC::Queue.new((args[:q_name] || QC::QUEUE), args[:top_bound])
+      name = args[:q_name] || QC::QUEUE
+      @pool = args[:pool] || Pool.new(Integer(args[:max_conns] || 1))
+      @queue = QC::Queue.new(
+        :pool => @pool,
+        :name => name,
+        :top_bound => args[:top_bound]
+      )
       log(args.merge(:at => "worker_initialized"))
       @running = true
     end
@@ -57,7 +63,7 @@ module QC
       job = nil
       while @running
         break if job = @queue.lock
-        Conn.wait(@queue.name)
+        @queue.wait
       end
       job
     end
