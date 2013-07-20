@@ -26,14 +26,17 @@ end
 
 class WorkerTest < QCTest
   def setup
+    super
     @worker = TestWorker.new
   end
 
   def teardown
     @worker.stop
+    super
   end
 
   def test_work
+    assert_equal(0, QC.count)
     QC.enqueue("TestObject.no_args")
     assert_equal(1, QC.count)
     @worker.work

@@ -23,6 +23,12 @@ class QueueTest < QCTest
     assert_nil(QC.lock(1))
   end
 
+  def test_lock_when_worker_has_died
+    QC.enqueue("Klass.method")
+    j = QC::Conn.execute "UPDATE queue_classic_jobs SET locked_at = NOW(), locked_by = 1 RETURNING *"
+    assert_equal j['id'], QC.lock(2)[:id]
+  end
+
   def test_count
     QC.enqueue("Klass.method")
     assert_equal(1, QC.count)

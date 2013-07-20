@@ -20,8 +20,8 @@ module QC
 
     def lock(worker_id)
       QC.log_yield(:measure => 'queue.lock') do
-        s = "SELECT * FROM lock_head($1, $2, $3)"
-        if r = Conn.execute(s, name, top_bound, worker_id)
+        s = "SELECT * FROM lock_head($1, $2, $3, $4)"
+        if r = Conn.execute(s, name, top_bound, worker_id, QC::WORKER_UPDATE_TIME * 2)
           {:id => r["id"],
             :method => r["method"],
             :args => JSON.parse(r["args"]),
