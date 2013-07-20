@@ -115,17 +115,18 @@ class WorkerTest < QCTest
     assert_equal(0, @worker.failed_count)
   end
 
-  def test_worker_ueses_one_conn
+  def test_worker_uses_one_conn
     QC.enqueue("TestObject.no_args")
     @worker.work
     assert_equal(
-      1,
+      2,
       QC::Conn.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i,
       "Multiple connections found -- are there open connections to #{ QC::Conn.db_url } in other terminals?"
     )
   end
 
-  def test_worker_registers_itself
+  def test_worker_registers_itself_asynchronously
+    @worker.stop
     assert_equal @worker.id, last_worker['id']
     assert_equal @worker.queue.name, last_worker['q_name']
   end

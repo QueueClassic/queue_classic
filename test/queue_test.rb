@@ -68,8 +68,8 @@ class QueueTest < QCTest
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
     connection = QC::Conn.connection
-    saved_method = connection.method(:exec)
-    def connection.exec(*args)
+    c = connection.raw_connection
+    def c.exec(*args)
       raise PGError
     end
     assert_raises(PG::Error) { queue.enqueue("Klass.other_method") }

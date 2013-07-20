@@ -5,10 +5,21 @@ require 'pg'
 module QC
   class Conn
     @conn_mutex = Mutex.new
+    def self.conn_mutex
+      @conn_mutex
+    end
 
     def initialize(connection = nil)
       @exec_mutex = Mutex.new
       @connection = connection || connect
+    end
+
+    def raw_connection
+      @connection ||= begin
+                        QC::Conn.conn_mutex.synchronize do
+                          connect
+                        end
+                      end
     end
 
     def execute(stmt, *params)
@@ -16,7 +27,7 @@ module QC
         log(:at => "exec_sql", :sql => stmt.inspect)
         begin
           params = nil if params.empty?
-          r = @connection.exec(stmt, params)
+          r = raw_connection.exec(stmt, params)
           result = []
           r.each {|t| result << t}
           result.length > 1 ? result : result.pop
@@ -47,12 +58,12 @@ module QC
     end
 
     def transaction_idle?
-      @connection.transaction_status == PGconn::PQTRANS_IDLE
+      raw_connection.transaction_status == PGconn::PQTRANS_IDLE
     end
 
     def self.connection
       @connection ||= @conn_mutex.synchronize do
-         new
+        new
       end
     end
 
@@ -61,9 +72,14 @@ module QC
     end
 
     def self.cas_connection
-      @conn_mutex.synchronize do
-        @cas_connection ||= connection.dup
-      end
+      log at: "cas_connection dup"
+      @cas_connection ||= begin
+                            # Make sure the conection exists
+                            connection 
+                            @conn_mutex.synchronize do
+                              connection.dup
+                            end
+                          end
     end
 
     def self.connection=(connection)
@@ -73,25 +89,28 @@ module QC
         raise(ArgumentError, err)
       end
       @conn_mutex.synchronize do
+        QC.log at: "cas_connection="
         @connection = new(connection)
       end
     end
 
     def disconnect
-      begin @connection.finish
-      ensure @connection = nil
+      begin 
+        @connection.finish
+      ensure 
+        @connection = nil
       end
     end
 
     def dup
       self.class.new PGconn.connect(
-       @connection.host,
-       @connection.port,
+       raw_connection.host,
+       raw_connection.port,
        nil, 
        '', 
-       @connection.db, 
-       @connection.user,
-       @connection.pass
+       raw_connection.db, 
+       raw_connection.user,
+       raw_connection.pass
       )
     end
 
@@ -135,12 +154,12 @@ module QC
 
     def wait_for_notify(t)
       Array.new.tap do |msgs|
-        @connection.wait_for_notify(t) {|event, pid, msg| msgs << msg}
+        raw_connection.wait_for_notify(t) {|event, pid, msg| msgs << msg}
       end
     end
 
     def drain_notify
-      until @connection.notifies.nil?
+      until raw_connection.notifies.nil?
         log(:at => "drain_notifications")
       end
     end

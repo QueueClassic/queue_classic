@@ -31,7 +31,7 @@ module QC
     # is sleeping.
     def stop
       @running = false
-      @cas_thread.join
+      @cas_thread.join if @cas_thread
       @cas_thread = nil
     end
 
@@ -57,7 +57,7 @@ module QC
     # Return a hash when a job is locked.
     # Caller responsible for deleting the job when finished.
     def lock_job
-      log(:at => "lock_job", :cas_status => @cas_thread.try(:status))
+      log(:at => "lock_job")
       job = nil
       while @running
         break if job = @queue.lock
@@ -109,11 +109,12 @@ module QC
     end
 
     def register_worker
-      sql = "INSERT INTO queue_classic_workers (q_name, host, pid) VALUES ($1, $2, $3) RETURNING id"
-      res = Conn.execute(sql, queue.name, Socket.gethostname, $$)
-      self.id = res.fetch('id')
       Conn.cas_connection
       @cas_thread = Thread.new do
+        sql = "INSERT INTO queue_classic_workers (q_name, host, pid) VALUES ($1, $2, $3) RETURNING id"
+        res = Conn.cas_connection.execute(sql, queue.name, Socket.gethostname, $$)
+        self.id = res.fetch('id')
+
         begin
           log(:at => "cas_thread_start")
           while @running 
