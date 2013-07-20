@@ -48,11 +48,12 @@ class WorkerTest < QCTest
   end
 
   def test_failed_job_is_logged
+    worker = QC::Worker.new
     output = capture_debug_output do
       QC.enqueue("TestObject.not_a_method")
-      QC::Worker.new.work
+      worker.work
     end
-    expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\]} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
+    expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\], :locked_by=>#{worker.id}} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
   end
 
@@ -125,9 +126,15 @@ class WorkerTest < QCTest
     )
   end
 
+  def test_lock_job_should_set_locked_by
+    QC.enqueue("TestObject.no_args")
+    job = @worker.lock_job
+    assert_equal @worker.id, job[:locked_by]
+  end
+
   def test_worker_registers_itself_asynchronously
     @worker.stop
-    assert_equal @worker.id, last_worker['id']
+    assert_equal @worker.id, last_worker['id'].to_i
     assert_equal @worker.queue.name, last_worker['q_name']
   end
 

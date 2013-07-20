@@ -15,12 +15,12 @@ class QueueTest < QCTest
 
     # See helper.rb for more information about the large initial id
     # number.
-    expected = {:id=>(2**34).to_s, :method=>"Klass.method", :args=>[]}
-    assert_equal(expected, QC.lock)
+    expected = {:id=>(2**34).to_s, :method=>"Klass.method", :args=>[], :locked_by => 1}
+    assert_equal(expected, QC.lock(1))
   end
 
   def test_lock_when_empty
-    assert_nil(QC.lock)
+    assert_nil(QC.lock(1))
   end
 
   def test_count
@@ -31,7 +31,7 @@ class QueueTest < QCTest
   def test_delete
     QC.enqueue("Klass.method")
     assert_equal(1, QC.count)
-    QC.delete(QC.lock[:id])
+    QC.delete(QC.lock(1)[:id])
     assert_equal(0, QC.count)
   end
 
@@ -59,7 +59,7 @@ class QueueTest < QCTest
     queue = QC::Queue.new("queue_classic_jobs")
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
-    queue.delete(queue.lock[:id])
+    queue.delete(queue.lock(1)[:id])
     assert_equal(0, queue.count)
   end
 

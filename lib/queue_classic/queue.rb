@@ -18,13 +18,14 @@ module QC
       end
     end
 
-    def lock
+    def lock(worker_id)
       QC.log_yield(:measure => 'queue.lock') do
-        s = "SELECT * FROM lock_head($1, $2)"
-        if r = Conn.execute(s, name, top_bound)
+        s = "SELECT * FROM lock_head($1, $2, $3)"
+        if r = Conn.execute(s, name, top_bound, worker_id)
           {:id => r["id"],
             :method => r["method"],
-            :args => JSON.parse(r["args"])}
+            :args => JSON.parse(r["args"]),
+            :locked_by => r['locked_by'].to_i }
         end
       end
     end

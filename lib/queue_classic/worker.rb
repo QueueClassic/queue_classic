@@ -60,7 +60,7 @@ module QC
       log(:at => "lock_job")
       job = nil
       while @running
-        break if job = @queue.lock
+        break if job = @queue.lock(id)
         Conn.wait(@queue.name)
       end
       job
@@ -109,16 +109,13 @@ module QC
     end
 
     def register_worker
-      Conn.cas_connection
-      @cas_thread = Thread.new do
-        sql = "INSERT INTO queue_classic_workers (q_name, host, pid) VALUES ($1, $2, $3) RETURNING id"
-        res = Conn.cas_connection.execute(sql, queue.name, Socket.gethostname, $$)
-        self.id = res.fetch('id')
+      sql = "INSERT INTO queue_classic_workers (q_name, host, pid) VALUES ($1, $2, $3) RETURNING id"
+      res = Conn.cas_connection.execute(sql, queue.name, Socket.gethostname, $$)
+      self.id = res.fetch('id').to_i
 
+      @cas_thread = Thread.new do
         begin
-          log(:at => "cas_thread_start")
           while @running 
-            log(:cas_at => "loop!!!!!!!!!!!!!!!")
             sleep QC::WORKER_UPDATE_TIME
             touch_worker
           end
