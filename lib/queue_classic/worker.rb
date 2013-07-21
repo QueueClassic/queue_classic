@@ -6,7 +6,7 @@ require 'socket'
 module QC
   class Worker
 
-    attr_accessor :queue, :running, :id, :cas_thread
+    attr_accessor :queue, :running, :id, :worker_thread
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
     def initialize(args={})
@@ -30,8 +30,8 @@ module QC
     # is sleeping.
     def stop
       @running = false
-      @cas_thread.join if @cas_thread
-      @cas_thread = nil
+      @worker_thread.join if @worker_thread
+      @worker_thread = nil
     end
 
     # This method will tell the ruby process to FORK.
@@ -109,11 +109,11 @@ module QC
 
     def register_worker
       sql = "INSERT INTO queue_classic_workers (q_name, host, pid) VALUES ($1, $2, $3) RETURNING id"
-      res = Conn.cas_connection.execute(sql, queue.name, Socket.gethostname, $$)
+      res = Conn.worker_connection.execute(sql, queue.name, Socket.gethostname, $$)
       self.id = res.fetch('id').to_i
       @running = true
 
-      @cas_thread = Thread.new do
+      @worker_thread = Thread.new do
         begin
           while @running 
             log(:at => "sleep", :value => QC::WORKER_UPDATE_TIME)
@@ -121,7 +121,7 @@ module QC
             touch_worker
           end
         rescue Exception => e
-          log(:cas_exception => e.message)
+          log(:worker_exception => e.message)
         end
       end
     end
@@ -129,7 +129,7 @@ module QC
     def touch_worker
       log(:at => "touch_worker")
       sql = "UPDATE queue_classic_workers SET last_seen = NOW() WHERE id = $1"
-      Conn.cas_connection.execute(sql, id)
+      Conn.worker_connection.execute(sql, id)
     end
   end
 end

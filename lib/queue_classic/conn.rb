@@ -16,10 +16,10 @@ module QC
 
     def raw_connection
       @connection ||= begin
-                        QC::Conn.conn_mutex.synchronize do
-                          connect
-                        end
-                      end
+        QC::Conn.conn_mutex.synchronize do
+          connect
+        end
+      end
     end
 
     def execute(stmt, *params)
@@ -71,15 +71,14 @@ module QC
       connection.send(method, *args, &block)
     end
 
-    def self.cas_connection
-      log at: "cas_connection dup"
-      @cas_connection ||= begin
-                            # Make sure the conection exists
-                            connection 
-                            @conn_mutex.synchronize do
-                              connection.dup
-                            end
-                          end
+    def self.worker_connection
+      @worker_connection ||= begin
+        # Make sure the conection exists
+        connection 
+        @conn_mutex.synchronize do
+          connection.dup
+        end
+      end
     end
 
     def self.connection=(connection)
@@ -89,7 +88,6 @@ module QC
         raise(ArgumentError, err)
       end
       @conn_mutex.synchronize do
-        QC.log at: "cas_connection="
         @connection = new(connection)
       end
     end
@@ -163,6 +161,5 @@ module QC
         log(:at => "drain_notifications")
       end
     end
-
   end
 end
