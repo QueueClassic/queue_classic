@@ -1,18 +1,19 @@
 require 'queue_classic'
 require 'queue_classic/queue'
 require 'queue_classic/conn'
+require 'socket'
 
 module QC
   class Worker
 
-    attr_accessor :queue, :running
+    attr_accessor :queue, :running, :id, :worker_thread
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
     def initialize(args={})
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
       @queue = QC::Queue.new((args[:q_name] || QC::QUEUE), args[:top_bound])
+      register_worker
       log(args.merge(:at => "worker_initialized"))
-      @running = true
     end
 
     # Start a loop and work jobs indefinitely.
@@ -29,6 +30,8 @@ module QC
     # is sleeping.
     def stop
       @running = false
+      @worker_thread.join if @worker_thread
+      @worker_thread = nil
     end
 
     # This method will tell the ruby process to FORK.
@@ -56,7 +59,7 @@ module QC
       log(:at => "lock_job")
       job = nil
       while @running
-        break if job = @queue.lock
+        break if job = @queue.lock(id)
         Conn.wait(@queue.name)
       end
       job
@@ -104,5 +107,29 @@ module QC
       QC.log(data)
     end
 
+    def register_worker
+      sql = "INSERT INTO queue_classic_workers (q_name, host, pid) VALUES ($1, $2, $3) RETURNING id"
+      res = Conn.worker_connection.execute(sql, queue.name, Socket.gethostname, $$)
+      self.id = res.fetch('id').to_i
+      @running = true
+
+      @worker_thread = Thread.new do
+        begin
+          while @running 
+            log(:at => "sleep", :value => QC::WORKER_UPDATE_TIME)
+            sleep QC::WORKER_UPDATE_TIME
+            touch_worker
+          end
+        rescue Exception => e
+          log(:worker_exception => e.message)
+        end
+      end
+    end
+
+    def touch_worker
+      log(:at => "touch_worker")
+      sql = "UPDATE queue_classic_workers SET last_seen = NOW() WHERE id = $1"
+      Conn.worker_connection.execute(sql, id)
+    end
   end
 end

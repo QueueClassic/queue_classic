@@ -3,6 +3,7 @@ module QC
     Root = File.expand_path("../..", File.dirname(__FILE__))
     SqlFunctions = File.join(Root, "/sql/ddl.sql")
     CreateTable = File.join(Root, "/sql/create_table.sql")
+    DropTable = File.join(Root, "/sql/drop_table.sql")
     DropSqlFunctions = File.join(Root, "/sql/drop_ddl.sql")
 
     def self.create
@@ -11,7 +12,7 @@ module QC
     end
 
     def self.drop
-      Conn.execute("DROP TABLE IF EXISTS queue_classic_jobs CASCADE")
+      Conn.execute(File.read(DropTable))
       Conn.execute(File.read(DropSqlFunctions))
     end
   end

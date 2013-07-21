@@ -2,6 +2,7 @@ $: << File.expand_path("lib")
 $: << File.expand_path("test")
 
 ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
+ENV["QC_WORKER_UPDATE_TIME"] = "0"
 
 require "queue_classic"
 require "stringio"

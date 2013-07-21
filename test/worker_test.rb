@@ -25,29 +25,38 @@ class TestWorker < QC::Worker
 end
 
 class WorkerTest < QCTest
+  def setup
+    super
+    @worker = TestWorker.new
+  end
+
+  def teardown
+    @worker.stop
+    super
+  end
 
   def test_work
-    QC.enqueue("TestObject.no_args")
-    worker = TestWorker.new
-    assert_equal(1, QC.count)
-    worker.work
     assert_equal(0, QC.count)
-    assert_equal(0, worker.failed_count)
+    QC.enqueue("TestObject.no_args")
+    assert_equal(1, QC.count)
+    @worker.work
+    assert_equal(0, QC.count)
+    assert_equal(0, @worker.failed_count)
   end
 
   def test_failed_job
     QC.enqueue("TestObject.not_a_method")
-    worker = TestWorker.new
-    worker.work
-    assert_equal(1, worker.failed_count)
+    @worker.work
+    assert_equal(1, @worker.failed_count)
   end
 
   def test_failed_job_is_logged
+    worker = QC::Worker.new
     output = capture_debug_output do
       QC.enqueue("TestObject.not_a_method")
-      QC::Worker.new.work
+      worker.work
     end
-    expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\]} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
+    expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\], :locked_by=>#{worker.id}} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
   end
 
@@ -71,55 +80,77 @@ class WorkerTest < QCTest
 
   def test_work_with_no_args
     QC.enqueue("TestObject.no_args")
-    worker = TestWorker.new
-    r = worker.work
+    r = @worker.work
     assert_nil(r)
-    assert_equal(0, worker.failed_count)
+    assert_equal(0, @worker.failed_count)
   end
 
   def test_work_with_one_arg
     QC.enqueue("TestObject.one_arg", "1")
-    worker = TestWorker.new
-    r = worker.work
+    r = @worker.work
     assert_equal("1", r)
-    assert_equal(0, worker.failed_count)
+    assert_equal(0, @worker.failed_count)
   end
 
   def test_work_with_two_args
     QC.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new
-    r = worker.work
+    r = @worker.work
     assert_equal(["1", 2], r)
-    assert_equal(0, worker.failed_count)
+    assert_equal(0, @worker.failed_count)
   end
 
   def test_work_custom_queue
     p_queue = QC::Queue.new("priority_queue")
     p_queue.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new(q_name: "priority_queue")
-    r = worker.work
+    @worker.stop
+    @worker = TestWorker.new(q_name: "priority_queue")
+    r = @worker.work
     assert_equal(["1", 2], r)
-    assert_equal(0, worker.failed_count)
+    assert_equal(0, @worker.failed_count)
   end
 
   def test_worker_listens_on_chan
     p_queue = QC::Queue.new("priority_queue")
     p_queue.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new(q_name: "priority_queue", listening_worker: true)
-    r = worker.work
+    @worker.stop
+    @worker = TestWorker.new(q_name: "priority_queue", listening_worker: true)
+    r = @worker.work
     assert_equal(["1", 2], r)
-    assert_equal(0, worker.failed_count)
+    assert_equal(0, @worker.failed_count)
   end
 
-  def test_worker_ueses_one_conn
+  def test_worker_uses_one_conn
     QC.enqueue("TestObject.no_args")
-    worker = TestWorker.new
-    worker.work
+    @worker.work
     assert_equal(
-      1,
+      2,
       QC::Conn.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i,
       "Multiple connections found -- are there open connections to #{ QC::Conn.db_url } in other terminals?"
     )
   end
 
+  def test_lock_job_should_set_locked_by
+    QC.enqueue("TestObject.no_args")
+    job = @worker.lock_job
+    assert_equal @worker.id, job[:locked_by]
+  end
+
+  def test_worker_registers_itself_asynchronously
+    @worker.stop
+    assert_equal @worker.id, last_worker['id'].to_i
+    assert_equal @worker.queue.name, last_worker['q_name']
+  end
+
+  def test_touch_worker
+    original_time = last_worker['last_seen']
+    @worker.touch_worker
+    new_time = last_worker['last_seen']
+
+    assert_operator new_time, :>, original_time
+  end
+
+  private
+  def last_worker
+    QC::Conn.execute("SELECT * from queue_classic_workers ORDER BY id DESC LIMIT 1")
+  end
 end

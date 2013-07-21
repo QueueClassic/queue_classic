@@ -7,6 +7,9 @@ module QC
   # Number of seconds to block on the listen chanel for new jobs.
   WAIT_TIME = (ENV["QC_LISTEN_TIME"] || 5).to_i
 
+  # Number of seconds to wait before updating the worker timestamp
+  WORKER_UPDATE_TIME = (ENV["QC_WORKER_UPDATE_TIME"] || 5).to_i
+
   # Why do you want to change the table name?
   # Just deal with the default OK?
   # If you do want to change this, you will

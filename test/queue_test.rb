@@ -15,12 +15,23 @@ class QueueTest < QCTest
 
     # See helper.rb for more information about the large initial id
     # number.
-    expected = {:id=>(2**34).to_s, :method=>"Klass.method", :args=>[]}
-    assert_equal(expected, QC.lock)
+    expected = {:id=>(2**34).to_s, :method=>"Klass.method", :args=>[], :locked_by => 1}
+    assert_equal(expected, QC.lock(1))
+  end
+
+  def test_lock_with_multiple_items
+    2.times { QC.enqueue("Klass.method") }
+    assert_equal("Klass.method", QC.lock(1)[:method])
   end
 
   def test_lock_when_empty
-    assert_nil(QC.lock)
+    assert_nil(QC.lock(1))
+  end
+
+  def test_lock_when_worker_has_died
+    QC.enqueue("Klass.method")
+    j = QC::Conn.execute "UPDATE queue_classic_jobs SET locked_at = NOW(), locked_by = 1 RETURNING *"
+    assert_equal j['id'], QC.lock(2)[:id]
   end
 
   def test_count
@@ -31,7 +42,7 @@ class QueueTest < QCTest
   def test_delete
     QC.enqueue("Klass.method")
     assert_equal(1, QC.count)
-    QC.delete(QC.lock[:id])
+    QC.delete(QC.lock(1)[:id])
     assert_equal(0, QC.count)
   end
 
@@ -59,7 +70,7 @@ class QueueTest < QCTest
     queue = QC::Queue.new("queue_classic_jobs")
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
-    queue.delete(queue.lock[:id])
+    queue.delete(queue.lock(1)[:id])
     assert_equal(0, queue.count)
   end
 
@@ -68,8 +79,8 @@ class QueueTest < QCTest
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
     connection = QC::Conn.connection
-    saved_method = connection.method(:exec)
-    def connection.exec(*args)
+    c = connection.raw_connection
+    def c.exec(*args)
       raise PGError
     end
     assert_raises(PG::Error) { queue.enqueue("Klass.other_method") }
