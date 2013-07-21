@@ -19,6 +19,11 @@ class QueueTest < QCTest
     assert_equal(expected, QC.lock(1))
   end
 
+  def test_lock_with_multiple_items
+    2.times { QC.enqueue("Klass.method") }
+    assert_equal("Klass.method", QC.lock(1)[:method])
+  end
+
   def test_lock_when_empty
     assert_nil(QC.lock(1))
   end

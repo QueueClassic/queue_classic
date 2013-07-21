@@ -32,11 +32,11 @@ BEGIN
 
   LOOP
     BEGIN
-      unlock_stmt = ' locked_at IS NULL OR NOT EXISTS('
+      unlock_stmt = ' (locked_at IS NULL OR NOT EXISTS('
         || '   SELECT 1 FROM queue_classic_workers'
         || '   WHERE queue_classic_workers.id = locked_by AND'
         || '   last_seen < NOW() - INTERVAL''' || worker_update_time || ' seconds'''
-        || ' ) AND q_name = ' || quote_literal(q_name);
+        || ' ) AND q_name = ' || quote_literal(q_name) || ')';
 
       EXECUTE 'SELECT id FROM queue_classic_jobs '
         || ' WHERE ' || unlock_stmt

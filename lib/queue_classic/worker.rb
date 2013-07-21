@@ -14,7 +14,6 @@ module QC
       @queue = QC::Queue.new((args[:q_name] || QC::QUEUE), args[:top_bound])
       register_worker
       log(args.merge(:at => "worker_initialized"))
-      @running = true
     end
 
     # Start a loop and work jobs indefinitely.
@@ -112,10 +111,12 @@ module QC
       sql = "INSERT INTO queue_classic_workers (q_name, host, pid) VALUES ($1, $2, $3) RETURNING id"
       res = Conn.cas_connection.execute(sql, queue.name, Socket.gethostname, $$)
       self.id = res.fetch('id').to_i
+      @running = true
 
       @cas_thread = Thread.new do
         begin
           while @running 
+            log(:at => "sleep", :value => QC::WORKER_UPDATE_TIME)
             sleep QC::WORKER_UPDATE_TIME
             touch_worker
           end
