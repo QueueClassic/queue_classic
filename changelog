@@ -1,6 +1,8 @@
-Version 3.0.0
+Version 2.2.1
 - Force listen/notify on worker
 - Notifications happen inside PostgreSQL trigger
+- Add rake task for generating rails migrations
+- Fix bug related to listening worker
 
 Version 2.2.0
 - Use json from the stdlib in place of MultiJson.

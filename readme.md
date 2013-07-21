@@ -1,6 +1,6 @@
 # queue_classic
 
-v2.2.0
+v2.2.1
 
 queue_classic provides a simple interface to a PostgreSQL-backed message queue. queue_classic specializes in concurrent locking and minimizing database load while providing a simple, intuitive developer experience. queue_classic assumes that you are already using PostgreSQL in your production environment and that adding another dependency (e.g. redis, beanstalkd, 0mq) is undesirable.
 
@@ -14,7 +14,7 @@ Features:
 
 Contents:
 
-* [Documentation](http://rubydoc.info/gems/queue_classic/2.2.0/frames)
+* [Documentation](http://rubydoc.info/gems/queue_classic/2.2.1/frames)
 * [Usage](#usage)
 * [Setup](#setup)
 * [Configuration](#configuration)
@@ -129,14 +129,7 @@ Declare dependencies in Gemfile.
 
 ```ruby
 source "http://rubygems.org"
-gem "queue_classic", "2.2.0"
-```
-
-Require these files in your Rakefile so that you can run `rake qc:work`.
-
-```ruby
-require "queue_classic"
-require "queue_classic/tasks"
+gem "queue_classic", "2.2.1"
 ```
 
 By default, queue_classic will use the QC_DATABASE_URL falling back on DATABASE_URL. The URL must be in the following format: `postgres://username:password@localhost/database_name`.  If you use Heroku's PostgreSQL service, this will already be set. If you don't want to set this variable, you can set the connection in an initializer. **QueueClassic will maintain its own connection to the database.** This may double the number of connections to your database. Set QC::Conn.connection to share the connection between Rails & QueueClassic
@@ -146,21 +139,15 @@ require 'queue_classic'
 QC::Conn.connection = ActiveRecord::Base.connection.raw_connection
 ```
 
-**Note on using ActiveRecord migrations:** If you use the migration, and you wish to use commands that reset the database from the stored schema (e.g. `rake db:reset`), your application must be configured with `config.active_record.schema_format = :sql` in `config/application.rb`.  If you don't do this, the PL/pgSQL function that queue_classic creates will be lost when you reset the database.
+Next you need to run the queue classic generator to create the database
+migration. This will setup the necessary table to use queue classic.
 
-```ruby
-require 'queue_classic'
-
-class AddQueueClassic < ActiveRecord::Migration
-  def self.up
-    QC::Setup.create
-  end
-
-  def self.down
-    QC::Setup.drop
-  end
-end
 ```
+rails generate queue_classic:install
+rake db:migrate
+```
+
+**Note on using ActiveRecord migrations:** If you use the migration, and you wish to use commands that reset the database from the stored schema (e.g. `rake db:reset`), your application must be configured with `config.active_record.schema_format = :sql` in `config/application.rb`.  If you don't do this, the PL/pgSQL function that queue_classic creates will be lost when you reset the database.
 
 ### Rake Task Setup
 
