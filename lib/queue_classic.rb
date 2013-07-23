@@ -46,9 +46,7 @@ module QC
   end
 
   def self.default_queue
-    @default_queue ||= begin
-      Queue.new(QUEUE)
-    end
+    @default_queue ||= Queue.new
   end
 
   def self.log_yield(data)
@@ -70,7 +68,7 @@ module QC
     if block_given?
       start = Time.now
       result = yield
-      data.merge(:elapsed => Integer((Time.now - t0)*1000))
+      data.merge(:elapsed => Integer((Time.now - start)*1000))
     end
     data.reduce(out=String.new) do |s, tup|
       s << [tup.first, tup.last].join("=") << " "

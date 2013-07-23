@@ -2,6 +2,16 @@ require File.expand_path("../helper.rb", __FILE__)
 
 class QueueTest < QCTest
 
+  def setup
+    init_db
+    @pool = QC::Pool.new
+  end
+
+  def teardown
+    @pool.drain!
+    QC.pool.drain!
+  end
+
   def test_enqueue
     QC.enqueue("Klass.method")
   end
@@ -44,8 +54,8 @@ class QueueTest < QCTest
   end
 
   def test_delete_all_by_queue_name
-    p_queue = QC::Queue.new("priority_queue")
-    s_queue = QC::Queue.new("secondary_queue")
+    p_queue = QC::Queue.new(:pool => @pool, :name => "priority_queue")
+    s_queue = QC::Queue.new(:pool => @pool, :name => "secondary_queue")
     p_queue.enqueue("Klass.method")
     s_queue.enqueue("Klass.method")
     assert_equal(1, p_queue.count)
@@ -56,29 +66,11 @@ class QueueTest < QCTest
   end
 
   def test_queue_instance
-    queue = QC::Queue.new("queue_classic_jobs")
+    queue = QC::Queue.new(:pool => @pool, :name => "queue_classic_jobs")
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
     queue.delete(queue.lock[:id])
     assert_equal(0, queue.count)
-  end
-
-  def test_repair_after_error
-    queue = QC::Queue.new("queue_classic_jobs")
-    queue.enqueue("Klass.method")
-    assert_equal(1, queue.count)
-    connection = QC::Conn.connection
-    saved_method = connection.method(:exec)
-    def connection.exec(*args)
-      raise PGError
-    end
-    assert_raises(PG::Error) { queue.enqueue("Klass.other_method") }
-    assert_equal(1, queue.count)
-    queue.enqueue("Klass.other_method")
-    assert_equal(2, queue.count)
-  rescue PG::Error
-    QC::Conn.disconnect
-    assert false, "Expected to QC repair after connection error"
   end
 
   def test_custom_default_queue
@@ -102,15 +94,16 @@ class QueueTest < QCTest
   end
 
   def test_enqueue_triggers_notify
-    QC::Conn.execute('LISTEN "' + QC::QUEUE + '"')
-    QC::Conn.send(:drain_notify)
+    QC.pool.use do |c|
+      c.execute('LISTEN "' + QC::QUEUE + '"')
+      c.send(:drain_notify)
+      msgs = c.send(:wait_for_notify, 0.25)
+      assert_equal(0, msgs.length)
 
-    msgs = QC::Conn.send(:wait_for_notify, 0.25)
-    assert_equal(0, msgs.length)
-
-    QC.enqueue("Klass.method")
-    msgs = QC::Conn.send(:wait_for_notify, 0.25)
-    assert_equal(1, msgs.length)
+      QC.enqueue("Klass.method")
+      msgs = c.send(:wait_for_notify, 0.25)
+      assert_equal(1, msgs.length)
+    end
   end
 
 end
