@@ -5,7 +5,9 @@ module QC
   # A thread safe container for accessing database connections.
   class Pool
 
-    attr_accessor :conns
+    # A queue of PG connections.
+    attr_reader :conns
+
     # Creating a new pool will
     # connect all connections in the pool to PostgreSQL.
     def initialize(sz=1)
