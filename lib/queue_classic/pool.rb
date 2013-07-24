@@ -18,7 +18,8 @@ module QC
 
     # This method is the primary way to use a connection in
     # the pool. It will take care of checking out the connection
-    # and returning the connection to the pool.
+    # and returning the connection to the pool. When checking the connection
+    # back into the pool, any open transaction will be rolled back.
     def use(new_on_empty=true)
       raise("Expected a block with Pool#use.") unless block_given?
       c = checkout(new_on_empty)
@@ -55,6 +56,9 @@ module QC
     end
 
     def checkin(c)
+      # Don't leave dirty connections around for other users
+      # in the pool.
+      c.abort_open_transaction
       # We synchronize this function
       # because we do a comparison followed by an enqueue.
       @mutex.synchronize do

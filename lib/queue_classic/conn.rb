@@ -52,6 +52,12 @@ module QC
       end
     end
 
+    def abort_open_transaction
+      if @c.transaction_status != PGconn::PQTRANS_IDLE
+        @c.exec('ROLLBACK')
+      end
+    end
+
     private
 
     def wait_for_notify(t)
