@@ -106,7 +106,7 @@ class WorkerTest < QCTest
   def test_work_custom_queue
     p_queue = QC::Queue.new(:name=> "priority_queue")
     p_queue.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new(:pool => @pool, q_name: "priority_queue")
+    worker = TestWorker.new(:pool => @pool, :q_name => "priority_queue")
     r = worker.work
     assert_equal(["1", 2], r)
     assert_equal(0, worker.failed_count)
@@ -116,7 +116,9 @@ class WorkerTest < QCTest
   def test_worker_listens_on_chan
     p_queue = QC::Queue.new(:name => "priority_queue")
     p_queue.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new(:pool => @pool, q_name: "priority_queue", listening_worker: true)
+    worker = TestWorker.new(:pool => @pool,
+      :q_name => "priority_queue",
+      :listening_worker => true)
     r = worker.work
     assert_equal(["1", 2], r)
     assert_equal(0, worker.failed_count)
