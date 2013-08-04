@@ -1,6 +1,6 @@
 # queue_classic
 
-v2.2.1
+v2.2.2
 
 queue_classic provides a simple interface to a PostgreSQL-backed message queue. queue_classic specializes in concurrent locking and minimizing database load while providing a simple, intuitive developer experience. queue_classic assumes that you are already using PostgreSQL in your production environment and that adding another dependency (e.g. redis, beanstalkd, 0mq) is undesirable.
 
@@ -14,7 +14,7 @@ Features:
 
 Contents:
 
-* [Documentation](http://rubydoc.info/gems/queue_classic/2.2.1/frames)
+* [Documentation](http://rubydoc.info/gems/queue_classic/2.2.2/frames)
 * [Usage](#usage)
 * [Setup](#setup)
 * [Configuration](#configuration)
@@ -129,7 +129,7 @@ Declare dependencies in Gemfile.
 
 ```ruby
 source "http://rubygems.org"
-gem "queue_classic", "2.2.1"
+gem "queue_classic", "2.2.2"
 ```
 
 By default, queue_classic will use the QC_DATABASE_URL falling back on DATABASE_URL. The URL must be in the following format: `postgres://username:password@localhost/database_name`.  If you use Heroku's PostgreSQL service, this will already be set. If you don't want to set this variable, you can set the connection in an initializer. **QueueClassic will maintain its own connection to the database.** This may double the number of connections to your database. Set QC::Conn.connection to share the connection between Rails & QueueClassic
