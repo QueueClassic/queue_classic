@@ -18,5 +18,24 @@ module QC
         c.execute(File.read(DropSqlFunctions))
       end
     end
+
+    def self.recreate(poll)
+      poll.use do |c|
+        c.execute <<-SQL
+          SELECT q_name, method, args
+          INTO TEMPORARY old_queue_classic_jobs
+          FROM queue_classic_jobs
+        SQL
+
+        drop pool
+        create pool
+
+        c.execute <<-SQL
+          INSERT INTO queue_classic_jobs (q_name, method, args)
+          SELECT q_name, method, args
+          FROM old_queue_classic_jobs
+        SQL
+      end
+    end
   end
 end
