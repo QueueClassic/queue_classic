@@ -60,7 +60,8 @@ There are two ways to work jobs. The first approach is to use the Rake task. The
 
 #### Rake Task
 
-Require queue_classic in your Rakefile.
+Require queue_classic in your Rakefile. If you are using Rails, the tasks will
+be loaded automatically.
 
 ```ruby
 require 'queue_classic'
