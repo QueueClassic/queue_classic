@@ -1,4 +1,5 @@
 require File.expand_path("../helper.rb", __FILE__)
+Thread.abort_on_exception = true
 
 if ENV["QC_BENCHMARK"]
   class BenchmarkTest < QCTest
@@ -16,21 +17,22 @@ if ENV["QC_BENCHMARK"]
     end
 
     def test_dequeue
-      worker = QC::Worker.new
+      pool = QC::Pool.new
+      queue = QC::Queue.new(:pool => pool)
+      worker = QC::Worker.new(:concurrency => 4, :queue => queue)
       worker.running = true
-      n = 10_000
+      queue.delete_all
+      n = 20
       n.times do
-        QC.enqueue("1.odd?", [])
+        queue.enqueue("puts", "hello")
       end
-      assert_equal(n, QC.count)
+      assert_equal(n, queue.count)
 
       start = Time.now
-      n.times do
-        worker.work
-      end
+      n.times.map {worker.fork_and_work}.map(&:join)
       elapsed = Time.now - start
 
-      assert_equal(0, QC.count)
+      assert_equal(0, queue.count)
       assert_in_delta(10, elapsed, 3)
     end
 

@@ -1,3 +1,4 @@
+require 'thread'
 require 'queue_classic'
 require 'queue_classic/queue'
 require 'queue_classic/conn'
@@ -10,6 +11,7 @@ module QC
     # the defaults are pulled from the environment variables.
     def initialize(args={})
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
+      @limiter = SizedQueue.new(args[:concurrency] || 1)
       name = args[:q_name] || QC::QUEUE
       @pool = args[:pool] || Pool.new(Integer(args[:max_conns] || 1))
       @queue = QC::Queue.new(
@@ -41,9 +43,19 @@ module QC
     # Define setup_child to hook into the forking process.
     # Using setup_child is good for re-establishing database connections.
     def fork_and_work
-      cpid = fork {setup_child; work}
-      log(:at => :fork, :pid => cpid)
-      Process.wait(cpid)
+      # If the limiter is full, then we will block until space permits.
+      @limiter.enq(1)
+      Thread.new do
+        begin
+          cpid = fork {setup_child; work}
+          log(:at => :fork, :pid => cpid)
+          Process.wait(cpid)
+        ensure
+          # Once we are done with our work and our process has exited,
+          # we can allow another process to run.
+          @limiter.deq
+        end
+      end
     end
 
     # This method will lock a job & process the job.
