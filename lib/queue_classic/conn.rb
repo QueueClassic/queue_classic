@@ -21,29 +21,33 @@ module QC
 
     def initialize
       @c = self.class.connect
+      @max_attempts = 2
     end
 
     def execute(stmt, *params)
       QC.log(:measure => "conn.exec", :sql => stmt.inspect) do
-        begin
+        with_retry(@max_attempts) do
           params = nil if params.empty?
           r = @c.exec(stmt, params)
           result = []
           r.each {|t| result << t}
           result.length > 1 ? result : result.pop
-        rescue PGError => e
-          QC.log(:error => e.inspect)
-          disconnect
-          raise
         end
       end
     end
 
     def wait(chan)
-      execute('LISTEN "' + chan + '"')
-      wait_for_notify(WAIT_TIME)
-      execute('UNLISTEN "' + chan + '"')
-      drain_notify
+      with_retry(@max_attempts) do
+        execute('LISTEN "' + chan + '"')
+        wait_for_notify(WAIT_TIME)
+        execute('UNLISTEN "' + chan + '"')
+        drain_notify
+      end
+    end
+
+    def reconnect
+      disconnect
+      @c = self.class.connect
     end
 
     def disconnect
@@ -59,6 +63,25 @@ module QC
     end
 
     private
+
+    def with_retry(n)
+      completed = false
+      attempts = 0
+      result = nil
+      last_error = nil
+      until completed || attempts == n
+        attempts += 1
+        begin
+          result = yield
+          completed = true
+        rescue => e
+          QC.log(:error => e.class, :at => 'conn-retry', :attempts => attempts)
+          last_error = e
+          reconnect
+        end
+      end
+      completed ? result : raise(last_error)
+    end
 
     def wait_for_notify(t)
       Array.new.tap do |msgs|

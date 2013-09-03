@@ -56,9 +56,6 @@ module QC
     end
 
     def checkin(c)
-      # Don't leave dirty connections around for other users
-      # in the pool.
-      c.abort_open_transaction
       # We synchronize this function
       # because we do a comparison followed by an enqueue.
       @mutex.synchronize do
