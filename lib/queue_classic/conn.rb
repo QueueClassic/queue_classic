@@ -5,6 +5,13 @@ require 'pg'
 
 module QC
   class Conn
+    # Number of seconds to block on the listen chanel for new jobs.
+    WAIT_TIME = (ENV["QC_LISTEN_TIME"] || 5).to_i
+    # You can use the APP_NAME to query for
+    # postgres related process information in the
+    # pg_stat_activity table.
+    APP_NAME = ENV["QC_APP_NAME"] || "queue_classic"
+
 
     def self.connect
       QC.log(:at => "establish_conn")
@@ -15,7 +22,7 @@ module QC
       if !Conf.debug?
         conn.exec("SET client_min_messages TO 'warning'")
       end
-      conn.exec("SET application_name = '#{QC::APP_NAME}'")
+      conn.exec("SET application_name = '#{APP_NAME}'")
       conn
     end
 
@@ -51,7 +58,7 @@ module QC
     end
 
     def disconnect
-      begin @c.finish
+      begin @c && @c.finish
       ensure @c = nil
       end
     end

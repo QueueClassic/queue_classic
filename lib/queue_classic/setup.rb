@@ -1,4 +1,4 @@
-require 'queue_classic/pool'
+require 'queue_classic/conn'
 
 module QC
   module Setup
@@ -7,20 +7,16 @@ module QC
     CreateTable = File.join(Root, "/sql/create_table.sql")
     DropSqlFunctions = File.join(Root, "/sql/drop_ddl.sql")
 
-    def self.create(pool=nil)
-      pool ||= Pool.new
-      pool.use do |c|
-        c.execute(File.read(CreateTable))
-        c.execute(File.read(SqlFunctions))
-      end
+    def self.create(conn=nil)
+      conn ||= Conn.new
+      conn.execute(File.read(CreateTable))
+      conn.execute(File.read(SqlFunctions))
     end
 
-    def self.drop(pool=nil)
-      pool ||= Pool.new
-      pool.use do |c|
-        c.execute("DROP TABLE IF EXISTS queue_classic_jobs CASCADE")
-        c.execute(File.read(DropSqlFunctions))
-      end
+    def self.drop(conn=nil)
+      conn ||= Conn.new
+      conn.execute("DROP TABLE IF EXISTS queue_classic_jobs CASCADE")
+      conn.execute(File.read(DropSqlFunctions))
     end
   end
 end
