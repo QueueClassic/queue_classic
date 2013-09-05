@@ -4,12 +4,10 @@ class QueueTest < QCTest
 
   def setup
     init_db
-    @pool = QC::Pool.new
   end
 
   def teardown
-    @pool.drain!
-    QC.pool.drain!
+    QC.conn.disconnect
   end
 
   def test_enqueue
@@ -54,8 +52,8 @@ class QueueTest < QCTest
   end
 
   def test_delete_all_by_queue_name
-    p_queue = QC::Queue.new(:pool => @pool, :name => "priority_queue")
-    s_queue = QC::Queue.new(:pool => @pool, :name => "secondary_queue")
+    p_queue = QC::Queue.new(:name => "priority_queue")
+    s_queue = QC::Queue.new(:name => "secondary_queue")
     p_queue.enqueue("Klass.method")
     s_queue.enqueue("Klass.method")
     assert_equal(1, p_queue.count)
@@ -63,14 +61,19 @@ class QueueTest < QCTest
     p_queue.delete_all
     assert_equal(0, p_queue.count)
     assert_equal(1, s_queue.count)
+  ensure
+    p_queue.conn.disconnect
+    s_queue.conn.disconnect
   end
 
   def test_queue_instance
-    queue = QC::Queue.new(:pool => @pool, :name => "queue_classic_jobs")
+    queue = QC::Queue.new(:name => "queue_classic_jobs")
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
     queue.delete(queue.lock[:id])
     assert_equal(0, queue.count)
+  ensure
+    queue.conn.disconnect
   end
 
   def test_custom_default_queue
@@ -94,16 +97,17 @@ class QueueTest < QCTest
   end
 
   def test_enqueue_triggers_notify
-    QC.pool.use do |c|
-      c.execute('LISTEN "' + QC::QUEUE + '"')
-      c.send(:drain_notify)
-      msgs = c.send(:wait_for_notify, 0.25)
-      assert_equal(0, msgs.length)
+    c = QC::Conn.new
+    c.execute('LISTEN "' + QC::QUEUE + '"')
+    c.send(:drain_notify)
+    msgs = c.send(:wait_for_notify, 0.25)
+    assert_equal(0, msgs.length)
 
-      QC.enqueue("Klass.method")
-      msgs = c.send(:wait_for_notify, 0.25)
-      assert_equal(1, msgs.length)
-    end
+    QC.enqueue("Klass.method")
+    msgs = c.send(:wait_for_notify, 0.25)
+    assert_equal(1, msgs.length)
+  ensure
+    c.disconnect
   end
 
 end

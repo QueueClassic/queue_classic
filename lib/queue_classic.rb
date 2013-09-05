@@ -30,6 +30,12 @@ module QC
   # for more details.
   FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
 
+  # The worker is capable of processing many jobs at a time.
+  # It uses FORK(2) to accomplish parallel processing. CONCURRENCY
+  # is used to set an uppoer bound on how many worker processes can
+  # run concurrently.
+  CONCURRENCY = Integer(ENV["QC_CONCURRENCY"] || 1)
+
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
   def self.method_missing(sym, *args, &block)

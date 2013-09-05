@@ -10,11 +10,11 @@ require "minitest/autorun"
 class QCTest < Minitest::Test
 
   def init_db
-    p = QC::Pool.new
-    QC::Setup.drop(p)
-    QC::Setup.create(p)
-    p.use {|c| c.execute(File.read('./test/helper.sql'))}
-    p.drain!
+    c = QC::Conn.new
+    QC::Setup.drop(c)
+    QC::Setup.create(c)
+    c.execute(File.read('./test/helper.sql'))
+    c.disconnect
   end
 
   def capture_debug_output

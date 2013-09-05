@@ -51,7 +51,7 @@ module QC
     end
 
     def disconnect
-      begin @c.finish
+      begin @c && @c.finish
       ensure @c = nil
       end
     end

@@ -28,17 +28,15 @@ class WorkerTest < QCTest
 
   def setup
     init_db
-    @pool = QC::Pool.new
   end
 
   def teardown
-    QC.pool.drain!
-    @pool.drain!
+    QC.conn.disconnect
   end
 
   def test_work
     QC.enqueue("TestObject.no_args")
-    worker = TestWorker.new(:pool => @pool)
+    worker = TestWorker.new
     assert_equal(1, QC.count)
     worker.work
     assert_equal(0, QC.count)
@@ -47,7 +45,7 @@ class WorkerTest < QCTest
 
   def test_failed_job
     QC.enqueue("TestObject.not_a_method")
-    worker = TestWorker.new(:pool => @pool)
+    worker = TestWorker.new
     worker.work
     assert_equal(1, worker.failed_count)
   end
@@ -55,7 +53,7 @@ class WorkerTest < QCTest
   def test_failed_job_is_logged
     output = capture_debug_output do
       QC.enqueue("TestObject.not_a_method")
-      QC::Worker.new(:pool => @pool).work
+      QC::Worker.new.work
     end
     expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\]} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
@@ -81,7 +79,7 @@ class WorkerTest < QCTest
 
   def test_work_with_no_args
     QC.enqueue("TestObject.no_args")
-    worker = TestWorker.new(:pool => @pool)
+    worker = TestWorker.new
     r = worker.work
     assert_nil(r)
     assert_equal(0, worker.failed_count)
@@ -89,7 +87,7 @@ class WorkerTest < QCTest
 
   def test_work_with_one_arg
     QC.enqueue("TestObject.one_arg", "1")
-    worker = TestWorker.new(:pool => @pool)
+    worker = TestWorker.new
     r = worker.work
     assert_equal("1", r)
     assert_equal(0, worker.failed_count)
@@ -97,7 +95,7 @@ class WorkerTest < QCTest
 
   def test_work_with_two_args
     QC.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new(:pool => @pool)
+    worker = TestWorker.new
     r = worker.work
     assert_equal(["1", 2], r)
     assert_equal(0, worker.failed_count)
@@ -106,35 +104,38 @@ class WorkerTest < QCTest
   def test_work_custom_queue
     p_queue = QC::Queue.new(:name=> "priority_queue")
     p_queue.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new(:pool => @pool, :q_name => "priority_queue")
+    worker = TestWorker.new(:queue => p_queue)
     r = worker.work
     assert_equal(["1", 2], r)
     assert_equal(0, worker.failed_count)
-    p_queue.pool.drain!
+    worker.stop
+    p_queue.conn.disconnect
   end
 
   def test_worker_listens_on_chan
     p_queue = QC::Queue.new(:name => "priority_queue")
     p_queue.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new(:pool => @pool,
-      :q_name => "priority_queue",
+    worker = TestWorker.new(
+      :queue => p_queue,
       :listening_worker => true)
     r = worker.work
     assert_equal(["1", 2], r)
     assert_equal(0, worker.failed_count)
-    p_queue.pool.drain!
+    worker.stop
+    p_queue.conn.disconnect
   end
 
   def test_worker_ueses_one_conn
     QC.enqueue("TestObject.no_args")
-    worker = TestWorker.new(:pool => @pool)
+    worker = TestWorker.new
     worker.work
-    s = 'SELECT count(*) from pg_stat_activity where datname=current_database()'
-    num_conns = QC.pool.use {|c| c.execute(s)["count"].to_i}
-    # One connection for the worker and one for the test.
-    assert_equal(2, num_conns,
+    s = "SELECT * from pg_stat_activity where datname=current_database()"
+    s += " and application_name = '#{QC::APP_NAME}'"
+    res = QC.conn.execute(s)
+    num_conns = res.length if res.class == Array
+    num_conns = 1 if res.class == Hash
+    assert_equal(1, num_conns,
       "Multiple connections found -- are there open connections to" +
-        " #{QC::Conf.db_url} in other terminals?")
+        " #{QC::Conf.db_url} in other terminals?\n res=#{res}")
   end
-
 end
