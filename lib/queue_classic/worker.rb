@@ -20,7 +20,7 @@ module QC
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
     def initialize(args={})
-      @fork_worker = args[:fork_worker] || FORK_WORKER
+      @fork_worker = args[:fork_worker] || FORK_WORKER || (CONCURRENCY > 1)
       @limiter = SizedQueue.new(args[:concurrency] || CONCURRENCY)
       @queue = args[:queue] || QC.default_queue
       log(args.merge(:at => "worker_initialized"))
