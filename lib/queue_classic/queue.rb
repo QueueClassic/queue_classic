@@ -4,12 +4,19 @@ require 'json'
 
 module QC
   class Queue
+    TABLE_NAME = "queue_classic_jobs"
+    # Each row in the table will have a column that
+    # notes the queue.
+    QUEUE_NAME = ENV["QUEUE"] || "default"
+    # Set this to 1 for strict FIFO.
+    TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
+
 
     attr_reader :conn, :name, :top_bound
     def initialize(opts={})
       @conn       = opts[:conn]       || Conn.new
-      @name       = opts[:name]       || QC::QUEUE
-      @top_bound  = opts[:top_bound]  || QC::TOP_BOUND
+      @name       = opts[:name]       || QUEUE_NAME
+      @top_bound  = opts[:top_bound]  || TOP_BOUND
     end
 
     def enqueue(method, *args)

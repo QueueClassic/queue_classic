@@ -4,13 +4,24 @@ require 'queue_classic/queue'
 
 module QC
   class Worker
+    # Set this variable if you wish for
+    # the worker to fork a UNIX process for
+    # each locked job. Remember to re-establish
+    # any database connections. See the worker
+    # for more details.
+    FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
+    # The worker is capable of processing many jobs at a time.
+    # It uses FORK(2) to accomplish parallel processing. CONCURRENCY
+    # is used to set an uppoer bound on how many worker processes can
+    # run concurrently.
+    CONCURRENCY = Integer(ENV["QC_CONCURRENCY"] || 1)
 
     attr_accessor :queue, :running
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
     def initialize(args={})
-      @fork_worker = args[:fork_worker] || QC::FORK_WORKER
-      @limiter = SizedQueue.new(args[:concurrency] || QC::CONCURRENCY)
+      @fork_worker = args[:fork_worker] || FORK_WORKER
+      @limiter = SizedQueue.new(args[:concurrency] || CONCURRENCY)
       @queue = args[:queue] || QC.default_queue
       log(args.merge(:at => "worker_initialized"))
       @running = true

@@ -98,7 +98,7 @@ class QueueTest < QCTest
 
   def test_enqueue_triggers_notify
     c = QC::Conn.new
-    c.execute('LISTEN "' + QC::QUEUE + '"')
+    c.execute('LISTEN "' + QC::Queue::QUEUE_NAME + '"')
     c.send(:drain_notify)
     msgs = c.send(:wait_for_notify, 0.25)
     assert_equal(0, msgs.length)

@@ -130,7 +130,7 @@ class WorkerTest < QCTest
     worker = TestWorker.new
     worker.work
     s = "SELECT * from pg_stat_activity where datname=current_database()"
-    s += " and application_name = '#{QC::APP_NAME}'"
+    s += " and application_name = '#{QC::Conn::APP_NAME}'"
     res = QC.conn.execute(s)
     num_conns = res.length if res.class == Array
     num_conns = 1 if res.class == Hash
