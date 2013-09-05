@@ -9,8 +9,8 @@ Features:
 * Leverage of PostgreSQL's listen/notify & row locking.
 * Support for multiple queues with heterogeneous workers.
 * JSON data format.
-* Forking workers.
-* [Fuzzy-FIFO support](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf).
+* Concurrent job processing using forking workers.
+* [Reduced contention FIFO design](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf).
 
 Contents:
 
@@ -56,7 +56,12 @@ p_queue.enqueue("Kernel.puts", ["hello", "world"])
 
 ### Working Jobs
 
-There are two ways to work jobs. The first approach is to use the Rake task. The second approach is to use a custom executable.
+There are two ways to work jobs. The first approach is to use the Rake task. The second approach is to use a custom executable. Each approach provides a set of configuration options accessable through the processes' environment:
+
+* `$CONCURRENCY=1` - The number of child processes to run concurrently.
+* `$FORK_WORKER=false` - Fork on each job execution. Enabled if `$CONCURRENCY` > 1
+* `$QUEUE=default` - The name of the queue to process.
+* `$TOP_BOUND=9` - The section of the queue that is elgible for dequeue operations. Setting this value to 1 will ensure a strict FIFO ordering.
 
 #### Rake Task
 
@@ -74,10 +79,10 @@ Start the worker via the Rakefile.
 $ bundle exec rake qc:work
 ```
 
-Setup a worker to work a non-default queue.
+Setup a worker to work a non-default queue while processing 4 jobs at a time.
 
 ```bash
-$ QUEUE="priority_queue" bundle exec rake qc:work
+$ CONCURRENCY=4 QUEUE="priority_queue" bundle exec rake qc:work
 ```
 
 #### Custom Worker
