@@ -10,6 +10,7 @@ module QC
     QUEUE_NAME = ENV["QUEUE"] || "default"
     # Set this to 1 for strict FIFO.
     TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
+    DEFAULT_PRIORITY = 0
 
 
     attr_reader :conn, :name, :top_bound
@@ -21,18 +22,24 @@ module QC
 
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
-        s="INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
-        res = conn.execute(s, name, method, JSON.dump(args))
+        priority = DEFAULT_PRIORITY
+        if args.last.is_a?(Hash)
+          priority = args.last.fetch(:priority, 0)
+          args.last.delete(:priority)
+        end
+        s="INSERT INTO #{TABLE_NAME} (q_name, method, args, priority) VALUES ($1, $2, $3, $4)"
+        res = conn.execute(s, name, method, JSON.dump(args), priority)
       end
     end
 
     def lock
       QC.log_yield(:measure => 'queue.lock') do
-        s = "SELECT * FROM lock_head($1, $2)"
+        s = "SELECT id, q_name, method, args, priority FROM lock_head($1, $2)"
         if r = conn.execute(s, name, top_bound)
           {:id => r["id"],
             :method => r["method"],
-            :args => JSON.parse(r["args"])}
+            :args => JSON.parse(r["args"]),
+            :priority => r["priority"].to_i}
         end
       end
     end

@@ -1,10 +1,11 @@
 do $$ begin
 
 CREATE TABLE queue_classic_jobs (
-  id bigserial PRIMARY KEY,
-  q_name text not null check (length(q_name) > 0),
-  method text not null check (length(method) > 0),
-  args   text not null,
+  id        bigserial PRIMARY KEY,
+  q_name    text not null check (length(q_name) > 0),
+  method    text not null check (length(method) > 0),
+  args      text not null,
+  priority  integer DEFAULT 0,
   locked_at timestamptz
 );
 
@@ -26,4 +27,4 @@ after insert on queue_classic_jobs
 for each row
 execute procedure queue_classic_notify();
 
-CREATE INDEX idx_qc_on_name_only_unlocked ON queue_classic_jobs (q_name, id) WHERE locked_at IS NULL;
+CREATE INDEX idx_qc_on_name_only_unlocked ON queue_classic_jobs (q_name, priority, id) WHERE locked_at IS NULL;

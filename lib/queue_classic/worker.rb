@@ -64,6 +64,7 @@ module QC
 
     # This method will lock a job & process the job.
     def work
+      puts "working"
       if job = lock_job
         QC.log_yield(:at => "work", :job => job[:id]) do
           process(job)

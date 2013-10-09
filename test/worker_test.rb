@@ -55,7 +55,7 @@ class WorkerTest < QCTest
       QC.enqueue("TestObject.not_a_method")
       QC::Worker.new.work
     end
-    expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\]} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
+    expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\], :priority=>#{QC::Queue::DEFAULT_PRIORITY}} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
   end
 
