@@ -17,7 +17,7 @@ if ENV["QC_BENCHMARK"]
       queue = QC::Queue.new
       worker = QC::Worker.new(:concurrency => 4, :queue => queue)
       queue.delete_all
-      n = 200
+      n = 20
 
       n.times {queue.enqueue("puts", "hello")}
       assert_equal(n, queue.count)
