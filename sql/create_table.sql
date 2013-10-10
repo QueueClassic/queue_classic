@@ -27,4 +27,4 @@ after insert on queue_classic_jobs
 for each row
 execute procedure queue_classic_notify();
 
-CREATE INDEX idx_qc_on_name_only_unlocked ON queue_classic_jobs (q_name, priority, id) WHERE locked_at IS NULL;
+CREATE INDEX idx_qc_on_name_and_priority_unlocked ON queue_classic_jobs (q_name, priority DESC, id) WHERE locked_at IS NULL;
