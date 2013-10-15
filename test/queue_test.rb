@@ -132,4 +132,10 @@ class QueueTest < QCTest
     assert_equal(QC.lock[:method], "Klass.method1")
   end
 
+  def test_remove_options_hash_if_empty
+    QC.enqueue("Klass.method1", 1, priority: 5)
+    assert_equal(QC.lock[:args], [1])
+    QC.enqueue("Klass.method1", 1, {})
+    assert_equal(QC.lock[:args], [1, {}])
+  end
 end

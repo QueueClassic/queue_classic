@@ -24,8 +24,12 @@ module QC
       QC.log_yield(:measure => 'queue.enqueue') do
         priority = DEFAULT_PRIORITY
         if args.last.is_a?(Hash)
-          priority = args.last.fetch(:priority, 0)
-          args.last.delete(:priority)
+          opts = args.last
+          if opts[:priority]
+            priority = opts[:priority].to_i
+            opts.delete(:priority)
+            args.pop if opts.empty?
+          end
         end
         s="INSERT INTO #{TABLE_NAME} (q_name, method, args, priority) VALUES ($1, $2, $3, $4)"
         res = conn.execute(s, name, method, JSON.dump(args), priority)
