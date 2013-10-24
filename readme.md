@@ -82,7 +82,7 @@ $ bundle exec rake qc:work
 Setup a worker to work a non-default queue while processing 4 jobs at a time.
 
 ```bash
-$ CONCURRENCY=4 QUEUE="priority_queue" bundle exec rake qc:work
+$ QC_CONCURRENCY=4 QUEUE="priority_queue" bundle exec rake qc:work
 ```
 
 #### Custom Worker
