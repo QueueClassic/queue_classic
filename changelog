@@ -1,3 +1,6 @@
+Version 3.0.0 (Unreleased)
+- Allows more complex constructs for jobs [GH#129]
+
 Version 2.2.1
 - Force listen/notify on worker
 - Notifications happen inside PostgreSQL trigger

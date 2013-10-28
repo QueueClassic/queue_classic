@@ -5,6 +5,8 @@ module TestObject
   def no_args; return nil; end
   def one_arg(a); return a; end
   def two_args(a,b); return [a,b]; end
+
+  def first; OpenStruct.new(last: 42); end
 end
 
 # This not only allows me to test what happens
@@ -98,6 +100,14 @@ class WorkerTest < QCTest
     worker = TestWorker.new
     r = worker.work
     assert_equal(["1", 2], r)
+    assert_equal(0, worker.failed_count)
+  end
+
+  def test_work_with_more_complex_construct
+    QC.enqueue("TestObject.first.last")
+    worker = TestWorker.new
+    r = worker.work
+    assert_equal(42, r)
     assert_equal(0, worker.failed_count)
   end
 

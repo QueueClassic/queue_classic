@@ -103,10 +103,10 @@ module QC
     # to grab the ruby object from memory. We send the method to
     # the object and pass the args.
     def call(job)
-      args = job[:args]
-      klass = eval(job[:method].split(".").first)
-      message = job[:method].split(".").last
-      klass.send(message, *args)
+      args                     = job[:args]
+      receiver_str, _, message = job[:method].rpartition('.')
+      receiver                 = eval(receiver_str)
+      receiver.send(message, *args)
     end
 
     # This method will be called when an exception
