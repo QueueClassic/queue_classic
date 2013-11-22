@@ -39,7 +39,7 @@ module QC
 
     def wait
       QC.log_yield(:measure => 'queue.wait') do
-        conn.wait(name)
+        conn.wait(name.split(','))
       end
     end
 

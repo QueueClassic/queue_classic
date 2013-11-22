@@ -43,11 +43,13 @@ module QC
       end
     end
 
-    def wait(chan)
+    def wait(channels)
+      channels = [channels] unless channels.respond_to? :each
+
       with_retry(@max_attempts) do
-        execute('LISTEN "' + chan + '"')
+        channels.each { |c| execute('LISTEN "' + c + '"') }
         wait_for_notify(WAIT_TIME)
-        execute('UNLISTEN "' + chan + '"')
+        channels.each { |c| execute('UNLISTEN "' + c + '"') }
         drain_notify
       end
     end
