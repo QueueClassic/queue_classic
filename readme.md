@@ -50,7 +50,7 @@ QC.enqueue("Kernel.puts", {"hello" => "world"})
 QC.enqueue("Kernel.puts", ["hello", "world"])
 
 # This method uses a non-default queue.
-p_queue = QC::Queue.new("priority_queue")
+p_queue = QC::Queue.new(name: "priority_queue")
 p_queue.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
@@ -107,7 +107,7 @@ This example is probably not production ready; however, it serves as an example 
 require 'timeout'
 require 'queue_classic'
 
-FailedQueue = QC::Queue.new("failed_jobs")
+FailedQueue = QC::Queue.new(name: "failed_jobs")
 
 class MyWorker < QC::Worker
  	def handle_failure(job, e)
