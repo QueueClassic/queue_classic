@@ -3,7 +3,7 @@
 -- have identical columns to queue_classic_jobs.
 -- When QC supports queues with columns other than the default, we will have to change this.
 
-CREATE OR REPLACE FUNCTION lock_head(q_name varchar, top_boundary integer)
+CREATE OR REPLACE FUNCTION lock_head(q_names varchar, top_boundary integer)
 RETURNS SETOF queue_classic_jobs AS $$
 DECLARE
   unlocked bigint;
@@ -15,8 +15,8 @@ BEGIN
   -- for more workers. Would love to see some optimization here...
 
   EXECUTE 'SELECT count(*) FROM '
-    || '(SELECT * FROM queue_classic_jobs WHERE q_name = '
-    || quote_literal(q_name)
+    || '(SELECT * FROM queue_classic_jobs '
+    || 'WHERE strpos(' || quote_literal(q_names) || ', q_name) > 0'
     || ' LIMIT '
     || quote_literal(top_boundary)
     || ') limited'
@@ -31,15 +31,16 @@ BEGIN
 
   LOOP
     BEGIN
-      EXECUTE 'SELECT id FROM queue_classic_jobs '
+      EXECUTE ' SELECT id FROM queue_classic_jobs '
         || ' WHERE locked_at IS NULL'
-        || ' AND q_name = '
-        || quote_literal(q_name)
-        || ' ORDER BY id ASC'
-        || ' LIMIT 1'
+        || ' AND strpos(' || quote_literal(q_names) || ', q_name) > 0 '
+        || ' ORDER BY '
+        || '   id ASC, '
+        || '   strpos(' || quote_literal(q_names) || ', q_name) ASC '
+        || ' LIMIT 1 '
         || ' OFFSET ' || quote_literal(relative_top)
-        || ' FOR UPDATE NOWAIT'
-      INTO unlocked;
+        || ' FOR UPDATE NOWAIT '
+        INTO unlocked;
       EXIT;
     EXCEPTION
       WHEN lock_not_available THEN
