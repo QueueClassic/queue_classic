@@ -163,4 +163,23 @@ class WorkerTest < QCTest
     queue.conn.disconnect
   end
 
+  def test_worker_works_multiple_queue_left_to_right
+    queue = QC::Queue.new(:name => "priority_queue,secondary_queue")
+    queue_r = QC::Queue.new(:name => "secondary_queue,priority_queue")
+    p_queue = QC::Queue.new(:name => "priority_queue")
+    s_queue = QC::Queue.new(:name => "secondary_queue")
+    3.times { p_queue.enqueue("TestObject.two_args", "1", 2) }
+    3.times { s_queue.enqueue("TestObject.two_args", "1", 2) }
+    worker = TestWorker.new :queue => queue
+    worker_r = TestWorker.new :queue => queue_r
+
+    assert_equal(6, queue.count)
+
+    worker.work
+    assert_equal(2, p_queue.count)
+
+    worker_r.work
+    assert_equal(2, s_queue.count)
+  end
+
 end
