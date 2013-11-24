@@ -35,8 +35,8 @@ BEGIN
         || ' WHERE locked_at IS NULL'
         || ' AND strpos(' || quote_literal(q_names) || ', q_name) > 0 '
         || ' ORDER BY '
-        || '   id ASC, '
-        || '   strpos(' || quote_literal(q_names) || ', q_name) ASC '
+        || '   strpos(' || quote_literal(q_names) || ', q_name) ASC, '
+        || '   id ASC '
         || ' LIMIT 1 '
         || ' OFFSET ' || quote_literal(relative_top)
         || ' FOR UPDATE NOWAIT '
