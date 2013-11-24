@@ -22,7 +22,7 @@ module QC
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
         s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
-        conn.execute(s, names, method, JSON.dump(args))
+        conn.execute(s, first_name, method, JSON.dump(args))
       end
     end
 
@@ -39,7 +39,7 @@ module QC
 
     def wait
       QC.log_yield(:measure => 'queue.wait') do
-        conn.wait(names.split(','))
+        conn.wait(first_name)
       end
     end
 
@@ -52,17 +52,21 @@ module QC
 
     def delete_all
       QC.log_yield(:measure => 'queue.delete_all') do
-        s = "DELETE FROM #{TABLE_NAME} WHERE q_name = $1"
+        s = "DELETE FROM #{TABLE_NAME} WHERE strpos($1, q_name) > 0"
         conn.execute(s, names)
       end
     end
 
     def count
       QC.log_yield(:measure => 'queue.count') do
-        s = "SELECT COUNT(*) FROM #{TABLE_NAME} WHERE q_name = $1"
+        s = "SELECT COUNT(*) FROM #{TABLE_NAME} WHERE strpos($1, q_name) > 0"
         r = conn.execute(s, names)
         r["count"].to_i
       end
+    end
+
+    def first_name
+      names.split(',').first
     end
 
   end

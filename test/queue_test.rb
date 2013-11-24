@@ -45,9 +45,9 @@ class QueueTest < QCTest
   end
 
   def test_count_multiple
-    queue = QC::Queue.new('priority,secondary')
-    p_queue = QC::Queue.new('priority')
-    s_queue = QC::Queue.new('secondary')
+    queue = QC::Queue.new(:name => 'priority,secondary')
+    p_queue = QC::Queue.new(:name => 'priority')
+    s_queue = QC::Queue.new(:name => 'secondary')
     p_queue.enqueue('Klass.method')
     s_queue.enqueue('Klass.method')
     assert_equal(2, queue.count)
@@ -89,7 +89,8 @@ class QueueTest < QCTest
     s_queue = QC::Queue.new(:name => "secondary_queue")
     p_queue.enqueue("Klass.method")
     s_queue.enqueue("Klass.method")
-    p_queue.delete_all
+    assert_equal(2, queue.count)
+    queue.delete_all
     assert_equal(0, queue.count)
   end
 
