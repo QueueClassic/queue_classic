@@ -47,9 +47,9 @@ module QC
       channels = [channels] unless channels.respond_to? :each
 
       with_retry(@max_attempts) do
-        channels.each { |c| execute('LISTEN "' + c + '"') }
+        execute('LISTEN "' + channels.first + '"')
         wait_for_notify(WAIT_TIME)
-        channels.each { |c| execute('UNLISTEN "' + c + '"') }
+        execute('UNLISTEN "' + channels.first + '"')
         drain_notify
       end
     end
