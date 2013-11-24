@@ -43,11 +43,11 @@ module QC
       end
     end
 
-    def wait(ch)
+    def wait(chan)
       with_retry(@max_attempts) do
-        execute('LISTEN "' + ch + '"')
+        execute('LISTEN "' + chan + '"')
         wait_for_notify(WAIT_TIME)
-        execute('UNLISTEN "' + ch + '"')
+        execute('UNLISTEN "' + chan + '"')
         drain_notify
       end
     end
