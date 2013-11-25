@@ -12,24 +12,27 @@ module QC
     TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
 
 
-    attr_reader :conn, :names, :top_bound
+    attr_reader :conn, :name, :top_bound
     def initialize(opts={})
-      @conn       = opts[:conn]       || Conn.new
-      @names      = opts[:name]       || opts[:names] || QUEUE_NAME
-      @top_bound  = opts[:top_bound]  || TOP_BOUND
+      @conn       =  opts[:conn]       || Conn.new
+      @name       =  opts[:name]       || QUEUE_NAME
+      @top_bound  =  opts[:top_bound]  || TOP_BOUND
     end
+
+    def names; name.split(',') end
+    def names_quoted; names.map { |n| "'#{n}'" }.join(',') end
 
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
         s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
-        conn.execute(s, first_name, method, JSON.dump(args))
+        conn.execute(s, names.first, method, JSON.dump(args))
       end
     end
 
     def lock
       QC.log_yield(:measure => 'queue.lock') do
         s = "SELECT * FROM lock_head($1, $2)"
-        if r = conn.execute(s, names, top_bound)
+        if r = conn.execute(s, names_quoted, top_bound)
           {:id => r["id"],
             :method => r["method"],
             :args => JSON.parse(r["args"])}
@@ -39,7 +42,7 @@ module QC
 
     def wait
       QC.log_yield(:measure => 'queue.wait') do
-        conn.wait(first_name)
+        conn.wait(names.first)
       end
     end
 
@@ -52,21 +55,17 @@ module QC
 
     def delete_all
       QC.log_yield(:measure => 'queue.delete_all') do
-        s = "DELETE FROM #{TABLE_NAME} WHERE strpos($1, q_name) > 0"
-        conn.execute(s, names)
+        s = "DELETE FROM #{TABLE_NAME} WHERE q_name IN (#{names_quoted})"
+        conn.execute(s)
       end
     end
 
     def count
       QC.log_yield(:measure => 'queue.count') do
-        s = "SELECT COUNT(*) FROM #{TABLE_NAME} WHERE strpos($1, q_name) > 0"
-        r = conn.execute(s, names)
+        s = "SELECT COUNT(*) FROM #{TABLE_NAME} WHERE q_name IN (#{names_quoted})"
+        r = conn.execute(s)
         r["count"].to_i
       end
-    end
-
-    def first_name
-      names.split(',').first
     end
 
   end

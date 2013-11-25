@@ -33,9 +33,9 @@ BEGIN
     BEGIN
       EXECUTE ' SELECT id FROM queue_classic_jobs '
         || ' WHERE locked_at IS NULL'
-        || ' AND strpos(' || quote_literal(q_names) || ', q_name) > 0 '
+        || ' AND q_name IN (' || q_names || ')'
         || ' ORDER BY '
-        || '   strpos(' || quote_literal(q_names) || ', q_name) ASC, '
+        || '   POSITION(q_name IN ' || quote_literal(q_names) || ') ASC, '
         || '   id ASC '
         || ' LIMIT 1 '
         || ' OFFSET ' || quote_literal(relative_top)
