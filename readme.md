@@ -74,8 +74,9 @@ $ QC_CONCURRENCY=4 QUEUE=high,medium bundle exec rake qc:work
 $ QC_CONCURRENCY=4 QUEUE=high bundle exec rake qc:work
 ```
 
-Queues are depleted in the order that they are given. So the second queue will
-go through all the jobs from the high queue first, before working the medium ones.
+Queues are depleted in the order that they are given. So in the first example
+the queue will go through all jobs from the high queue first, before working
+the medium, and then low jobs.
 
 #### Rake Task
 
