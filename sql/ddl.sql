@@ -3,7 +3,7 @@
 -- have identical columns to queue_classic_jobs.
 -- When QC supports queues with columns other than the default, we will have to change this.
 
-CREATE OR REPLACE FUNCTION lock_head(q_names varchar, top_boundary integer)
+CREATE OR REPLACE FUNCTION lock_head(q_names varchar, top_boundary integer, case_stmt varchar)
 RETURNS SETOF queue_classic_jobs AS $$
 DECLARE
   unlocked bigint;
@@ -31,11 +31,11 @@ BEGIN
 
   LOOP
     BEGIN
-      EXECUTE ' SELECT id FROM queue_classic_jobs '
+      EXECUTE ' SELECT id, ' || case_stmt || ' AS q_priority FROM queue_classic_jobs '
         || ' WHERE locked_at IS NULL'
         || ' AND q_name IN (' || q_names || ')'
         || ' ORDER BY '
-        || '   POSITION(q_name IN ' || quote_literal(q_names) || ') ASC, '
+        || '   q_priority ASC, '
         || '   id ASC '
         || ' LIMIT 1 '
         || ' OFFSET ' || quote_literal(relative_top)

@@ -21,6 +21,12 @@ module QC
 
     def names; name.split(',') end
     def names_quoted; names.map { |n| "'#{n}'" }.join(',') end
+    def priority_case_statement
+      stmt = "CASE"
+      names.each_with_index { |n,i| stmt << " WHEN q_name = '#{n}' THEN #{i}" }
+      stmt << " END"
+      stmt
+    end
 
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
@@ -31,8 +37,8 @@ module QC
 
     def lock
       QC.log_yield(:measure => 'queue.lock') do
-        s = "SELECT * FROM lock_head($1, $2)"
-        if r = conn.execute(s, names_quoted, top_bound)
+        s = "SELECT * FROM lock_head($1, $2, $3)"
+        if r = conn.execute(s, names_quoted, top_bound, priority_case_statement)
           {:id => r["id"],
             :method => r["method"],
             :args => JSON.parse(r["args"])}
