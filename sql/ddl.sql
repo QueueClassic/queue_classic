@@ -16,7 +16,7 @@ BEGIN
 
   EXECUTE 'SELECT count(*) FROM '
     || '(SELECT * FROM queue_classic_jobs '
-    || 'WHERE q_name IN (' || quote_literal(q_names) || ')'
+    || 'WHERE q_name IN (' || q_names || ')'
     || ' LIMIT '
     || quote_literal(top_boundary)
     || ') limited'
