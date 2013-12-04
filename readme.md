@@ -78,6 +78,13 @@ Queues are depleted in the order that they are given. So in the first example
 the queue will go through all jobs from the high queue first, before working
 the medium, and then low jobs.
 
+If you are upgrading from a release that didn't previously have this feature,
+run the following to make it available:
+
+``` bash
+$ rake qc:upgrade
+```
+
 #### Rake Task
 
 Require queue_classic in your Rakefile. If you are using Rails, the tasks will

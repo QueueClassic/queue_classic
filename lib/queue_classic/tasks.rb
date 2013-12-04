@@ -38,5 +38,10 @@ else
     task :drop => :environment do
       QC::Setup.drop
     end
+
+    desc "Updated stored procs to the newest version."
+    task :upgrade => :environment do
+      QC::Setup.upgrade
+    end
   end
 end

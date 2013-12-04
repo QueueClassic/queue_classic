@@ -18,5 +18,10 @@ module QC
       conn.execute("DROP TABLE IF EXISTS queue_classic_jobs CASCADE")
       conn.execute(File.read(DropSqlFunctions))
     end
+
+    def self.upgrade(conn=nil)
+      conn ||= Conn.new
+      conn.execute(File.read(SqlFunctions))
+    end
   end
 end
