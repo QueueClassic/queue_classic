@@ -69,6 +69,10 @@ module QC
       end
     end
 
+    def quote(*args)
+      PG::Connection::quote_connstr(*args)
+    end
+
     private
 
     def with_retry(n)

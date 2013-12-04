@@ -20,7 +20,7 @@ module QC
     end
 
     def names; name.split(',') end
-    def names_quoted; names.map { |n| "'#{n}'" }.join(',') end
+    def names_quoted; names.map { |n| conn.quote(n) }.join(',') end
     def priority_case_statement
       stmt = "CASE"
       names.each_with_index { |n,i| stmt << " WHEN q_name = '#{n}' THEN #{i}" }
