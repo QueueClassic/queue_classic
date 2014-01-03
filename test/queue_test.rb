@@ -14,6 +14,14 @@ class QueueTest < QCTest
     QC.enqueue("Klass.method")
   end
 
+  def test_enqueue_on_multiple_queue_adds_to_first
+    queue = QC::Queue.new(:name => 'priority,secondary')
+    p_queue = QC::Queue.new(:name => 'priority')
+    queue.enqueue('Klass.method')
+    assert_equal(1, queue.count)
+    assert_equal(1, p_queue.count)
+  end
+
   def test_respond_to
     assert_equal(true, QC.respond_to?(:enqueue))
   end
@@ -34,6 +42,15 @@ class QueueTest < QCTest
   def test_count
     QC.enqueue("Klass.method")
     assert_equal(1, QC.count)
+  end
+
+  def test_count_multiple
+    queue = QC::Queue.new(:name => 'priority,secondary')
+    p_queue = QC::Queue.new(:name => 'priority')
+    s_queue = QC::Queue.new(:name => 'secondary')
+    p_queue.enqueue('Klass.method')
+    s_queue.enqueue('Klass.method')
+    assert_equal(2, queue.count)
   end
 
   def test_delete
@@ -64,6 +81,17 @@ class QueueTest < QCTest
   ensure
     p_queue.conn.disconnect
     s_queue.conn.disconnect
+  end
+
+  def test_delete_all_multiple
+    queue = QC::Queue.new(:name => "priority_queue,secondary_queue")
+    p_queue = QC::Queue.new(:name => "priority_queue")
+    s_queue = QC::Queue.new(:name => "secondary_queue")
+    p_queue.enqueue("Klass.method")
+    s_queue.enqueue("Klass.method")
+    assert_equal(2, queue.count)
+    queue.delete_all
+    assert_equal(0, queue.count)
   end
 
   def test_queue_instance

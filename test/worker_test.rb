@@ -125,7 +125,7 @@ class WorkerTest < QCTest
     p_queue.conn.disconnect
   end
 
-  def test_worker_ueses_one_conn
+  def test_worker_uses_one_conn
     QC.enqueue("TestObject.no_args")
     worker = TestWorker.new
     worker.work
@@ -138,4 +138,48 @@ class WorkerTest < QCTest
       "Multiple connections found -- are there open connections to" +
         " #{QC::Conf.db_url} in other terminals?\n res=#{res}")
   end
+
+  def test_worker_can_work_multiple_queues
+    queue = QC::Queue.new(:name => "priority_queue,secondary_queue")
+    p_queue = QC::Queue.new(:name => "priority_queue")
+    p_queue.enqueue("TestObject.two_args", "1", 2)
+    s_queue = QC::Queue.new(:name => "secondary_queue")
+    s_queue.enqueue("TestObject.two_args", "1", 2)
+    worker = TestWorker.new :queue => queue
+
+    assert_equal(2, queue.count)
+
+    2.times do
+      r = worker.work
+      assert_equal(["1", 2], r)
+      assert_equal(0, worker.failed_count)
+    end
+
+    assert_equal(0, queue.count)
+
+    worker.stop
+    p_queue.conn.disconnect
+    s_queue.conn.disconnect
+    queue.conn.disconnect
+  end
+
+  def test_worker_works_multiple_queue_left_to_right
+    queue = QC::Queue.new(:name => "priority_queue,secondary_queue")
+    queue_r = QC::Queue.new(:name => "secondary_queue,priority_queue")
+    p_queue = QC::Queue.new(:name => "priority_queue")
+    s_queue = QC::Queue.new(:name => "secondary_queue")
+    3.times { p_queue.enqueue("TestObject.two_args", "1", 2) }
+    3.times { s_queue.enqueue("TestObject.two_args", "1", 2) }
+    worker = TestWorker.new :queue => queue
+    worker_r = TestWorker.new :queue => queue_r
+
+    assert_equal(6, queue.count)
+
+    worker.work
+    assert_equal(2, p_queue.count)
+
+    worker_r.work
+    assert_equal(2, s_queue.count)
+  end
+
 end

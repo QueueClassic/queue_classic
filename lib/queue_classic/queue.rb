@@ -14,22 +14,31 @@ module QC
 
     attr_reader :conn, :name, :top_bound
     def initialize(opts={})
-      @conn       = opts[:conn]       || Conn.new
-      @name       = opts[:name]       || QUEUE_NAME
-      @top_bound  = opts[:top_bound]  || TOP_BOUND
+      @conn       =  opts[:conn]       || Conn.new
+      @name       =  opts[:name]       || QUEUE_NAME
+      @top_bound  =  opts[:top_bound]  || TOP_BOUND
+    end
+
+    def names; name.split(',') end
+    def names_quoted; names.map { |n| conn.quote(n) }.join(',') end
+    def priority_case_statement
+      stmt = "CASE"
+      names.each_with_index { |n,i| stmt << " WHEN q_name = '#{n}' THEN #{i}" }
+      stmt << " END"
+      stmt
     end
 
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
-        s="INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
-        res = conn.execute(s, name, method, JSON.dump(args))
+        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
+        conn.execute(s, names.first, method, JSON.dump(args))
       end
     end
 
     def lock
       QC.log_yield(:measure => 'queue.lock') do
-        s = "SELECT * FROM lock_head($1, $2)"
-        if r = conn.execute(s, name, top_bound)
+        s = "SELECT * FROM lock_head($1, $2, $3)"
+        if r = conn.execute(s, names_quoted, top_bound, priority_case_statement)
           {:id => r["id"],
             :method => r["method"],
             :args => JSON.parse(r["args"])}
@@ -39,7 +48,7 @@ module QC
 
     def wait
       QC.log_yield(:measure => 'queue.wait') do
-        conn.wait(name)
+        conn.wait(names.first)
       end
     end
 
@@ -52,15 +61,15 @@ module QC
 
     def delete_all
       QC.log_yield(:measure => 'queue.delete_all') do
-        s = "DELETE FROM #{TABLE_NAME} WHERE q_name = $1"
-        conn.execute(s, name)
+        s = "DELETE FROM #{TABLE_NAME} WHERE q_name IN (#{names_quoted})"
+        conn.execute(s)
       end
     end
 
     def count
       QC.log_yield(:measure => 'queue.count') do
-        s = "SELECT COUNT(*) FROM #{TABLE_NAME} WHERE q_name = $1"
-        r = conn.execute(s, name)
+        s = "SELECT COUNT(*) FROM #{TABLE_NAME} WHERE q_name IN (#{names_quoted})"
+        r = conn.execute(s)
         r["count"].to_i
       end
     end

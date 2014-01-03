@@ -60,8 +60,30 @@ There are two ways to work jobs. The first approach is to use the Rake task. The
 
 * `$CONCURRENCY=1` - The number of child processes to run concurrently.
 * `$FORK_WORKER=false` - Fork on each job execution. Enabled if `$CONCURRENCY` > 1
-* `$QUEUE=default` - The name of the queue to process.
+* `$QUEUE=default` - The name of the queue(s) to process.
 * `$TOP_BOUND=9` - The section of the queue that is elgible for dequeue operations. Setting this value to 1 will ensure a strict FIFO ordering.
+
+#### Working multiple queues
+
+You can specify multiple queues for the process to work separated by commas.
+E.g:
+
+``` bash
+$ QC_CONCURRENCY=4 QUEUE=high,medium,low bundle exec rake qc:work
+$ QC_CONCURRENCY=4 QUEUE=high,medium bundle exec rake qc:work
+$ QC_CONCURRENCY=4 QUEUE=high bundle exec rake qc:work
+```
+
+Queues are depleted in the order that they are given. So in the first example
+the queue will go through all jobs from the high queue first, before working
+the medium, and then low jobs.
+
+If you are upgrading from a release that didn't previously have this feature,
+run the following to make it available:
+
+``` bash
+$ rake qc:upgrade
+```
 
 #### Rake Task
 
