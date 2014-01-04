@@ -10,6 +10,7 @@ Features:
 * Support for multiple queues with heterogeneous workers.
 * JSON data format.
 * Forking workers.
+* Workers can work multiple queues.
 * [Fuzzy-FIFO support](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf).
 
 Contents:
@@ -77,6 +78,12 @@ Setup a worker to work a non-default queue.
 
 ```bash
 $ QUEUE="priority_queue" bundle exec rake qc:work
+```
+
+Setup a worker to work multiple queues.
+
+```bash
+$ QUEUE="priority_queue, secondary_queue" bundle exec rake qc:work
 ```
 
 #### Custom Worker
