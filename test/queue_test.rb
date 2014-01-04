@@ -23,7 +23,7 @@ class QueueTest < QCTest
 
     # See helper.rb for more information about the large initial id
     # number.
-    expected = {:id=>(2**34).to_s, :method=>"Klass.method", :args=>[]}
+    expected = {:id=>(2**34).to_s, :method=>"Klass.method", :args=>[], :priority => QC::Queue::DEFAULT_PRIORITY}
     assert_equal(expected, QC.lock)
   end
 
@@ -110,4 +110,32 @@ class QueueTest < QCTest
     c.disconnect
   end
 
+  def test_setting_priority_values
+    QC.enqueue("Klass.method1", priority: 5)
+    assert_equal(QC.lock[:priority], 5)
+    QC.enqueue("Klass.method2", priority: 10)
+    assert_equal(QC.lock[:priority], 10)
+  end
+
+  def test_priority_defaults
+    QC.enqueue("Klass.priority0")
+    job = QC.lock
+    assert_equal(job[:priority], QC::Queue::DEFAULT_PRIORITY)
+  end
+
+  def test_priority_ordering
+    QC.enqueue("Klass.method1", priority: 1)
+    QC.enqueue("Klass.method2", priority: 5)
+    QC.enqueue("Klass.method3", priority: 10)
+    assert_equal(QC.lock[:method], "Klass.method3")
+    assert_equal(QC.lock[:method], "Klass.method2")
+    assert_equal(QC.lock[:method], "Klass.method1")
+  end
+
+  def test_remove_options_hash_if_empty
+    QC.enqueue("Klass.method1", 1, priority: 5)
+    assert_equal(QC.lock[:args], [1])
+    QC.enqueue("Klass.method1", 1, {})
+    assert_equal(QC.lock[:args], [1, {}])
+  end
 end
