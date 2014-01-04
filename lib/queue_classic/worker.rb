@@ -70,7 +70,7 @@ module QC
           break if job = queue.lock
         end
         break if job
-        Conn.wait(@queues.first.name)
+        Conn.wait(@queues.map {|q| q.name})
       end
       job
     end

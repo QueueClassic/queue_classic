@@ -24,10 +24,12 @@ module QC
       end
     end
 
-    def wait(chan)
-      execute('LISTEN "' + chan + '"')
+    def wait(*channels)
+      listen_cmds = channels.map {|c| 'LISTEN "' + c + '"'}
+      execute(listen_cmds.join(';'))
       wait_for_notify(WAIT_TIME)
-      execute('UNLISTEN "' + chan + '"')
+      unlisten_cmds = channels.map {|c| 'UNLISTEN "' + c +'"'}
+      execute(unlisten_cmds.join(';'))
       drain_notify
     end
 
