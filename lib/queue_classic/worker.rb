@@ -124,7 +124,7 @@ module QC
         @heartbeat = Thread.new do
           loop do
             sleep(2)
-            if err = QC::Conn.heartbeat(wid, job[:id])
+            if !QC::Queue.heartbeat(wid, job[:id])
               QC.log(:at => 'heartbeat_failed', :jid => job[:id], :wid => wid)
               exit(1)
             end

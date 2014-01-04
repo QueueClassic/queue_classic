@@ -7,6 +7,24 @@ module QC
   # The queue class maps a queue abstraction onto a database table.
   class Queue
 
+    def self.heartbeat(wid, jid)
+      QC.log_yield(:measure => 'queue.heartbeat') do
+        job = Conn.execute(<<-EOS, wid, jid)
+          UPDATE #{TABLE_NAME}
+          SET updated_at = NOW()
+          WHERE locked_by = $1 AND id = $2
+          RETURNING *
+        EOS
+        return job[:locked_by] == wid
+      end
+    end
+
+    def self.delete(id)
+      QC.log_yield(:measure => 'queue.delete') do
+        Conn.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)
+      end
+    end
+
     attr_reader :name, :top_bound
     def initialize(name, top_bound=nil)
       @name = name
