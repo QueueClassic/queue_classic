@@ -122,4 +122,38 @@ class WorkerTest < QCTest
     )
   end
 
+  def test_worker_can_work_multiple_queues
+    p_queue = QC::Queue.new("priority_queue")
+    p_queue.enqueue("TestObject.two_args", "1", 2)
+
+    s_queue = QC::Queue.new("secondary_queue")
+    s_queue.enqueue("TestObject.two_args", "1", 2)
+
+    worker = TestWorker.new(:q_names => ["priority_queue", "secondary_queue"])
+
+    2.times do
+      r = worker.work
+      assert_equal(["1", 2], r)
+      assert_equal(0, worker.failed_count)
+    end
+  end
+
+  def test_worker_works_multiple_queue_left_to_right
+    l_queue = QC::Queue.new("left_queue")
+    r_queue = QC::Queue.new("right_queue")
+
+    3.times { l_queue.enqueue("TestObject.two_args", "1", 2) }
+    3.times { r_queue.enqueue("TestObject.two_args", "1", 2) }
+
+    worker = TestWorker.new(:q_names => ["left_queue", "right_queue"])
+
+    worker.work
+    assert_equal(2, l_queue.count)
+    assert_equal(3, r_queue.count)
+
+    worker.work
+    assert_equal(1, l_queue.count)
+    assert_equal(3, r_queue.count)
+  end
+
 end
