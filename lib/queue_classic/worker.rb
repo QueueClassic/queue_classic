@@ -100,6 +100,7 @@ module QC
       start = Time.now
       finished = false
       begin
+        start_heartbeat(job)
         call(job).tap do
           queue.delete(job[:id])
           finished = true
@@ -108,11 +109,30 @@ module QC
         handle_failure(job, e)
         finished = true
       ensure
+        stop_heartbeat
         if !finished
           queue.unlock(job[:id])
         end
         ttp = Integer((Time.now - start) * 1000)
         $stdout.puts("measure#qc.time-to-process=#{ttp} source=#{queue.name}")
+      end
+    end
+
+    def start_heartbeat(job)
+      wid = SecureRandom.uuid
+      QC.log_yield(:at => "start_heartbeat", :jid => job[:id], :wid => wid) do
+        @heartbeat = Thread.new do
+          loop do
+            sleep(2)
+            QC::Conn.heartbeat(wid, job[:id])
+          end
+        end
+      end
+    end
+
+    def stop_heartbeat
+      QC.log_yield(:at => "stop_heartbeat") do
+        @heartbeat.kill
       end
     end
 
