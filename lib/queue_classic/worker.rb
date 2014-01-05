@@ -66,12 +66,12 @@ module QC
       job = nil
       while @running
         @queues.each do |queue|
-          break if job = queue.lock
+          if job = queue.lock
+            return job
+          end
         end
-        break if job
         Conn.wait(@queues.map {|q| q.name})
       end
-      job
     end
 
     # A job is processed by evaluating the target code.
