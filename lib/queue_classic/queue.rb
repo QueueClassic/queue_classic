@@ -5,12 +5,6 @@ require 'json'
 module QC
   class Queue
 
-    def self.delete(id)
-      QC.log_yield(:measure => 'queue.delete') do
-        Conn.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)
-      end
-    end
-
     attr_reader :name, :top_bound
     def initialize(name, top_bound=nil)
       @name = name
@@ -36,7 +30,9 @@ module QC
     end
 
     def delete(id)
-      self.class.delete(id)
+      QC.log_yield(:measure => 'queue.delete') do
+        Conn.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)
+      end
     end
 
     def delete_all

@@ -51,9 +51,10 @@ module QC
 
     # This method will lock a job & process the job.
     def work
-      if job = lock_job
+      queue, job = lock_job
+      if queue && job
         QC.log_yield(:at => "work", :job => job[:id]) do
-          process(job)
+          process(queue, job)
         end
       end
     end
@@ -67,7 +68,7 @@ module QC
       while @running
         @queues.each do |queue|
           if job = queue.lock
-            return job
+            return [queue, job]
           end
         end
         Conn.wait(@queues.map {|q| q.name})
@@ -78,13 +79,13 @@ module QC
     # Errors are delegated to the handle_failure method.
     # Also, this method will make the best attempt to delete the job
     # from the queue before returning.
-    def process(job)
+    def process(queue, job)
       begin
         call(job)
       rescue => e
         handle_failure(job, e)
       ensure
-        QC::Queue.delete(job[:id])
+        queue.delete(job[:id])
         log(:at => "delete_job", :job => job[:id])
       end
     end
