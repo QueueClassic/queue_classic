@@ -14,13 +14,14 @@ end
 class TestWorker < QC::Worker
   attr_accessor :failed_count
 
-  def initialize(*args)
-    super(*args)
+  def initialize(args={})
+    super(args.merge(:connection => QC.default_conn_adapter.connection))
     @failed_count = 0
   end
 
   def handle_failure(job,e)
     @failed_count += 1
+    super
   end
 end
 
@@ -45,7 +46,7 @@ class WorkerTest < QCTest
   def test_failed_job_is_logged
     output = capture_debug_output do
       QC.enqueue("TestObject.not_a_method")
-      QC::Worker.new.work
+      TestWorker.new.work
     end
     expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\]} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
