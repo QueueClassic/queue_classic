@@ -10,6 +10,7 @@ module QC
     # the defaults are pulled from the environment variables.
     def initialize(args={})
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
+      @wait_interval = args[:wait_interval] || QC::WAIT_TIME
       @conn_adapter = ConnAdapter.new(args[:connection])
       @queues = setup_queues(@conn_adapter,
         args[:q_name], args[:q_names], args[:top_bound])
@@ -64,7 +65,7 @@ module QC
             return [queue, job]
           end
         end
-        Conn.wait(@queues.map {|q| q.name})
+        @conn_adapter.wait(@wait_interval, *@queues.map {|q| q.name})
       end
     end
 

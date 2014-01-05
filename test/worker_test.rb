@@ -105,11 +105,21 @@ class WorkerTest < QCTest
 
   def test_worker_listens_on_chan
     p_queue = QC::Queue.new("priority_queue")
+    # Use a new connection because the default connection
+    # will be locked by the sleeping worker.
+    p_queue.conn_adapter = QC::ConnAdapter.new
+    # The wait interval is extreme to demonstrate
+    # that the worker is in fact being activated by a NOTIFY.
+    worker = TestWorker.new(:q_name => "priority_queue", :wait_interval => 100)
+    t = Thread.new do
+      r = worker.work
+      assert_equal(["1", 2], r)
+      assert_equal(0, worker.failed_count)
+    end
+    sleep(0.5) #Give the thread some time to start the worker.
     p_queue.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new(q_name: "priority_queue", listening_worker: true)
-    r = worker.work
-    assert_equal(["1", 2], r)
-    assert_equal(0, worker.failed_count)
+    p_queue.conn_adapter.disconnect
+    t.join
   end
 
   def test_worker_ueses_one_conn
