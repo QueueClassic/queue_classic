@@ -9,7 +9,7 @@ module QC
 
     def execute(stmt, *params)
       @exec_mutex.synchronize do
-        log(:at => "exec_sql", :sql => stmt.inspect)
+        QC.log(:at => "exec_sql", :sql => stmt.inspect)
         begin
           params = nil if params.empty?
           r = connection.exec(stmt, params)
@@ -17,7 +17,7 @@ module QC
           r.each {|t| result << t}
           result.length > 1 ? result : result.pop
         rescue PGError => e
-          log(:error => e.inspect)
+          QC.log(:error => e.inspect)
           disconnect
           raise
         end
@@ -53,10 +53,10 @@ module QC
     end
 
     def connect
-      log(:at => "establish_conn")
+      QC.log(:at => "establish_conn")
       conn = PGconn.connect(*normalize_db_url(db_url))
       if conn.status != PGconn::CONNECTION_OK
-        log(:error => conn.error)
+        QC.log(:error => conn.error)
       end
       conn.exec("SET application_name = '#{QC::APP_NAME}'")
       conn
@@ -86,10 +86,6 @@ module QC
 
     private
 
-    def log(msg)
-      QC.log(msg)
-    end
-
     def wait_for_notify(t)
       Array.new.tap do |msgs|
         connection.wait_for_notify(t) {|event, pid, msg| msgs << msg}
@@ -98,7 +94,7 @@ module QC
 
     def drain_notify
       until connection.notifies.nil?
-        log(:at => "drain_notifications")
+        QC.log(:at => "drain_notifications")
       end
     end
 
