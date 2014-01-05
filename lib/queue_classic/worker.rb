@@ -65,7 +65,6 @@ module QC
       log(:at => "lock_job")
       job = nil
       while @running
-        job = nil
         @queues.each do |queue|
           break if job = queue.lock
         end
