@@ -52,6 +52,10 @@ module QC
     end
   end
 
+  def self.default_conn_adapter
+    @conn_adapter ||= ConnAdapter.new
+  end
+
   def self.log_yield(data)
     begin
       t0 = Time.now

@@ -2,6 +2,8 @@ require File.expand_path("../helper.rb", __FILE__)
 
 class QueueTest < QCTest
 
+  ResetError = Class.new(PGError)
+
   def test_enqueue
     QC.enqueue("Klass.method")
   end
@@ -65,20 +67,15 @@ class QueueTest < QCTest
 
   def test_repair_after_error
     queue = QC::Queue.new("queue_classic_jobs")
+    queue.conn_adapter = QC::ConnAdapter.new
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
-    connection = QC::Conn.connection
-    saved_method = connection.method(:exec)
-    def connection.exec(*args)
-      raise PGError
-    end
-    assert_raises(PG::Error) { queue.enqueue("Klass.other_method") }
-    assert_equal(1, queue.count)
-    queue.enqueue("Klass.other_method")
-    assert_equal(2, queue.count)
-  rescue PG::Error
-    QC::Conn.disconnect
-    assert false, "Expected to QC repair after connection error"
+    conn = queue.conn_adapter.connection
+    def conn.exec(*args); raise(PGError); end
+    def conn.reset(*args); raise(ResetError)  end
+    # We ensure that the reset method is called on the connection.
+    assert_raises(PG::Error, ResetError) {queue.enqueue("Klass.other_method")}
+    queue.conn_adapter.disconnect
   end
 
   def test_custom_default_queue
@@ -102,14 +99,15 @@ class QueueTest < QCTest
   end
 
   def test_enqueue_triggers_notify
-    QC::Conn.execute('LISTEN "' + QC::QUEUE + '"')
-    QC::Conn.send(:drain_notify)
+    adapter = QC.default_conn_adapter
+    adapter.execute('LISTEN "' + QC::QUEUE + '"')
+    adapter.send(:drain_notify)
 
-    msgs = QC::Conn.send(:wait_for_notify, 0.25)
+    msgs = adapter.send(:wait_for_notify, 0.25)
     assert_equal(0, msgs.length)
 
     QC.enqueue("Klass.method")
-    msgs = QC::Conn.send(:wait_for_notify, 0.25)
+    msgs = adapter.send(:wait_for_notify, 0.25)
     assert_equal(1, msgs.length)
   end
 

@@ -14,13 +14,14 @@ end
 class TestWorker < QC::Worker
   attr_accessor :failed_count
 
-  def initialize(*args)
-    super(*args)
+  def initialize(args={})
+    super(args.merge(:connection => QC.default_conn_adapter.connection))
     @failed_count = 0
   end
 
   def handle_failure(job,e)
     @failed_count += 1
+    super
   end
 end
 
@@ -45,7 +46,7 @@ class WorkerTest < QCTest
   def test_failed_job_is_logged
     output = capture_debug_output do
       QC.enqueue("TestObject.not_a_method")
-      QC::Worker.new.work
+      TestWorker.new.work
     end
     expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\]} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
@@ -104,11 +105,21 @@ class WorkerTest < QCTest
 
   def test_worker_listens_on_chan
     p_queue = QC::Queue.new("priority_queue")
+    # Use a new connection because the default connection
+    # will be locked by the sleeping worker.
+    p_queue.conn_adapter = QC::ConnAdapter.new
+    # The wait interval is extreme to demonstrate
+    # that the worker is in fact being activated by a NOTIFY.
+    worker = TestWorker.new(:q_name => "priority_queue", :wait_interval => 100)
+    t = Thread.new do
+      r = worker.work
+      assert_equal(["1", 2], r)
+      assert_equal(0, worker.failed_count)
+    end
+    sleep(0.5) #Give the thread some time to start the worker.
     p_queue.enqueue("TestObject.two_args", "1", 2)
-    worker = TestWorker.new(q_name: "priority_queue", listening_worker: true)
-    r = worker.work
-    assert_equal(["1", 2], r)
-    assert_equal(0, worker.failed_count)
+    p_queue.conn_adapter.disconnect
+    t.join
   end
 
   def test_worker_ueses_one_conn
@@ -117,8 +128,8 @@ class WorkerTest < QCTest
     worker.work
     assert_equal(
       1,
-      QC::Conn.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i,
-      "Multiple connections found -- are there open connections to #{ QC::Conn.db_url } in other terminals?"
+      QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i,
+      "Multiple connections found -- are there open connections to #{ QC.default_conn_adapter.send(:db_url) } in other terminals?"
     )
   end
 

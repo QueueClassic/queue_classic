@@ -5,21 +5,15 @@ require 'queue_classic/conn'
 module QC
   class Worker
 
-    def self.setup_queues(names, top_bound)
-      names.map do |name|
-        QC::Queue.new(name, top_bound)
-      end
-    end
-
     attr_accessor :queues, :running
     # In the case no arguments are passed to the initializer,
     # the defaults are pulled from the environment variables.
     def initialize(args={})
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
-      name = args[:q_name] || QC::QUEUE
-      names = args[:q_names] || QC::QUEUES
-      names << name unless names.include?(name)
-      @queues = self.class.setup_queues(names, args[:top_bound])
+      @wait_interval = args[:wait_interval] || QC::WAIT_TIME
+      @conn_adapter = ConnAdapter.new(args[:connection])
+      @queues = setup_queues(@conn_adapter,
+        args[:q_name], args[:q_names], args[:top_bound])
       log(args.merge(:at => "worker_initialized"))
       @running = true
     end
@@ -51,9 +45,10 @@ module QC
 
     # This method will lock a job & process the job.
     def work
-      if job = lock_job
+      queue, job = lock_job
+      if queue && job
         QC.log_yield(:at => "work", :job => job[:id]) do
-          process(job)
+          process(queue, job)
         end
       end
     end
@@ -65,27 +60,26 @@ module QC
       log(:at => "lock_job")
       job = nil
       while @running
-        job = nil
         @queues.each do |queue|
-          break if job = queue.lock
+          if job = queue.lock
+            return [queue, job]
+          end
         end
-        break if job
-        Conn.wait(@queues.map {|q| q.name})
+        @conn_adapter.wait(@wait_interval, *@queues.map {|q| q.name})
       end
-      job
     end
 
     # A job is processed by evaluating the target code.
     # Errors are delegated to the handle_failure method.
     # Also, this method will make the best attempt to delete the job
     # from the queue before returning.
-    def process(job)
+    def process(queue, job)
       begin
         call(job)
       rescue => e
         handle_failure(job, e)
       ensure
-        QC::Queue.delete(job[:id])
+        queue.delete(job[:id])
         log(:at => "delete_job", :job => job[:id])
       end
     end
@@ -115,6 +109,19 @@ module QC
 
     def log(data)
       QC.log(data)
+    end
+
+    private
+
+    def setup_queues(adapter, q_name, q_names, top_bound)
+      name = q_name || QC::QUEUE
+      names = q_names || QC::QUEUES
+      names << name unless names.include?(name)
+      names.map do |name|
+        QC::Queue.new(name, top_bound).tap do |q|
+          q.conn_adapter = adapter
+        end
+      end
     end
 
   end

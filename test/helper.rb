@@ -18,10 +18,12 @@ class QCTest < Minitest::Test
   end
 
   def init_db
-    QC::Conn.execute("SET client_min_messages TO 'warning'")
-    QC::Setup.drop
-    QC::Setup.create
-    QC::Conn.execute(File.read('./test/helper.sql'))
+    c = QC::ConnAdapter.new
+    c.execute("SET client_min_messages TO 'warning'")
+    QC::Setup.drop(c.connection)
+    QC::Setup.create(c.connection)
+    c.execute(File.read('./test/helper.sql'))
+    c.disconnect
   end
 
   def capture_debug_output
