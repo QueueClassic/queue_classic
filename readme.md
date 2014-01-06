@@ -12,7 +12,7 @@ Features:
 * JSON data format.
 * Forking workers.
 * Workers can work multiple queues.
-* [Fuzzy-FIFO support](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf).
+* Reduced row contention using a relaxed [FIFO](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf) technique.
 
 Contents:
 
@@ -191,7 +191,7 @@ export DEBUG="true"
 If you think you have found a bug, feel free to open an issue. Use the following template for the new issue:
 
 1. List Versions: Ruby, PostgreSQL, queue_classic.
-2. Define what you would have expcted to happen.
+2. Define what you would have expected to happen.
 3. List what actually happened.
 4. Provide sample codes & commands which will reproduce the problem.
 
