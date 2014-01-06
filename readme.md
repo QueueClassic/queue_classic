@@ -97,7 +97,7 @@ FailedQueue = QC::Queue.new("failed_jobs")
 
 class MyWorker < QC::Worker
   def handle_failure(job, e)
-    FailedQueue.enqueue(job)
+    FailedQueue.enqueue(job[:method], *job[:args])
   end
 end
 
