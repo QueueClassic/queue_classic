@@ -70,22 +70,20 @@ require 'queue_classic/tasks'
 ```
 
 Start the worker via the Rakefile.
-
 ```bash
 $ bundle exec rake qc:work
 ```
 
 Setup a worker to work a non-default queue.
-
 ```bash
 $ QUEUE="priority_queue" bundle exec rake qc:work
 ```
 
 Setup a worker to work multiple queues.
-
 ```bash
-$ QUEUE="priority_queue, secondary_queue" bundle exec rake qc:work
+$ QUEUES="priority_queue, secondary_queue" bundle exec rake qc:work
 ```
+In this scenario, on each iteration of the worker's loop, it will look for jobs in the first queue prior to looking at the second queue. This means that the first queue must be empty before the worker will look at the second queue.
 
 #### Custom Worker
 
@@ -98,9 +96,9 @@ require 'queue_classic'
 FailedQueue = QC::Queue.new("failed_jobs")
 
 class MyWorker < QC::Worker
- 	def handle_failure(job, e)
-		FailedQueue.enqueue(job)
- 	end
+  def handle_failure(job, e)
+    FailedQueue.enqueue(job)
+  end
 end
 
 worker = MyWorker.new
@@ -109,10 +107,8 @@ trap('INT') {exit}
 trap('TERM') {worker.stop}
 
 loop do
-	job = worker.lock_job
-	Thread.new do
-	  Timeout::timeout(5) { worker.process(job) }
-	end
+  job = worker.lock_job
+  Timeout::timeout(5) { worker.process(job) }
 end
 ```
 
@@ -134,25 +130,25 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 ### Ruby on Rails Setup
 
 Declare dependencies in Gemfile.
-
 ```ruby
 source "http://rubygems.org"
-gem "queue_classic", "2.2.3"
+gem "queue_classic", "3.0.0beta"
 ```
 
-By default, queue_classic will use the QC_DATABASE_URL falling back on DATABASE_URL. The URL must be in the following format: `postgres://username:password@localhost/database_name`.  If you use Heroku's PostgreSQL service, this will already be set. If you don't want to set this variable, you can set the connection in an initializer. **QueueClassic will maintain its own connection to the database.** This may double the number of connections to your database. Set QC::Conn.connection to share the connection between Rails & QueueClassic
-
-```ruby
-require 'queue_classic'
-QC::Conn.connection = ActiveRecord::Base.connection.raw_connection
-```
-
-Next you need to run the queue classic generator to create the database
-migration. This will setup the necessary table to use queue classic.
-
+Add the database tables and stored procedures.
 ```
 rails generate queue_classic:install
 rake db:migrate
+```
+
+By default, queue_classic will use the QC_DATABASE_URL falling back on DATABASE_URL. The URL must be in the following format: `postgres://username:password@localhost/database_name`.  If you use Heroku's PostgreSQL service, this will already be set. If you don't want to set this variable, you can set the connection in an initializer. **QueueClassic will maintain its own connection to the database.** This may double the number of connections to your database.
+
+You can share your active record connection with queue_classic –**however this is not thread safe.**
+
+```ruby
+require 'queue_classic'
+QC.default_conn_adapter = QC::ConnAdapter.new(
+	ActiveRecord::Base.connection.raw_connection)
 ```
 
 **Note on using ActiveRecord migrations:** If you use the migration, and you wish to use commands that reset the database from the stored schema (e.g. `rake db:reset`), your application must be configured with `config.active_record.schema_format = :sql` in `config/application.rb`.  If you don't do this, the PL/pgSQL function that queue_classic creates will be lost when you reset the database.
