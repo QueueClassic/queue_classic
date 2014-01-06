@@ -3,11 +3,19 @@ require 'queue_classic/queue'
 require 'queue_classic/conn_adapter'
 
 module QC
+  # A Worker object can process jobs from one or many queues.
   class Worker
 
     attr_accessor :queues, :running
-    # In the case no arguments are passed to the initializer,
-    # the defaults are pulled from the environment variables.
+
+    # Creates a new worker but does not start the worker. See Worker#start.
+    # This method takes a single hash argument. The following keys are read:
+    # fork_worker:: Worker forks each job execution.
+    # wait_interval:: Time to wait between failed lock attempts
+    # connection:: PGConn object.
+    # q_name:: Name of a single queue to process.
+    # q_names:: Names of queues to process. Will process left to right.
+    # top_bound:: Offset to the head of the queue. 1 == strict FIFO.
     def initialize(args={})
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
       @wait_interval = args[:wait_interval] || QC::WAIT_TIME
@@ -18,32 +26,38 @@ module QC
       @running = true
     end
 
-    # Start a loop and work jobs indefinitely.
-    # Call this method to start the worker.
-    # This is the easiest way to start working jobs.
+    # Commences the working of jobs.
+    # start() spins on @running –which is initialized as true.
+    # This method is the primary entry point to starting the worker.
+    # The canonical example of starting a worker is as follows:
+    # QC::Worker.new.start
     def start
       while @running
         @fork_worker ? fork_and_work : work
       end
     end
 
-    # Call this method to stop the worker.
-    # The worker may not stop immediately if the worker
-    # is sleeping.
+    # Signals the worker to stop taking new work.
+    # This method has no immediate effect. However, there are
+    # two loops in the worker (one in #start and another in #lock_job)
+    # which check the @running variable to determine if further progress
+    # is desirable. In the case that @running is false, the aforementioned
+    # methods will short circuit and cause the blocking call to #start
+    # to unblock.
     def stop
       @running = false
     end
 
-    # This method will tell the ruby process to FORK.
-    # Define setup_child to hook into the forking process.
-    # Using setup_child is good for re-establishing database connections.
+    # Calls Worker#work but after the current process is forked.
+    # The parent process will wait on the child process to exit.
     def fork_and_work
       cpid = fork {setup_child; work}
       log(:at => :fork, :pid => cpid)
       Process.wait(cpid)
     end
 
-    # This method will lock a job & process the job.
+    # Blocks on locking a job, and once a job is locked,
+    # it will process the job.
     def work
       queue, job = lock_job
       if queue && job
@@ -54,8 +68,12 @@ module QC
     end
 
     # Attempt to lock a job in the queue's table.
-    # Return a hash when a job is locked.
-    # Caller responsible for deleting the job when finished.
+    # If a job can be locked, this method returns an array with
+    # 2 elements. The first element is the queue from which the job was locked
+    # and the second is a hash representation of the job.
+    # If a job is returned, its locked_at column has been set in the
+    # job's row. It is the caller's responsibility to delete the job row
+    # from the table when the job is complete.
     def lock_job
       log(:at => "lock_job")
       job = nil
