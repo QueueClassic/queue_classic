@@ -1,8 +1,8 @@
 #encoding: UTF-8
 Gem::Specification.new do |s|
   s.name          = "queue_classic"
-  s.email         = "ryan@heroku.com"
-  s.version       = "2.2.3"
+  s.email         = "r@32k.io"
+  s.version       = "3.0.0beta"
   s.date          = "2013-01-02"
   s.description   = "queue_classic is a queueing library for Ruby apps. (Rails, Sinatra, Etc...) queue_classic features asynchronous job polling, database maintained locks and no ridiculous dependencies. As a matter of fact, queue_classic only requires pg."
   s.summary       = "Simple, efficient worker queue for Ruby & PostgreSQL."
