@@ -12,7 +12,7 @@ Features:
 * JSON data format.
 * Forking workers.
 * Workers can work multiple queues.
-* Reduced row contention using a relaxed [FIFO](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf) technique.
+* Reduced row contention using a [relaxed FIFO](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf) technique.
 
 Contents:
 
