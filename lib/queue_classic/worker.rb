@@ -89,9 +89,9 @@ module QC
     # the object and pass the args.
     def call(job)
       args = job[:args]
-      klass = eval(job[:method].split(".").first)
-      message = job[:method].split(".").last
-      klass.send(message, *args)
+      receiver_str, _, message = job[:method].rpartition('.')
+      receiver = eval(receiver_str)
+      receiver.send(message, *args)
     end
 
     # This method will be called when an exception
