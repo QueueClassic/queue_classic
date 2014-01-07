@@ -90,17 +90,26 @@ module QC
     end
 
     # A job is processed by evaluating the target code.
-    # Errors are delegated to the handle_failure method.
-    # Also, this method will make the best attempt to delete the job
-    # from the queue before returning.
+    # if the job is evaluated with no exceptions
+    # then it is deleted from the queue.
+    # If the job has raised an exception the responsibility of what
+    # to do with the job is delegated to Worker#handle_failure.
+    # If the job is not finished and an INT signal is traped,
+    # this method will unlock the job in the queue.
     def process(queue, job)
+      finished = false
       begin
-        call(job)
+        call(job).tap do
+          queue.delete(job[:id])
+          finished = true
+        end
       rescue => e
         handle_failure(job, e)
+        finished = true
       ensure
-        queue.delete(job[:id])
-        log(:at => "delete_job", :job => job[:id])
+        if !finished
+          queue.unlock(job[:id])
+        end
       end
     end
 

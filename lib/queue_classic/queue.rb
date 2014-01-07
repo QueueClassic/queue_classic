@@ -52,6 +52,13 @@ module QC
       end
     end
 
+    def unlock(id)
+      QC.log_yield(:measure => 'queue.unlock') do
+        s = "UPDATE #{TABLE_NAME} set locked_at = null where id = $1"
+        conn_adapter.execute(s, id)
+      end
+    end
+
     def delete(id)
       QC.log_yield(:measure => 'queue.delete') do
         conn_adapter.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)
