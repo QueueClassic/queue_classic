@@ -21,7 +21,9 @@ module QC
       @wait_interval = args[:wait_interval] || QC::WAIT_TIME
       @conn_adapter = ConnAdapter.new(args[:connection])
       @queues = setup_queues(@conn_adapter,
-        args[:q_name], args[:q_names], args[:top_bound])
+        (args[:q_name] || QC::QUEUE),
+        (args[:q_names] || QC::QUEUES),
+        (args[:top_bound] || QC::TOP_BOUND))
       log(args.merge(:at => "worker_initialized"))
       @running = true
     end
@@ -131,10 +133,8 @@ module QC
 
     private
 
-    def setup_queues(adapter, q_name, q_names, top_bound)
-      name = q_name || QC::QUEUE
-      names = q_names || QC::QUEUES
-      names << name unless names.include?(name)
+    def setup_queues(adapter, queue, queues, top_bound)
+      names = queues.length > 0 ? queues : [queue]
       names.map do |name|
         QC::Queue.new(name, top_bound).tap do |q|
           q.conn_adapter = adapter

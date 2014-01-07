@@ -18,7 +18,7 @@ module QC
   # notes the queue. You can point your workers
   # at different queues but only one at a time.
   QUEUE = ENV["QUEUE"] || "default"
-  QUEUES = ENV["QUEUES"] || []
+  QUEUES = (ENV["QUEUES"] && ENV["QUEUES"].split(",")) || []
 
   # Set this to 1 for strict FIFO.
   # There is nothing special about 9....
