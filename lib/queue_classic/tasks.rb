@@ -8,9 +8,22 @@ end
 namespace :qc do
   desc "Start a new worker for the (default or $QUEUE) queue"
   task :work  => :environment do
-    trap('INT') {exit}
-    trap('TERM') {@worker.stop}
     @worker = QC::Worker.new
+
+    trap('INT') do
+      $stderr.puts("Received INT. Shutting down.")
+      if !@worker.running
+        $stderr.puts("Worker has stopped running. Exit.")
+        exit(1)
+      end
+      @worker.stop
+    end
+
+    trap('TERM') do
+      $stderr.puts("Received Term. Shutting down.")
+      @worker.stop
+    end
+
     @worker.start
   end
 
