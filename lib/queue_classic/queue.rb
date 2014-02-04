@@ -11,6 +11,10 @@ module QC
       Queries.insert(name, method, args, chan)
     end
 
+    def enqueue_custom(method, custom, *args)
+      Queries.insert(name, method, custom, args, chan)
+    end
+
     def lock(top_bound=TOP_BOUND)
       Queries.lock_head(name, top_bound)
     end
