@@ -14,11 +14,11 @@ class QueueTest < QCTest
 
   def test_lock
     QC.enqueue("Klass.method")
-
-    # See helper.rb for more information about the large initial id
-    # number.
-    expected = {:id=>(2**34).to_s, :method=>"Klass.method", :args=>[]}
-    assert_equal(expected, QC.lock)
+    job = QC.lock
+    # See helper.rb for more information about the large initial id number.
+    assert_equal((2**34).to_s, job[:id])
+    assert_equal("Klass.method", job[:method])
+    assert_equal([], job[:args])
   end
 
   def test_lock_when_empty

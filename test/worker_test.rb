@@ -49,8 +49,7 @@ class WorkerTest < QCTest
       QC.enqueue("TestObject.not_a_method")
       TestWorker.new.work
     end
-    expected_output = /lib=queue-classic at=handle_failure job={:id=>"\d+", :method=>"TestObject.not_a_method", :args=>\[\]} error=#<NoMethodError: undefined method `not_a_method' for TestObject:Module>/
-    assert_match(expected_output, output, "=== debug output ===\n #{output}")
+    assert(output.include?("#<NoMethodError: undefined method `not_a_method'"))
   end
 
   def test_log_yield

@@ -1,6 +1,7 @@
 require 'queue_classic'
 require 'queue_classic/conn_adapter'
 require 'json'
+require 'time'
 
 module QC
   # The queue class maps a queue abstraction onto a database table.
@@ -45,9 +46,16 @@ module QC
       QC.log_yield(:measure => 'queue.lock') do
         s = "SELECT * FROM lock_head($1, $2)"
         if r = conn_adapter.execute(s, name, top_bound)
-          {:id => r["id"],
-            :method => r["method"],
-            :args => JSON.parse(r["args"])}
+          {}.tap do |job|
+            job[:id] = r["id"]
+            job[:method] = r["method"]
+            job[:args] = JSON.parse(r["args"])
+            if r["created_at"]
+              job[:created_at] = Time.parse(r["created_at"])
+              ttl = Integer((Time.now - job[:created_at]) * 1000)
+              $stdout.puts("measure#qc.time-to-lock=#{ttl}ms")
+            end
+          end
         end
       end
     end

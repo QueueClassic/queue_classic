@@ -97,6 +97,7 @@ module QC
     # If the job is not finished and an INT signal is traped,
     # this method will unlock the job in the queue.
     def process(queue, job)
+      start = Time.now
       finished = false
       begin
         call(job).tap do
@@ -110,6 +111,8 @@ module QC
         if !finished
           queue.unlock(job[:id])
         end
+        ttp = Integer((Time.now - start) * 1000)
+        $stdout.puts("measure#qc.time-to-process=#{ttp}")
       end
     end
 

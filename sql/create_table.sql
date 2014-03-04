@@ -5,7 +5,8 @@ CREATE TABLE queue_classic_jobs (
   q_name text not null check (length(q_name) > 0),
   method text not null check (length(method) > 0),
   args   text not null,
-  locked_at timestamptz
+  locked_at timestamptz,
+  created_at timestamptz default now()
 );
 
 -- If json type is available, use it for the args column.
