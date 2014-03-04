@@ -112,7 +112,7 @@ module QC
           queue.unlock(job[:id])
         end
         ttp = Integer((Time.now - start) * 1000)
-        $stdout.puts("measure#qc.time-to-process=#{ttp}")
+        $stdout.puts("measure#qc.time-to-process=#{ttp} source=#{queue.name}")
       end
     end
 

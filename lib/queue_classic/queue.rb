@@ -53,7 +53,7 @@ module QC
             if r["created_at"]
               job[:created_at] = Time.parse(r["created_at"])
               ttl = Integer((Time.now - job[:created_at]) * 1000)
-              $stdout.puts("measure#qc.time-to-lock=#{ttl}ms")
+              $stdout.puts("measure#qc.time-to-lock=#{ttl}ms source=#{name}")
             end
           end
         end
