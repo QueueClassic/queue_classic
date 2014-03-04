@@ -21,13 +21,13 @@ BEGIN
     || quote_literal(top_boundary)
     || ') limited'
   INTO job_count;
+  
+  IF job_count < top_boundary THEN
+    top_boundary = job_count;
+  END IF;
 
   SELECT TRUNC(random() * (top_boundary - 1))
   INTO relative_top;
-
-  IF job_count < top_boundary THEN
-    relative_top = 0;
-  END IF;
 
   LOOP
     BEGIN
