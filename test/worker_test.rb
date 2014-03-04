@@ -45,7 +45,7 @@ class WorkerTest < QCTest
   end
 
   def test_failed_job_is_logged
-    output = capture_debug_output do
+    output = capture_stderr_output do
       QC.enqueue("TestObject.not_a_method")
       TestWorker.new.work
     end

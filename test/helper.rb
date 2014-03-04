@@ -26,6 +26,15 @@ class QCTest < Minitest::Test
     c.disconnect
   end
 
+  def capture_stderr_output
+    original_stderr = $stderr
+    $stderr = StringIO.new
+    yield
+    $stderr.string
+  ensure
+    $stderr = original_stderr
+  end
+
   def capture_debug_output
     original_debug = ENV['DEBUG']
     original_stdout = $stdout
