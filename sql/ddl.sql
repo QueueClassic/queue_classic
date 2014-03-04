@@ -1,3 +1,8 @@
+--- We are declaring the return type to be queue_classic_jobs.
+--- This is ok since I am assuming that all of the users added queues will
+--- have identical columns to queue_classic_jobs.
+--- When QC supports queues with columns other than the default, we will have to change this.
+
 CREATE OR REPLACE FUNCTION lock_head(q_name varchar, top_boundary integer)
 RETURNS SETOF queue_classic_jobs AS $$
 DECLARE
