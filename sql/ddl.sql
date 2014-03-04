@@ -15,7 +15,9 @@ BEGIN
   -- for more workers. Would love to see some optimization here...
 
   EXECUTE 'SELECT count(*) FROM '
-    || '(SELECT * FROM queue_classic_jobs WHERE q_name = '
+    || '(SELECT * FROM queue_classic_jobs '
+    || ' WHERE locked_at IS NULL'
+    || ' AND q_name = '
     || quote_literal(q_name)
     || ' LIMIT '
     || quote_literal(top_boundary)
