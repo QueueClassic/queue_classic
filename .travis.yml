@@ -1,0 +1,9 @@
+language: ruby
+before_script:
+  - psql -c 'create database queue_classic_test;' -U postgres
+env:
+  - QC_DATABASE_URL="postgres://postgres@localhost/queue_classic_test"
+rvm:
+  - 2.1.1
+  - 2.0.0
+  - 1.9.3
