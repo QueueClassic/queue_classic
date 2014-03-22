@@ -1,5 +1,7 @@
 # queue_classic
 
+[![Build Status](https://travis-ci.org/ryandotsmith/queue_classic.svg?branch=master)](https://travis-ci.org/ryandotsmith/queue_classic)
+
 Stable: [v2.2.3](https://github.com/ryandotsmith/queue_classic/tree/v2.2.3)
 Latest: v3.0.0rc
 
@@ -201,7 +203,7 @@ https://groups.google.com/d/forum/queue_classic
 
 ## Hacking on queue_classic
 
-[![Build Status](https://drone.io/github.com/ryandotsmith/queue_classic/status.png)](https://drone.io/github.com/ryandotsmith/queue_classic/latest)
+[![Build Status](https://travis-ci.org/ryandotsmith/queue_classic.svg?branch=master)](https://travis-ci.org/ryandotsmith/queue_classic)
 
 ### Dependencies
 
