@@ -52,6 +52,10 @@ module QC
     end
   end
 
+  def self.has_connection?
+    !@conn_adapter.nil?
+  end
+
   def self.default_conn_adapter
     @conn_adapter ||= ConnAdapter.new
   end
