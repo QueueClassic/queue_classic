@@ -6,5 +6,5 @@ gemspec
 
 group :test do
   gem "turn"
-  gem "minitest"
+  gem 'minitest', '~> 5.3.1'
 end
