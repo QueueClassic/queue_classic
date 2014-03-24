@@ -60,7 +60,7 @@ module QC
     @conn_adapter ||= ConnAdapter.new
   end
 
-  def self.default_conn_adapter= conn
+  def self.default_conn_adapter=(conn)
     @conn_adapter = conn
   end
 
