@@ -19,11 +19,13 @@ module QC
     def initialize(args={})
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
       @wait_interval = args[:wait_interval] || QC::WAIT_TIME
-      if QC.has_connection?
-        @conn_adapter = QC.default_conn_adapter
-      else
+
+      if args[:connection]
         @conn_adapter = ConnAdapter.new(args[:connection])
+      elsif QC.has_connection?
+        @conn_adapter = QC.default_conn_adapter
       end
+
       @queues = setup_queues(@conn_adapter,
         (args[:q_name] || QC::QUEUE),
         (args[:q_names] || QC::QUEUES),
