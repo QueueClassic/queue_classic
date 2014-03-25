@@ -22,7 +22,7 @@ module QC
 
       if args[:connection]
         @conn_adapter = ConnAdapter.new(args[:connection])
-      elsif QC.has_connection?
+      else
         @conn_adapter = QC.default_conn_adapter
       end
 
