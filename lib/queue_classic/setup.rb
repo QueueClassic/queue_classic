@@ -5,14 +5,14 @@ module QC
     CreateTable = File.join(Root, "/sql/create_table.sql")
     DropSqlFunctions = File.join(Root, "/sql/drop_ddl.sql")
 
-    def self.create(c=nil)
+    def self.create(c = QC::default_conn_adapter.connection)
       conn = QC::ConnAdapter.new(c)
       conn.execute(File.read(CreateTable))
       conn.execute(File.read(SqlFunctions))
       conn.disconnect if c.nil? #Don't close a conn we didn't create.
     end
 
-    def self.drop(c=nil)
+    def self.drop(c = QC::default_conn_adapter.connection)
       conn = QC::ConnAdapter.new(c)
       conn.execute("DROP TABLE IF EXISTS queue_classic_jobs CASCADE")
       conn.execute(File.read(DropSqlFunctions))
