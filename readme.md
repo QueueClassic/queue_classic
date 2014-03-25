@@ -22,6 +22,7 @@ Contents:
 * [Documentation](http://rubydoc.info/gems/queue_classic/2.2.3/frames)
 * [Usage](#usage)
 * [Setup](#setup)
+* [Upgrade](#upgrade)
 * [Configuration](#configuration)
 * [Support](#support)
 * [Hacking](#hacking-on-queue_classic)
@@ -166,6 +167,25 @@ $ bundle exec rake qc:create
 
 # Dropping the table and functions
 $ bundle exec rake qc:drop
+```
+
+## Upgrade
+If you are upgrading from a previous version of queue_classic, you might need some new database columns and/or functions. Luckily enough for you, it is easy to do so.
+
+### Ruby on Rails
+
+You just need to run those lines, which will copy the new required migrations:
+
+```
+rails generate queue_classic:install
+rake db:migrate
+```
+### Rake Task
+
+This rake task will get you covered:
+```bash
+# Updating the table and functions
+$ bundle exec rake qc:update
 ```
 
 ## Configuration
