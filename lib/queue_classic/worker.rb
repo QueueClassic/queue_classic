@@ -40,6 +40,7 @@ module QC
     # The canonical example of starting a worker is as follows:
     # QC::Worker.new.start
     def start
+      unlock_jobs_of_dead_workers()
       while @running
         @fork_worker ? fork_and_work : work
       end
@@ -93,6 +94,12 @@ module QC
         end
         @conn_adapter.wait(@wait_interval, *@queues.map {|q| q.name})
       end
+    end
+
+    # This will unlock all jobs any postgres' PID that is not existing anymore
+    # to prevent any infinitely locked jobs
+    def unlock_jobs_of_dead_workers
+      @conn_adapter.execute("UPDATE #{QC::TABLE_NAME} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
     end
 
     # A job is processed by evaluating the target code.
