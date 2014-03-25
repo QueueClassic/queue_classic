@@ -50,7 +50,8 @@ BEGIN
   END LOOP;
 
   RETURN QUERY EXECUTE 'UPDATE queue_classic_jobs '
-    || ' SET locked_at = (CURRENT_TIMESTAMP)'
+    || ' SET locked_at = (CURRENT_TIMESTAMP),'
+    || ' locked_by = (select pg_backend_pid())'
     || ' WHERE id = $1'
     || ' AND locked_at is NULL'
     || ' RETURNING *'
