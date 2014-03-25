@@ -22,7 +22,7 @@ Contents:
 * [Documentation](http://rubydoc.info/gems/queue_classic/2.2.3/frames)
 * [Usage](#usage)
 * [Setup](#setup)
-* [Upgrade](#upgrade)
+* [Upgrade from V2 to V3](#upgrade-from-v2-to-v3)
 * [Configuration](#configuration)
 * [Support](#support)
 * [Hacking](#hacking-on-queue_classic)
@@ -169,7 +169,7 @@ $ bundle exec rake qc:create
 $ bundle exec rake qc:drop
 ```
 
-## Upgrade
+## Upgrade from V2 to V3
 If you are upgrading from a previous version of queue_classic, you might need some new database columns and/or functions. Luckily enough for you, it is easy to do so.
 
 ### Ruby on Rails
