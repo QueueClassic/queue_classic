@@ -20,6 +20,13 @@ module QC
       @fork_worker = args[:fork_worker] || QC::FORK_WORKER
       @wait_interval = args[:wait_interval] || QC::WAIT_TIME
       @conn_adapter = ConnAdapter.new(args[:connection])
+
+      if args[:connection]
+        @conn_adapter = ConnAdapter.new(args[:connection])
+      else
+        @conn_adapter = QC.default_conn_adapter
+      end
+
       @queues = setup_queues(@conn_adapter,
         (args[:q_name] || QC::QUEUE),
         (args[:q_names] || QC::QUEUES),
