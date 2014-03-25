@@ -6,6 +6,7 @@ CREATE TABLE queue_classic_jobs (
   method text not null check (length(method) > 0),
   args   text not null,
   locked_at timestamptz,
+  locked_by integer,
   created_at timestamptz default now()
 );
 

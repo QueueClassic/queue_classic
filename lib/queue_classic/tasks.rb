@@ -41,4 +41,9 @@ namespace :qc do
   task :drop => :environment do
     QC::Setup.drop
   end
+
+  desc "Update queue_classic tables and functions in database"
+  task :update => :environment do
+    QC::Setup.update
+  end
 end
