@@ -175,4 +175,23 @@ class WorkerTest < QCTest
     assert_equal(0, worker.failed_count)
   end
 
+  def test_unlock_jobs_of_dead_workers
+    # Insert a locked job
+    adapter = QC::ConnAdapter.new
+    query = "INSERT INTO #{QC::TABLE_NAME} (q_name, method, args, locked_by, locked_at) VALUES ('whatever', 'Kernel.puts', '[\"ok?\"]', 0, (CURRENT_TIMESTAMP))"
+    adapter.execute(query)
+
+    # We should have no unlocked jobs
+    query_locked_jobs = "SELECT * FROM #{QC::TABLE_NAME} WHERE locked_at IS NULL"
+    res = adapter.connection.exec(query_locked_jobs)
+    assert_equal(0, res.count)
+
+    # Unlock the job
+    QC::Worker.new.unlock_jobs_of_dead_workers
+
+    # We should have an unlocked job now
+    res = adapter.connection.exec(query_locked_jobs)
+    assert_equal(1, res.count)
+  end
+
 end
