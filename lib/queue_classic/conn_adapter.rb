@@ -30,10 +30,10 @@ module QC
 
     def wait(time, *channels)
       @mutex.synchronize do
-        listen_cmds = channels.map {|c| 'LISTEN "' + c + '"'}
+        listen_cmds = channels.map {|c| 'LISTEN "' + c.to_s + '"'}
         @connection.exec(listen_cmds.join(';'))
         wait_for_notify(time)
-        unlisten_cmds = channels.map {|c| 'UNLISTEN "' + c +'"'}
+        unlisten_cmds = channels.map {|c| 'UNLISTEN "' + c.to_s + '"'}
         @connection.exec(unlisten_cmds.join(';'))
         drain_notify
       end
