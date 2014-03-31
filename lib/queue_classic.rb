@@ -93,7 +93,7 @@ module QC
   end
 end
 
-require "queue_classic/queue"
-require "queue_classic/worker"
-require "queue_classic/setup"
-require "queue_classic/railtie" if defined?(Rails)
+require_relative "queue_classic/queue"
+require_relative "queue_classic/worker"
+require_relative "queue_classic/setup"
+require_relative "queue_classic/railtie" if defined?(Rails)

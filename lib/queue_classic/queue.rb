@@ -1,5 +1,4 @@
-require 'queue_classic'
-require 'queue_classic/conn_adapter'
+require_relative 'conn_adapter'
 require 'json'
 require 'time'
 
