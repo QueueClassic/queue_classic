@@ -1,5 +1,5 @@
-require 'queue_classic/queue'
-require 'queue_classic/conn_adapter'
+require_relative 'queue'
+require_relative 'conn_adapter'
 
 module QC
   # A Worker object can process jobs from one or many queues.
