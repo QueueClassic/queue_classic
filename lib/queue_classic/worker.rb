@@ -1,4 +1,3 @@
-require 'queue_classic'
 require 'queue_classic/queue'
 require 'queue_classic/conn_adapter'
 
