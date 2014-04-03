@@ -23,6 +23,8 @@ Contents:
 * [Usage](#usage)
 * [Setup](#setup)
 * [Configuration](#configuration)
+  * [JSON](#json)
+  * [Logging](#logging)
 * [Support](#support)
 * [Hacking](#hacking-on-queue_classic)
 * [License](#license)
@@ -182,8 +184,17 @@ alter table queue_classic_jobs alter column args type json using (args::json);
 ## Logging
 
 By default queue_classic does not talk very much.
-If you find yourself in a situation where you need to know what's happening inside QC,
-you can enable the debug output by setting the `DEBUG` environment variable:
+If you find yourself in a situation where you need to know what's happening inside QC, there are two different kind of logging you can enable: DEBUG and MEASURE.
+
+### Measure
+This will output the time to process and that kind of thing. To enable it, set the `QC_MEASURE`:
+
+```
+export QC_MEASURE="true"
+```
+
+### Debug
+You can enable the debug output by setting the `DEBUG` environment variable:
 
 ```
 export DEBUG="true"
