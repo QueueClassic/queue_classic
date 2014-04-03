@@ -91,6 +91,12 @@ module QC
     puts(out) if ENV["DEBUG"]
     return result
   end
+  
+  def self.measure(data)
+    if ENV['QC_MEASURE']
+      $stdout.puts("measure#qc.#{data}")
+    end
+  end
 end
 
 require_relative "queue_classic/queue"
