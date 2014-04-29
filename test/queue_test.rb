@@ -13,10 +13,12 @@ class QueueTest < QCTest
   end
 
   def test_lock
-    QC.enqueue("Klass.method")
-    job = QC.lock
+    queue = QC::Queue.new("queue_classic_jobs")
+    queue.enqueue("Klass.method")
+    job = queue.lock
     # See helper.rb for more information about the large initial id number.
     assert_equal((2**34).to_s, job[:id])
+    assert_equal("queue_classic_jobs", job[:q_name])
     assert_equal("Klass.method", job[:method])
     assert_equal([], job[:args])
   end
