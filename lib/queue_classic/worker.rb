@@ -61,17 +61,28 @@ module QC
     # The parent process will wait on the child process to exit.
     def fork_and_work
       read, write = IO.pipe
+      before_fork
       cpid = Process.fork do
         setup_child
-        result = work
         read.close
-        write.puts result
+        write.puts work
       end
       log(:at => :fork, :pid => cpid)
       write.close
       Process.wait(cpid)
       @running = false
+      after_fork(cpid)
       read.read.strip
+    end
+
+    # Override if you want to run code before a forked worker
+    def before_fork
+      log(:at => "before_fork")
+    end
+
+    # Override if you want to run code after a forked process finishes, but before the worker moves on to the next job
+    def after_fork(cpid)
+      log(:at => "after_fork", :pid => cpid)
     end
 
     # Blocks on locking a job, and once a job is locked,
