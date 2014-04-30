@@ -194,4 +194,10 @@ class WorkerTest < QCTest
     assert_equal(1, res.count)
   end
 
+  def test_forked_worker
+    QC.enqueue("TestObject.one_arg", "13")
+    worker = TestWorker.new(:fork_worker => true)
+    r = worker.start
+    assert_equal("13", r)
+  end
 end

@@ -11,7 +11,12 @@ module QC
       @mutex = Mutex.new
     end
 
+    def reconnect_if_closed
+     @connection = establish_new
+    end
+
     def execute(stmt, *params)
+      reconnect_if_closed
       @mutex.synchronize do
         QC.log(:at => "exec_sql", :sql => stmt.inspect)
         begin
