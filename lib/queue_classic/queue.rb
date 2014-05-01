@@ -47,6 +47,7 @@ module QC
         if r = conn_adapter.execute(s, name, top_bound)
           {}.tap do |job|
             job[:id] = r["id"]
+            job[:q_name] = r["q_name"]
             job[:method] = r["method"]
             job[:args] = JSON.parse(r["args"])
             if r["created_at"]
