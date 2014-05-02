@@ -197,10 +197,10 @@ class WorkerTest < QCTest
   def test_forked_worker
     # create hooks for logging
     QC.before_fork do |worker|
-      QC.log(:before_fork => "true")
+      QC.log(:testing_before_fork => "true")
     end
     QC.after_fork do |worker, cpid|
-      QC.log(:after_fork => cpid)
+      QC.log(:testing_after_fork => cpid)
     end
 
     #run a simple forked job
@@ -212,9 +212,9 @@ class WorkerTest < QCTest
     end
 
     assert_equal(0, forking_worker.failed_count)
-    expected_output = /lib=queue-classic before_fork=true/
+    expected_output = /lib=queue-classic testing_before_fork=true/
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
-    expected_output = /lib=queue-classic after_fork=#{cpid}/
+    expected_output = /lib=queue-classic testing_after_fork=#{cpid}/
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
   end
 end
