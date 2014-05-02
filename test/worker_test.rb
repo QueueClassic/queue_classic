@@ -205,12 +205,13 @@ class WorkerTest < QCTest
 
     #run a simple forked job
     QC.enqueue("TestObject.no_args")
+    QC.enqueue("TestObject.no_args")
     forking_worker = TestWorker.new(:fork_worker => true)
     cpid = nil
     output = capture_debug_output do
       cpid = forking_worker.fork_and_work
     end
-
+    forking_worker.fork_and_work
     assert_equal(0, forking_worker.failed_count)
     expected_output = /lib=queue-classic testing_before_fork=true/
     assert_match(expected_output, output, "=== debug output ===\n #{output}")
