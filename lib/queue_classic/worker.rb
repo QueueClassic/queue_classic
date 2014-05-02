@@ -41,7 +41,7 @@ module QC
     def start
       unlock_jobs_of_dead_workers()
       while @running
-       @fork_worker ? fork_and_work : work
+        @fork_worker ? fork_and_work : work
       end
     end
 
@@ -63,7 +63,6 @@ module QC
       cpid = fork {setup_child; work}
       log(:at => :fork, :pid => cpid)
       Process.wait(cpid)
-      @running = false
       QC.after_fork(self, cpid)
       cpid
     end
