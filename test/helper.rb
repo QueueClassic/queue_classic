@@ -5,7 +5,6 @@ ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
 
 require "queue_classic"
 require "stringio"
-require 'minitest'
 require "minitest/autorun"
 
 class QCTest < Minitest::Test
