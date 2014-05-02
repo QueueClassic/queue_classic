@@ -197,7 +197,7 @@ class WorkerTest < QCTest
   def test_forked_worker
     QC.enqueue("TestObject.one_arg", "13")
     worker = TestWorker.new(:fork_worker => true)
-    r = worker.start
-    assert_equal("13", r)
+    cpid = worker.start
+    assert_equal(0, worker.failed_count)
   end
 end
