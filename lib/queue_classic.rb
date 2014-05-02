@@ -100,7 +100,6 @@ module QC
 
   # before_fork hook (adapted from Unicorn's implementation)
   def self.before_fork(*args, &block)
-    log(:at => "before_fork")
     if block_given?
       DEFAULTS[:before_fork] = block
     else
@@ -110,7 +109,6 @@ module QC
 
   # after_fork hook (adapted from Unicorn's implementation)
   def self.after_fork(*args, &block)
-    log(:at => "after_fork")
     if block_given?
       DEFAULTS[:after_fork] = block
     else
@@ -119,8 +117,8 @@ module QC
   end
 
   DEFAULTS = {
-    :after_fork => lambda {|worker, cpid| },
-    :before_fork => lambda {|worker| }
+    :after_fork => lambda {|worker, cpid| log(:at => "after_fork", :cpid => cpid) },
+    :before_fork => lambda {|worker| log(:at => "before_fork") }
   }
 end
 
