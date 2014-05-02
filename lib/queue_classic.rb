@@ -97,6 +97,31 @@ module QC
       $stdout.puts("measure#qc.#{data}")
     end
   end
+
+  # before_fork hook (adapted from Unicorn's implementation)
+  def self.before_fork(*args, &block)
+    log(:at => "before_fork")
+    if block_given?
+      DEFAULTS[:before_fork] = block
+    else
+      DEFAULTS[:before_fork].call(*args)
+    end
+  end
+
+  # after_fork hook (adapted from Unicorn's implementation)
+  def self.after_fork(*args, &block)
+    log(:at => "after_fork")
+    if block_given?
+      DEFAULTS[:after_fork] = block
+    else
+      DEFAULTS[:after_fork].call(*args)
+    end
+  end
+
+  DEFAULTS = {
+    :after_fork => lambda {|worker, cpid| },
+    :before_fork => lambda {|worker| }
+  }
 end
 
 require_relative "queue_classic/queue"

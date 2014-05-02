@@ -41,9 +41,8 @@ module QC
     def start
       unlock_jobs_of_dead_workers()
       while @running
-       result = @fork_worker ? fork_and_work : work
+       @fork_worker ? fork_and_work : work
       end
-      result
     end
 
     # Signals the worker to stop taking new work.
@@ -60,22 +59,13 @@ module QC
     # Calls Worker#work but after the current process is forked.
     # The parent process will wait on the child process to exit.
     def fork_and_work
-      before_fork
+      QC.before_fork(self)
       cpid = fork {setup_child; work}
       log(:at => :fork, :pid => cpid)
       Process.wait(cpid)
       @running = false
-      after_fork(cpid)
-    end
-
-    # Override if you want to run code before a forked worker
-    def before_fork
-      log(:at => "before_fork")
-    end
-
-    # Override if you want to run code after a forked process finishes, but before the worker moves on to the next job
-    def after_fork(cpid)
-      log(:at => "after_fork", :pid => cpid)
+      QC.after_fork(self, cpid)
+      cpid
     end
 
     # Blocks on locking a job, and once a job is locked,
