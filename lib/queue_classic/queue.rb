@@ -41,6 +41,13 @@ module QC
       end
     end
 
+    def enqueue_at(time, method, *args)
+      QC.log_yield(:measure => 'queue.enqueue') do
+        s="INSERT INTO #{TABLE_NAME} (q_name, method, args, created_at) VALUES ($1, $2, $3, $4)"
+        res = conn_adapter.execute(s, name, method, JSON.dump(args), time)
+      end
+    end
+
     def lock
       QC.log_yield(:measure => 'queue.lock') do
         s = "SELECT * FROM lock_head($1, $2)"

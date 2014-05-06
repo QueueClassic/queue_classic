@@ -27,6 +27,16 @@ class QueueTest < QCTest
     assert_nil(QC.lock)
   end
 
+  def test_lock_with_future_job
+    future = Time.now + 3
+    QC.enqueue_at(future, "Klass.method")
+    assert_nil QC.lock
+    until Time.now >= future do sleep 1 end
+    job = QC.lock
+    assert_equal("Klass.method", job[:method])
+    assert_equal([], job[:args])
+  end
+
   def test_count
     QC.enqueue("Klass.method")
     assert_equal(1, QC.count)
