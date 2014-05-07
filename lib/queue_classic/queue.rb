@@ -42,9 +42,15 @@ module QC
     end
 
     def enqueue_at(time, method, *args)
+      offset = time - Time.now
+      enqueue_in(offset, method, *args)
+    end
+
+    def enqueue_in(seconds, method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
-        s="INSERT INTO #{TABLE_NAME} (q_name, method, args, created_at) VALUES ($1, $2, $3, $4)"
-        res = conn_adapter.execute(s, name, method, JSON.dump(args), time)
+        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args, created_at)
+             VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')"
+        res = conn_adapter.execute(s, name, method, JSON.dump(args))
       end
     end
 
