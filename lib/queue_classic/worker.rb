@@ -108,13 +108,15 @@ module QC
       start = Time.now
       call(job, callback) do |result|
         log_result(queue, job, result, start)
-        result
       end
     end
 
     def log_result(queue, job, result, start)
       ttp = Integer((Time.now - start) * 1000)
       QC.measure("time-to-process=#{ttp} source=#{queue.name}")
+      if @asynchronous && queue.conn_adapter.needs_its_own_connection?
+        queue.conn_adapter.reestablish
+      end
       if (Exception === result)
         log_failure(queue, job, result)
       else
@@ -203,9 +205,6 @@ module QC
     # your worker is forking and you need to
     # re-establish database connections
     def setup_child
-      if @asynchronous && QC.default_conn_adapter.needs_its_own_connection?
-        QC.default_conn_adapter.reestablish
-      end
     end
 
     # This method is called before process is forked
