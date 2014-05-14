@@ -41,7 +41,7 @@ module QC
     def start
       unlock_jobs_of_dead_workers()
       while @running
-        @fork_worker ? fork_and_work : work
+        work
       end
     end
 
@@ -54,14 +54,6 @@ module QC
     # to unblock.
     def stop
       @running = false
-    end
-
-    # Calls Worker#work but after the current process is forked.
-    # The parent process will wait on the child process to exit.
-    def fork_and_work
-      cpid = fork {setup_child; work}
-      log(:at => :fork, :pid => cpid)
-      Process.wait(cpid)
     end
 
     # Blocks on locking a job, and once a job is locked,
@@ -112,7 +104,8 @@ module QC
       start = Time.now
       finished = false
       begin
-        call(job).tap do
+        result = @fork_worker ? call_forked(job) : call(job)
+        result.tap do
           queue.delete(job[:id])
           finished = true
         end
@@ -138,6 +131,36 @@ module QC
       receiver.send(message, *args)
     end
 
+    # Invoke worker inside a forked process. Worker should NOT
+    # use shared pg connection, as it corrupts it. It pipes the 
+    # result back via IO.pipe, passes exceptions through.
+    # To use pg inside worker, use connection pool or a fresh connection
+    def call_forked(job)
+      read, write = IO.pipe
+      prepare_child
+      cpid = fork do
+        read.close
+        setup_child
+        begin
+          result = call(job)
+        rescue => e
+          result = e
+        ensure
+          Marshal.dump(result, write)
+          # Exit forked process without running exit handlers 
+          # so pg connection is not corrupted
+          exit!(0) 
+        end
+      end
+      log(:at => :fork, :pid => cpid)
+      write.close
+      result = read.read
+      Process.wait(cpid)
+      loaded = Marshal.load(result)
+      raise loaded if Exception === loaded
+      loaded
+    end
+
     # This method will be called when an exception
     # is raised during the execution of the job.
     def handle_failure(job,e)
@@ -148,6 +171,13 @@ module QC
     # your worker is forking and you need to
     # re-establish database connections
     def setup_child
+      
+    end
+
+    # This method is called before process is forked
+    # We avoid using pg inside a forked process,
+    # so logging has to happen her
+    def prepare_child
       log(:at => "setup_child")
     end
 
