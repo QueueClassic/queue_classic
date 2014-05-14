@@ -111,6 +111,7 @@ module QC
       end
     end
 
+    # If a result is not Exception, the job is considered a success
     def log_result(queue, job, result, start)
       ttp = Integer((Time.now - start) * 1000)
       QC.measure("time-to-process=#{ttp} source=#{queue.name}")

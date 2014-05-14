@@ -15,6 +15,7 @@ module QC
     def reestablish
       @connection = establish_new;
       @mutex = Mutex.new
+      @pid = Process.pid
     end
 
     def needs_its_own_connection?
