@@ -134,20 +134,35 @@ module QC
       queue.delete(job[:id])
     end
 
+    # Call the job, fork the process if needed
     def call(job, callback = nil, &block)
       if @fork_worker
         call_forked(job, callback, &block)
       else
-        yield call_inline(job)
+        call_inline(job, callback, &block)
       end
+    end
+
+    # Call the job within current process, handle exceptions
+    def call_inline(job, callback = nil, &block)
+      result = call_worker(job)
     rescue => e
-      yield e 
+      result = e
+    ensure
+      call_ensure(result, callback, &block)
+    end
+
+    # Call returning block and user callback in worker process
+    def call_ensure(result, callback = nil)
+      callback.call(result) if callback
+      yield(result) if block_given?
+      result
     end
 
     # Each job includes a method column. We will use ruby's eval
     # to grab the ruby object from memory. We send the method to
     # the object and pass the args.
-    def call_inline(job)
+    def call_worker(job)
       args = job[:args]
       receiver_str, _, message = job[:method].rpartition('.')
       receiver = eval(receiver_str)
@@ -161,28 +176,20 @@ module QC
     # back via IO.pipe and re-raises exceptions. If a worker is
     # asynchronous, it returns pid as output and logs completion on
     # its own.
-    def call_forked(job, callback = nil)
+    def call_forked(job, callback = nil, &block)
       read, write = IO.pipe
       prepare_child
       fork_pid = fork do
         setup_child
-        begin
-          result = call_inline(job)
-        rescue => e
-          result = e
-        ensure
-          callback.call(result) if callback
-          # Asynchronous workers should log completion on their own
-          if @asynchronous
-            yield result
-          else
-            read.close
-            Marshal.dump(result, write)
-          end
-          # Exit forked process without running exit handlers 
-          # so pg connection is not corrupted
-          exit!(0) 
+        result = call_inline(job, callback, &block)
+        # Asynchronous workers should log completion on their own
+        unless @asynchronous
+          read.close
+          Marshal.dump(result, write)
         end
+        # Exit forked process without running exit handlers 
+        # so pg connection is not corrupted
+        exit!(0) 
       end
       log(:at => :fork, :pid => fork_pid)
       unless @asynchronous
