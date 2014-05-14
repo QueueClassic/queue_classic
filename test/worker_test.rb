@@ -234,7 +234,7 @@ class WorkerTest < QCTest
   end
 
 
-  def test_forked_work_that_does_no_sql
+  def test_forked_work_that_does_sql
     QC.enqueue("TestObject.qc_count")
     worker = TestWorker.new fork_worker: true
     read, write = IO.pipe
