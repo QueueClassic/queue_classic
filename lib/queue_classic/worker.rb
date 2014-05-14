@@ -153,9 +153,12 @@ module QC
     end
 
     # Invoke worker inside a forked process. Worker should NOT
-    # use shared pg connection, as it corrupts it. It pipes the 
-    # result back via IO.pipe, passes exceptions through.
-    # To use pg inside worker, use connection pool or a fresh connection
+    # use shared pg connection, as it corrupts it. Worker clones
+    # connection for you behind the scenes if you try to execute
+    # anything in conn_adapter. The forked process pipes the result 
+    # back via IO.pipe and re-raises exceptions. If a worker is
+    # asynchronous, it returns pid as output and logs completion on
+    # its own.
     def call_forked(job, callback = nil)
       read, write = IO.pipe
       prepare_child
