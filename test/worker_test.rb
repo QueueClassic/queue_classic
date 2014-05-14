@@ -329,7 +329,7 @@ class WorkerTest < QCTest
     assert_equal(2, QC.count) # async not done here
     Process.wait(a1)
     Process.wait(a2)
-    assert_equal(0, QC.count) # not yet executed
+    assert_equal(0, QC.count) # all done
 
   end
 
