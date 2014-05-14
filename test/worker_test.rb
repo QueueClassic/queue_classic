@@ -127,10 +127,11 @@ class WorkerTest < QCTest
   end
 
   def test_worker_reuses_conn
-    QC.enqueue("TestObject.no_args")
+    QC.enqueue("QC.default_conn_adapter.execute", "SELECT 123 as value")
     count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
     worker = TestWorker.new
-    worker.work
+    result = worker.work
+    assert_equal("123", result["value"])
     new_count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
     assert(
       new_count == count,
