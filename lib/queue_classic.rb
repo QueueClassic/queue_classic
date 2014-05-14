@@ -31,6 +31,9 @@ module QC
   # for more details.
   FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
 
+  # Should forked worker wait for response by default?
+  ASYNCHRONOUS_WORKER = !ENV["QC_ASYNCHRONOUS_WORKER"].nil?
+
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
   def self.method_missing(sym, *args, &block)

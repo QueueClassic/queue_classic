@@ -12,8 +12,18 @@ module QC
       @mutex = Mutex.new
     end
 
+    def reestablish
+      @connection = establish_new;
+      @mutex = Mutex.new
+    end
+
+    def needs_its_own_connection?
+      @pid != Process.pid
+    end
+
     def execute(stmt, *params)
-      raise "Forked workers should create a new DB connection" unless @pid == Process.pid 
+      reestablish if needs_its_own_connection?
+
       @mutex.synchronize do
         QC.log(:at => "exec_sql", :sql => stmt.inspect)
         begin
