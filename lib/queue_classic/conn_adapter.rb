@@ -7,11 +7,13 @@ module QC
 
     attr_accessor :connection
     def initialize(c=nil)
+      @pid = Process.pid
       @connection = c.nil? ? establish_new : validate!(c)
       @mutex = Mutex.new
     end
 
     def execute(stmt, *params)
+      raise "Forked workers should create a new DB connection" unless @pid == Process.pid 
       @mutex.synchronize do
         QC.log(:at => "exec_sql", :sql => stmt.inspect)
         begin

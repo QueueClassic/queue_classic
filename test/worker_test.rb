@@ -26,7 +26,9 @@ class TestWorker < QC::Worker
   end
 end
 
+
 class WorkerTest < QCTest
+
 
   def test_work
     QC.enqueue("TestObject.no_args")
@@ -42,6 +44,7 @@ class WorkerTest < QCTest
     worker = TestWorker.new
     worker.work
     assert_equal(1, worker.failed_count)
+    assert_equal(1, QC.count)
   end
 
   def test_failed_job_is_logged
@@ -192,6 +195,66 @@ class WorkerTest < QCTest
     # We should have an unlocked job now
     res = adapter.connection.exec(query_locked_jobs)
     assert_equal(1, res.count)
+    adapter.connection.close
+  end
+
+  def test_forked_work_success
+    QC.enqueue("Process.pid")
+    worker = TestWorker.new fork_worker: true
+    chpid = worker.work
+    assert(Process.pid != chpid && chpid > 0)
+    assert_equal(0, QC.count)
+    assert_equal(0, worker.failed_count)
+  end
+
+  def test_forked_work_failure
+    QC.enqueue("TestObject.not_a_method")
+    worker = TestWorker.new fork_worker: true
+    output = capture_stderr_output do
+      worker.work
+    end
+    assert(output.include?("#<NoMethodError: undefined method `not_a_method'"))
+    assert_equal(1, QC.count)
+    assert_equal(1, worker.failed_count)
+  end
+
+  def test_mixed_forked_and_unforked_work_success
+    QC.enqueue("Process.pid")
+    QC.enqueue("Process.pid")
+    forked = TestWorker.new fork_worker: true
+    current = TestWorker.new
+    forkedpid = forked.work
+    currentpid = current.work
+    assert(Process.pid != forkedpid && forkedpid > 0)
+    assert(Process.pid == currentpid)
+    assert_equal(0, QC.count)
+    assert_equal(0, current.failed_count)
+    assert_equal(0, forked.failed_count)
+  end
+
+
+  def test_forked_work_connection_reuse_failure
+    QC.enqueue("QC.default_conn_adapter.execute", "SELECT 123 as value")
+    worker = TestWorker.new fork_worker: true
+    output = capture_stderr_output do
+      worker.work
+    end
+    assert(output.include?("<RuntimeError: Forked workers should create a new DB connection"))
+    assert_equal(1, QC.count)
+    assert_equal(1, worker.failed_count)
+  end
+
+  def test_work_connection_reuse
+    QC.enqueue("QC.default_conn_adapter.execute", "SELECT 123 as value")
+    worker = TestWorker.new
+    result = nil
+    output = capture_stderr_output do
+      result = worker.work
+    end
+    assert(!output.include?("<RuntimeError: Forked workers should create a new DB connection"))
+    assert_equal("123", result["value"])
+    assert_equal(0, QC.count)
+    assert_equal(0, worker.failed_count)
   end
 
 end
