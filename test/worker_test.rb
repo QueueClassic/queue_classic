@@ -311,22 +311,15 @@ class WorkerTest < QCTest
     sync2 = TestWorker.new
 
 
-    assert_equal(6, QC.count) # not yet executed
-    f1 = fork1.work
-    assert_equal(5, QC.count) # executed synchronously
-    f2 = fork2.work
-    assert_equal(4, QC.count) # executed synchronously
-
     a1 = async1.work
     a2 = async2.work
-    assert_equal(4, QC.count) # not yet executed
+    
+    f1 = fork1.work
+    f2 = fork2.work
 
     s1 = sync1.work
-    assert_equal(3, QC.count) # executed synchronously
     s2 = sync2.work
-    assert_equal(2, QC.count) # executed synchronously
 
-    assert_equal(2, QC.count) # async not done here
     Process.wait(a1)
     Process.wait(a2)
     assert_equal(0, QC.count) # all done

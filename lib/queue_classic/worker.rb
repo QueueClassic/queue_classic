@@ -183,13 +183,12 @@ module QC
       fork_pid = fork do
         setup_child
         result = call_inline(job, callback, &block)
-        # Asynchronous workers should log completion on their own
         unless @asynchronous
           read.close
           Marshal.dump(result, write)
         end
         # Exit forked process without running exit handlers 
-        # so pg connection is not corrupted
+        # so pg connection in parent process doesnt break
         exit!(0) 
       end
       log(:at => :fork, :pid => fork_pid)
