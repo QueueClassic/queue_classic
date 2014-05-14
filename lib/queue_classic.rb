@@ -31,7 +31,7 @@ module QC
   # for more details.
   FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
 
-  # Should forked worker wait for response by default?
+  # When worker forks, should parent process wait for its completion?
   ASYNCHRONOUS_WORKER = !ENV["QC_ASYNCHRONOUS_WORKER"].nil?
 
   # Defer method calls on the QC module to the
