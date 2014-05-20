@@ -316,13 +316,10 @@ class WorkerTest < QCTest
     a1 = async1.work
     a2 = async2.work
     
-    count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
     f1 = fork1.work
     f2 = fork2.work
     s1 = sync1.work
     s2 = sync2.work
-    new_count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
-    assert(new_count == count)
     
     Process.wait(a1)
     Process.wait(a2)
