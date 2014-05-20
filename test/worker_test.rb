@@ -279,7 +279,6 @@ class WorkerTest < QCTest
 
   def test_async_forked_work_that_does_sql
     QC.enqueue("QC.default_conn_adapter.execute", "SELECT 123 as value")
-    count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
     worker = TestWorker.new fork_worker: true, asynchronous: true
     read, write = IO.pipe
     object_id = QC.default_conn_adapter.connection.object_id
@@ -292,8 +291,6 @@ class WorkerTest < QCTest
     write.close
     marshalled = read.read
     Process.wait(fork_pid)
-    new_count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
-    assert(new_count == count, "should not leave any connections unclosed")
     new_object_id = Marshal.load(marshalled)
     assert(new_object_id != object_id, "should establish new connection")
     assert_equal(0, QC.count)
