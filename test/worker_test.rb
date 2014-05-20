@@ -240,11 +240,11 @@ class WorkerTest < QCTest
     QC.enqueue("TestObject.qc_count")
     worker = TestWorker.new fork_worker: true
     read, write = IO.pipe
-    object_id = QC.default_conn_adapter.connection.object_id
+    object_id = QC.default_queue.conn_adapter.connection.object_id
     assert_equal(1, QC.count)
     output = worker.work do
       read.close
-      Marshal.dump(QC.default_conn_adapter.connection.object_id, write)
+      Marshal.dump(QC.default_queue.conn_adapter.connection.object_id, write)
     end
 
     write.close
@@ -261,11 +261,11 @@ class WorkerTest < QCTest
     QC.enqueue("TestObject.no_args")
     worker = TestWorker.new fork_worker: true
     read, write = IO.pipe
-    object_id = QC.default_conn_adapter.connection.object_id
+    object_id = QC.default_queue.conn_adapter.connection.object_id
     assert_equal(1, QC.count)
     output = worker.work do
       read.close
-      Marshal.dump(QC.default_conn_adapter.connection.object_id, write)
+      Marshal.dump(QC.default_queue.conn_adapter.connection.object_id, write)
     end
 
     write.close
@@ -281,10 +281,10 @@ class WorkerTest < QCTest
     QC.enqueue("QC.default_conn_adapter.execute", "SELECT 123 as value")
     worker = TestWorker.new fork_worker: true, asynchronous: true
     read, write = IO.pipe
-    object_id = QC.default_conn_adapter.connection.object_id
+    object_id = QC.default_queue.conn_adapter.connection.object_id
     fork_pid = worker.work do
       read.close
-      Marshal.dump(QC.default_conn_adapter.connection.object_id, write)
+      Marshal.dump(QC.default_queue.conn_adapter.connection.object_id, write)
     end
     assert_equal(1, QC.count) # not yet executed
     assert_equal(0, worker.failed_count)
