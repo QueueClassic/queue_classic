@@ -6,7 +6,9 @@ module TestObject
   def one_arg(a); return a; end
   def two_args(a,b); return [a,b]; end
   def forty_two; OpenStruct.new(number: 42); end
-  def qc_count; QC.count; end
+  def connection_count; 
+    QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i; 
+  end
 end
 
 # This not only allows me to test what happens
@@ -128,11 +130,11 @@ class WorkerTest < QCTest
 
   def test_worker_reuses_conn
     QC.enqueue("QC.default_conn_adapter.execute", "SELECT 123 as value")
-    count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
+    count = TestObject.connection_count
     worker = TestWorker.new
     result = worker.work
     assert_equal("123", result["value"])
-    new_count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
+    new_count = TestObject.connection_count
     assert(
       new_count == count,
       "Worker should not initialize new connections to #{ QC.default_conn_adapter.send(:db_url) }."
@@ -182,6 +184,9 @@ class WorkerTest < QCTest
   end
 
   def test_unlock_jobs_of_dead_workers
+    # Do some SQL
+    QC.count
+
     # Insert a locked job
     adapter = QC::ConnAdapter.new
     query = "INSERT INTO #{QC::TABLE_NAME} (q_name, method, args, locked_by, locked_at) VALUES ('whatever', 'Kernel.puts', '[\"ok?\"]', 0, (CURRENT_TIMESTAMP))"
@@ -237,20 +242,21 @@ class WorkerTest < QCTest
 
 
   def test_forked_work_that_does_sql
-    QC.enqueue("TestObject.qc_count")
+    QC.enqueue("TestObject.connection_count")
     worker = TestWorker.new fork_worker: true
     read, write = IO.pipe
-    object_id = QC.default_queue.conn_adapter.connection.object_id
     assert_equal(1, QC.count)
+
     output = worker.work do
       read.close
+      QC.count
       Marshal.dump(QC.default_conn_adapter.instance_variable_get("@pid"), write)
     end
 
     write.close
     marshalled = read.read
     new_pid = Marshal.load(marshalled)
-    assert(new_pid != Process.pid, "should not establish another connection")
+    assert(new_pid != Process.pid, "should establish another connection")
     
     assert_equal(0, QC.count)
     assert_equal(0, worker.failed_count)

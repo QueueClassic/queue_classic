@@ -23,8 +23,6 @@ module QC
 
       if args[:connection]
         @conn_adapter = ConnAdapter.new(args[:connection])
-      elsif @asynchronous
-        @conn_adapter = QC.default_conn_adapter
       elsif QC.has_connection?
         @conn_adapter = QC.default_conn_adapter
       end
@@ -107,7 +105,6 @@ module QC
     def process(queue, job, &callback)
       start = Time.now
       call(job, callback) do |result|
-        queue.conn_adapter.dont_use_forked_connection
         log_result(queue, job, result, start)
       end
     end

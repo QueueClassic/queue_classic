@@ -7,16 +7,17 @@ module QC
     attr_accessor :connection
 
     def initialize(c=nil)
+      establish(c)
+    end
+
+    def establish(c=nil)
       @pid = Process.pid
       @connection = c.nil? ? establish_new : validate!(c)
       @mutex = Mutex.new
     end
 
-    def dont_use_forked_connection(pid = Process.pid)
-      unless @pid == pid
-        @pid = pid
-        initialize
-      end
+    def dont_use_forked_connection
+      establish unless @pid == Process.pid
     end
 
     def execute(stmt, *params)
