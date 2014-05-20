@@ -107,6 +107,7 @@ module QC
     def process(queue, job, &callback)
       start = Time.now
       call(job, callback) do |result|
+        queue.conn_adapter.dont_use_forked_connection
         log_result(queue, job, result, start)
       end
     end
@@ -115,10 +116,7 @@ module QC
     def log_result(queue, job, result, start)
       ttp = Integer((Time.now - start) * 1000)
       QC.measure("time-to-process=#{ttp} source=#{queue.name}")
-      if @asynchronous && queue.conn_adapter.needs_its_own_connection?
-        queue.conn_adapter.reestablish
-      end
-      if (Exception === result)
+      if result.kind_of?(Exception)
         log_failure(queue, job, result)
       else
         log_success(queue, job, result)
@@ -179,27 +177,27 @@ module QC
     # its own.
     def call_forked(job, callback = nil, &block)
       read, write = IO.pipe
-      prepare_child
+      before_fork
       fork_pid = fork do
         setup_child
+        # Process the job inside of a forked process
         result = call_inline(job, callback, &block)
+        # Write the result to the pipe, so parent process can read it 
         unless @asynchronous
           read.close
           Marshal.dump(result, write)
+          kill_child
         end
-        # Exit forked process without running exit handlers 
-        # so pg connection in parent process doesnt break
-        exit!(0) 
+        # Exit forked process without running failure handlers 
+        exit!(0)
       end
       log(:at => :fork, :pid => fork_pid)
-      unless @asynchronous
-        write.close
-        marshalled = read.read
-        Process.wait(fork_pid)
-        yield Marshal.load(marshalled)
-      else
-        fork_pid
-      end
+      return fork_pid if @asynchronous
+      # Wait for a forked process and read the result from a pipe
+      write.close
+      marshalled = read.read
+      Process.wait(fork_pid)
+      yield Marshal.load(marshalled)
     end
 
     # This method will be called when an exception
@@ -208,17 +206,19 @@ module QC
       $stderr.puts("count#qc.job-error=1 job=#{job} error=#{e.inspect}")
     end
 
-    # This method should be overriden if
-    # your worker is forking and you need to
-    # re-establish database connections
+    # This method is called inside of a new fork
+    # Redefine it to initialize your db connection
     def setup_child
+      log(:at => "setup_child")
+    end
+
+    # This method is called before the fork is killed
+    # Redefine it to kill your db connection
+    def kill_child
     end
 
     # This method is called before process is forked
-    # We avoid using pg inside a forked process,
-    # so logging has to happen her
-    def prepare_child
-      log(:at => "setup_child")
+    def before_fork
     end
 
     def log(data)

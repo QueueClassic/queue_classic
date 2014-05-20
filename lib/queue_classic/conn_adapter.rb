@@ -4,27 +4,27 @@ require 'pg'
 
 module QC
   class ConnAdapter
-
     attr_accessor :connection
+
     def initialize(c=nil)
+      establish(c)
+    end
+
+    def establish(c = nil)
       @pid = Process.pid
       @connection = c.nil? ? establish_new : validate!(c)
       @mutex = Mutex.new
     end
 
-    def reestablish
-      @connection = establish_new;
-      @mutex = Mutex.new
-      @pid = Process.pid
-    end
-
-    def needs_its_own_connection?
-      @pid != Process.pid
+    def dont_use_forked_connection(pid = Process.pid)
+      unless @pid == pid
+        @pid = pid
+        establish
+      end
     end
 
     def execute(stmt, *params)
-      reestablish if needs_its_own_connection?
-
+      dont_use_forked_connection
       @mutex.synchronize do
         QC.log(:at => "exec_sql", :sql => stmt.inspect)
         begin
