@@ -244,13 +244,13 @@ class WorkerTest < QCTest
     assert_equal(1, QC.count)
     output = worker.work do
       read.close
-      Marshal.dump(QC.default_queue.conn_adapter.connection.object_id, write)
+      Marshal.dump(QC.default_conn_adapter.instance_variable_get("@pid"), write)
     end
 
     write.close
     marshalled = read.read
-    new_object_id = Marshal.load(marshalled)
-    assert(new_object_id != object_id, "should establish another connection")
+    new_pid = Marshal.load(marshalled)
+    assert(new_pid != Process.pid, "should not establish another connection")
     
     assert_equal(0, QC.count)
     assert_equal(0, worker.failed_count)
@@ -261,17 +261,16 @@ class WorkerTest < QCTest
     QC.enqueue("TestObject.no_args")
     worker = TestWorker.new fork_worker: true
     read, write = IO.pipe
-    object_id = QC.default_queue.conn_adapter.connection.object_id
     assert_equal(1, QC.count)
     output = worker.work do
       read.close
-      Marshal.dump(QC.default_queue.conn_adapter.connection.object_id, write)
+      Marshal.dump(QC.default_conn_adapter.instance_variable_get("@pid"), write)
     end
 
     write.close
     marshalled = read.read
-    new_object_id = Marshal.load(marshalled)
-    assert(new_object_id == object_id, "should not another connection")
+    new_pid = Marshal.load(marshalled)
+    assert(new_pid == Process.pid, "should not establish another connection")
     
     assert_equal(0, QC.count)
     assert_equal(0, worker.failed_count)
@@ -281,18 +280,17 @@ class WorkerTest < QCTest
     QC.enqueue("QC.default_conn_adapter.execute", "SELECT 123 as value")
     worker = TestWorker.new fork_worker: true, asynchronous: true
     read, write = IO.pipe
-    object_id = QC.default_queue.conn_adapter.connection.object_id
     fork_pid = worker.work do
       read.close
-      Marshal.dump(QC.default_queue.conn_adapter.connection.object_id, write)
+      Marshal.dump(QC.default_conn_adapter.instance_variable_get("@pid"), write)
     end
     assert_equal(1, QC.count) # not yet executed
     assert_equal(0, worker.failed_count)
     write.close
     marshalled = read.read
     Process.wait(fork_pid)
-    new_object_id = Marshal.load(marshalled)
-    assert(new_object_id != object_id, "should establish new connection")
+    new_pid = Marshal.load(marshalled)
+    assert(new_pid == fork_pid, "should establish new connection")
     assert_equal(0, QC.count)
     assert_equal(0, worker.failed_count)
   end
