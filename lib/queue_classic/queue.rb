@@ -41,11 +41,21 @@ module QC
       end
     end
 
+    # enqueue_at(t,m,a) inserts a row into the jobs table representing a job
+    # to be executed not before the specified time.
+    # The time argument must be a Time object. The method and args argument
+    # must be in the form described in the documentation for the #enqueue
+    # method.
     def enqueue_at(time, method, *args)
       offset = time - Time.now
       enqueue_in(offset, method, *args)
     end
 
+    # enqueue_in(t,m,a) inserts a row into the jobs table representing a job
+    # to be executed not before the specified time offset.
+    # The seconds argument must be a number. The method and args argument
+    # must be in the form described in the documentation for the #enqueue
+    # method.
     def enqueue_in(seconds, method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
         s = "INSERT INTO #{TABLE_NAME} (q_name, method, args, created_at)

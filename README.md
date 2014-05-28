@@ -77,6 +77,16 @@ p_queue = QC::Queue.new("priority_queue")
 p_queue.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
+There is also the possibility to schedule a job at a specified time in the future. It will not be worked off before that specified time.
+
+```ruby
+# Specifying the job execution time exactly.
+QC.enqueue_at(Time.new(2024,01,02,10,00), "Kernel.puts", "hello future")
+
+# Specifying the job execution time as an offset in seconds.
+QC.enqueue_in(60, "Kernel.puts", "hello from 1 minute later")
+```
+
 ### Working Jobs
 
 There are two ways to work jobs. The first approach is to use the Rake task. The second approach is to use a custom executable.
