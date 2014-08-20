@@ -91,11 +91,17 @@ module QC
     puts(out) if ENV["DEBUG"]
     return result
   end
-  
+
   def self.measure(data)
     if ENV['QC_MEASURE']
       $stdout.puts("measure#qc.#{data}")
     end
+  end
+
+  # This will unlock all jobs any postgres' PID that is not existing anymore
+  # to prevent any infinitely locked jobs
+  def self.unlock_jobs_of_dead_workers
+    @conn_adapter.execute("UPDATE #{QC::TABLE_NAME} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
   end
 end
 
