@@ -4,7 +4,7 @@
 [![Code Climate](https://codeclimate.com/github/ryandotsmith/queue_classic.png)](https://codeclimate.com/github/ryandotsmith/queue_classic)
 
 Stable: [v2.2.3](https://github.com/ryandotsmith/queue_classic/tree/v2.2.3)
-Latest: v3.0.0rc
+Latest: v3.0.0
 
 queue_classic provides a simple interface to a PostgreSQL-backed message queue. queue_classic specializes in concurrent locking and minimizing database load while providing a simple, intuitive developer experience. queue_classic assumes that you are already using PostgreSQL in your production environment and that adding another dependency (e.g. redis, beanstalkd, 0mq) is undesirable.
 
@@ -138,7 +138,7 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 Declare dependencies in Gemfile.
 ```ruby
 source "http://rubygems.org"
-gem "queue_classic", "3.0.0beta"
+gem "queue_classic", "~> 3.0.0"
 ```
 
 Add the database tables and stored procedures.
