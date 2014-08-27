@@ -174,4 +174,49 @@ class WorkerTest < QCTest
     assert_equal(42, r)
     assert_equal(0, worker.failed_count)
   end
+
+  def test_init_worker_with_arg
+    set_database 'postgres:///invalid'
+
+    conn = PG::Connection.connect(dbname: 'queue_classic_test')
+    worker = QC::Worker.new connection: conn
+
+    conn.close
+    reset_database
+  end
+
+  def test_init_worker_with_database_url
+    set_database ENV['DATABASE_URL'] || ENV['QC_DATABASE_URL']
+
+    worker = QC::Worker.new
+    QC.enqueue("TestObject.no_args")
+    worker.lock_job
+
+    QC.default_conn_adapter.disconnect
+    reset_database
+  end
+
+  def test_init_worker_without_conn
+    set_database nil
+
+    assert_raises(ArgumentError) { QC::Worker.new }
+
+    reset_database
+  end
+
+  private
+
+  def set_database(url)
+    @database_url = ENV['DATABASE_URL']
+    @qc_database_url = ENV['QC_DATABASE_URL']
+    ENV['DATABASE_URL'] = ENV['QC_DATABASE_URL'] = url
+    @conn_adapter = QC.default_conn_adapter
+    QC.default_conn_adapter = nil
+  end
+
+  def reset_database
+    ENV['DATABASE_URL'] = @database_url
+    ENV['QC_DATABASE_URL'] = @qc_database_url
+    QC.default_conn_adapter = @conn_adapter
+  end
 end
