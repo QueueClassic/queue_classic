@@ -1,10 +1,10 @@
 # queue_classic
 
-[![Build Status](https://travis-ci.org/ryandotsmith/queue_classic.svg?branch=master)](https://travis-ci.org/ryandotsmith/queue_classic)
-[![Code Climate](https://codeclimate.com/github/ryandotsmith/queue_classic.png)](https://codeclimate.com/github/ryandotsmith/queue_classic)
+[![Build Status](https://travis-ci.org/QueueClassic/queue_classic.svg?branch=master)](https://travis-ci.org/QueueClassic/queue_classic)
+[![Code Climate](https://codeclimate.com/github/QueueClassic/queue_classic.png)](https://codeclimate.com/github/QueueClassic/queue_classic)
 
 Current: v3.0.X
-Older stable: [v2.2.3](https://github.com/ryandotsmith/queue_classic/tree/v2.2.3)
+Older stable: [v2.2.3](https://github.com/QueueClassic/queue_classic/tree/v2.2.3)
 
 
 queue_classic provides a simple interface to a PostgreSQL-backed message queue. queue_classic specializes in concurrent locking and minimizing database load while providing a simple, intuitive developer experience. queue_classic assumes that you are already using PostgreSQL in your production environment and that adding another dependency (e.g. redis, beanstalkd, 0mq) is undesirable.
@@ -193,7 +193,7 @@ $ bundle exec rake qc:update
 
 ## Configuration
 
-All configuration takes place in the form of environment vars. See [queue_classic.rb](https://github.com/ryandotsmith/queue_classic/blob/master/lib/queue_classic.rb#L23-62) for a list of options.
+All configuration takes place in the form of environment vars. See [queue_classic.rb](https://github.com/QueueClassic/queue_classic/blob/master/lib/queue_classic.rb#L23-62) for a list of options.
 
 ## JSON
 
@@ -236,8 +236,8 @@ https://groups.google.com/d/forum/queue_classic
 
 ## Hacking on queue_classic
 
-[![Build Status](https://travis-ci.org/ryandotsmith/queue_classic.svg?branch=master)](https://travis-ci.org/ryandotsmith/queue_classic)
-[![Code Climate](https://codeclimate.com/github/ryandotsmith/queue_classic.png)](https://codeclimate.com/github/ryandotsmith/queue_classic)
+[![Build Status](https://travis-ci.org/QueueClassic/queue_classic.svg?branch=master)](https://travis-ci.org/QueueClassic/queue_classic)
+[![Code Climate](https://codeclimate.com/github/QueueClassic/queue_classic.png)](https://codeclimate.com/github/QueueClassic/queue_classic)
 
 ### Dependencies
 
