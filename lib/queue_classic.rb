@@ -58,7 +58,7 @@ module QC
 
   def self.default_conn_adapter
     return @conn_adapter if @conn_adapter
-    if Object.const_defined?("ActiveRecord::Base") && ActiveRecord::Base.respond_to?("connection")
+    if Object.const_defined?("ActiveRecord") && ActiveRecord::Base.respond_to?("connection")
       @conn_adapter = ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
     else
       @conn_adapter = ConnAdapter.new
