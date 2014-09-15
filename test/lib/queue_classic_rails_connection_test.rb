@@ -1,14 +1,28 @@
 require File.expand_path("../../helper.rb", __FILE__)
 
 class QueueClassicRailsConnectionTest < QCTest
+  def before_setup
+    Object.send :const_set, :ActiveRecord, Module.new
+    ActiveRecord.const_set :Base, Module.new
+
+    QC.default_conn_adapter = nil
+  end
+
+  def after_teardown
+    ensure
+      ActiveRecord.send :remove_const, :Base
+      Object.send :remove_const, :ActiveRecord
+  end
+
   def test_uses_active_record_connection_if_exists
-    # This is unimplmented. I am not very used to work minitest, what I want
-    # to achieve is something not too hacky that would be the equivalent of:
-    #   expect(ActiveRecord::Base.connection).to receive(:raw_connection)
+    connection = Minitest::Mock.new
+    connection.expect(:raw_connection, QC::ConnAdapter.new.connection)
 
-    raise "we need something that works here..."
-  end
+    ActiveRecord::Base.define_singleton_method(:connection) do
+      connection
+    end
 
-  def test_does_not_use_active_record_connection_if_doesnt_exists
-    raise "unimplemented"
+    QC.default_conn_adapter
+    assert connection.verify
   end
+end
