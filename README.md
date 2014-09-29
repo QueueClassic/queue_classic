@@ -37,7 +37,7 @@ queue_classic provides a simple interface to a PostgreSQL-backed message queue. 
 * [Documentation](http://rubydoc.info/gems/queue_classic/2.2.3/frames)
 * [Usage](#usage)
 * [Setup](#setup)
-* [Upgrade from V2 to V3](#upgrade-from-v2-to-v3)
+* [Upgrade from earlier versions to V3.1](#upgrade-from-earlier-versions)
 * [Configuration](#configuration)
   * [JSON](#json)
   * [Logging](#logging)
@@ -201,7 +201,7 @@ If you don't want to use the automatic database connection, set this environment
 
 By default, queue_classic will use the QC_DATABASE_URL falling back on DATABASE_URL. The URL must be in the following format: `postgres://username:password@localhost/database_name`.  If you use Heroku's PostgreSQL service, this will already be set. If you don't want to set this variable, you can set the connection in an initializer. **QueueClassic will maintain its own connection to the database.** This may double the number of connections to your database.
 
-## Upgrade from V2 to V3
+## Upgrade from earlier versions
 If you are upgrading from a previous version of queue_classic, you might need some new database columns and/or functions. Luckily enough for you, it is easy to do so.
 
 ### Ruby on Rails

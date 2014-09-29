@@ -6,6 +6,8 @@ module QC
     DropSqlFunctions = File.join(Root, "/sql/drop_ddl.sql")
     UpgradeTo_3_0_0 = File.join(Root, "/sql/update_to_3_0_0.sql")
     DowngradeFrom_3_0_0 = File.join(Root, "/sql/downgrade_from_3_0_0.sql")
+    UpgradeTo_3_1_0 = File.join(Root, "/sql/update_to_3_1_0.sql")
+    DowngradeFrom_3_1_0 = File.join(Root, "/sql/downgrade_from_3_1_0.sql")
 
     def self.create(c = QC::default_conn_adapter.connection)
       conn = QC::ConnAdapter.new(c)
@@ -24,6 +26,7 @@ module QC
     def self.update(c = QC::default_conn_adapter.connection)
       conn = QC::ConnAdapter.new(c)
       conn.execute(File.read(UpgradeTo_3_0_0))
+      conn.execute(File.read(UpgradeTo_3_1_0))
       conn.execute(File.read(DropSqlFunctions))
       conn.execute(File.read(SqlFunctions))
     end
@@ -38,6 +41,18 @@ module QC
     def self.downgrade_from_3_0_0(c = QC::default_conn_adapter.connection)
       conn = QC::ConnAdapter.new(c)
       conn.execute(File.read(DowngradeFrom_3_0_0))
+    end
+
+    def self.update_to_3_1_0(c = QC::default_conn_adapter.connection)
+      conn = QC::ConnAdapter.new(c)
+      conn.execute(File.read(UpgradeTo_3_1_0))
+      conn.execute(File.read(DropSqlFunctions))
+      conn.execute(File.read(SqlFunctions))
+    end
+
+    def self.downgrade_from_3_1_0(c = QC::default_conn_adapter.connection)
+      conn = QC::ConnAdapter.new(c)
+      conn.execute(File.read(DowngradeFrom_3_1_0))
     end
   end
 end

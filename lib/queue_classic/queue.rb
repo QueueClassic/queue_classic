@@ -58,7 +58,7 @@ module QC
     # method.
     def enqueue_in(seconds, method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
-        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args, created_at)
+        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args, scheduled_at)
              VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')"
         res = conn_adapter.execute(s, name, method, JSON.dump(args))
       end
@@ -73,9 +73,9 @@ module QC
             job[:q_name] = r["q_name"]
             job[:method] = r["method"]
             job[:args] = JSON.parse(r["args"])
-            if r["created_at"]
-              job[:created_at] = Time.parse(r["created_at"])
-              ttl = Integer((Time.now - job[:created_at]) * 1000)
+            if r["scheduled_at"]
+              job[:scheduled_at] = Time.parse(r["scheduled_at"])
+              ttl = Integer((Time.now - job[:scheduled_at]) * 1000)
               QC.measure("time-to-lock=#{ttl}ms source=#{name}")
             end
           end

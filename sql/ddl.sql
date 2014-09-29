@@ -19,7 +19,7 @@ BEGIN
     || ' WHERE locked_at IS NULL'
     || ' AND q_name = '
     || quote_literal(q_name)
-    || ' AND created_at <= '
+    || ' AND scheduled_at <= '
     || quote_literal(now())
     || ' LIMIT '
     || quote_literal(top_boundary)
@@ -39,7 +39,7 @@ BEGIN
         || ' WHERE locked_at IS NULL'
         || ' AND q_name = '
         || quote_literal(q_name)
-        || ' AND created_at <= '
+        || ' AND scheduled_at <= '
         || quote_literal(now())
         || ' ORDER BY id ASC'
         || ' LIMIT 1'

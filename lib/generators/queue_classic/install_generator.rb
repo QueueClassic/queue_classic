@@ -27,6 +27,10 @@ module QC
       if self.class.migration_exists?('db/migrate', 'update_queue_classic_3_0_2').nil?
         migration_template 'update_queue_classic_3_0_2.rb', 'db/migrate/update_queue_classic_3_0_2.rb'
       end
+
+      if self.class.migration_exists?('db/migrate', 'update_queue_classic_3_1_0').nil?
+        migration_template 'update_queue_classic_3_1_0.rb', 'db/migrate/update_queue_classic_3_1_0.rb'
+      end
     end
   end
 end

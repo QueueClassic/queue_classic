@@ -7,7 +7,8 @@ CREATE TABLE queue_classic_jobs (
   args   text not null,
   locked_at timestamptz,
   locked_by integer,
-  created_at timestamptz default now()
+  created_at timestamptz default now(),
+  scheduled_at timestamptz default now()
 );
 
 -- If json type is available, use it for the args column.
@@ -19,3 +20,5 @@ end if;
 end $$ language plpgsql;
 
 CREATE INDEX idx_qc_on_name_only_unlocked ON queue_classic_jobs (q_name, id) WHERE locked_at IS NULL;
+CREATE INDEX idx_qc_on_scheduled_at_only_unlocked ON queue_classic_jobs (scheduled_at, id) WHERE locked_at IS NULL;
+
