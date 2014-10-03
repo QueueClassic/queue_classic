@@ -9,9 +9,8 @@ class QueueClassicRailsConnectionTest < QCTest
   end
 
   def after_teardown
-    ensure
-      ActiveRecord.send :remove_const, :Base
-      Object.send :remove_const, :ActiveRecord
+    ActiveRecord.send :remove_const, :Base
+    Object.send :remove_const, :ActiveRecord
   end
 
   def test_uses_active_record_connection_if_exists
