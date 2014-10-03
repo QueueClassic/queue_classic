@@ -148,6 +148,8 @@ rails generate queue_classic:install
 rake db:migrate
 ```
 
+If you want to use queue_classic with Active Job (Rails 4.2+), you need to set `Rails.application.config.active_job.queue_adapter = :queue_classic`. Everything else will be taken care for you, just use the Active Job API.
+
 ### Rake Task Setup
 
 Alternatively, you can use the Rake task to prepare your database.
