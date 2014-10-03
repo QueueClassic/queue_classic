@@ -166,6 +166,8 @@ $ bundle exec rake qc:drop
 
 Starting with with queue_classic 3.1, Rails is automatically detected and its connection is used.
 
+If you don't want to use the automatic database connection, set this environment variable to false: `export QC_RAILS_DATABASE=false`
+
 **Note on using ActiveRecord migrations:** If you use the migration, and you wish to use commands that reset the database from the stored schema (e.g. `rake db:reset`), your application must be configured with `config.active_record.schema_format = :sql` in `config/application.rb`.  If you don't do this, the PL/pgSQL function that queue_classic creates will be lost when you reset the database.
 
 
