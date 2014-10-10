@@ -1,15 +1,29 @@
 # queue_classic
 
-[![Build Status](https://travis-ci.org/QueueClassic/queue_classic.svg?branch=master)](https://travis-ci.org/QueueClassic/queue_classic)
-[![Code Climate](https://codeclimate.com/github/QueueClassic/queue_classic.png)](https://codeclimate.com/github/QueueClassic/queue_classic)
+<p align="center">
+  <b>Simple, efficient worker queue for Ruby & PostgreSQL</b>
+  <br />
+  <a href="https://travis-ci.org/QueueClassic/queue_classic"><img src="http://img.shields.io/travis/QueueClassic/queue_classic/master.svg?style=flat" /></a>
 
-Current: v3.0.X
-Older stable: [v2.2.3](https://github.com/QueueClassic/queue_classic/tree/v2.2.3)
+  <a href="https://codeclimate.com/github/QueueClassic/queue_classic"><img src="http://img.shields.io/codeclimate/github/QueueClassic/queue_classic.svg?style=flat" /></a>
 
+  <a href="http://badge.fury.io/rb/queue_classic"><img src="http://img.shields.io/gem/v/queue_classic.svg?style=flat" alt="Gem Version" height="18"></a>
+</p>
+
+
+**IMPORTANT NOTE REGARDING VERSIONS**
+
+**This README is representing the current work for queue_classic 3.1, which is neither complete or stable. You can find the README for stable versions:**
+
+- latest stable can be found: [v3.0.X](https://github.com/QueueClassic/queue_classic/tree/3-0-stable)
+- older stable: [v2.2.3](https://github.com/QueueClassic/queue_classic/tree/v2.2.3)
+
+
+## What is queue_classic?
 
 queue_classic provides a simple interface to a PostgreSQL-backed message queue. queue_classic specializes in concurrent locking and minimizing database load while providing a simple, intuitive developer experience. queue_classic assumes that you are already using PostgreSQL in your production environment and that adding another dependency (e.g. redis, beanstalkd, 0mq) is undesirable.
 
-Features:
+## Features
 
 * Leverage of PostgreSQL's listen/notify & row locking.
 * Support for multiple queues with heterogeneous workers.
@@ -18,7 +32,7 @@ Features:
 * Workers can work multiple queues.
 * Reduced row contention using a [relaxed FIFO](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf) technique.
 
-Contents:
+## Table of content
 
 * [Documentation](http://rubydoc.info/gems/queue_classic/2.2.3/frames)
 * [Usage](#usage)
