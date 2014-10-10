@@ -67,3 +67,14 @@ BEGIN
   RETURN QUERY EXECUTE 'SELECT * FROM lock_head($1,10)' USING tname;
 END;
 $$ LANGUAGE plpgsql;
+
+-- queue_classic_notify function and trigger
+create function queue_classic_notify() returns trigger as $$ begin
+  perform pg_notify(new.q_name, '');
+  return null;
+end $$ language plpgsql;
+
+create trigger queue_classic_notify
+after insert on queue_classic_jobs
+for each row
+execute procedure queue_classic_notify();
