@@ -27,7 +27,7 @@ class QueueTest < QCTest
     assert_nil(QC.lock)
   end
 
-  def test_lock_with_future_job
+  def test_lock_with_future_job_with_enqueue_in
     QC.enqueue_in(2, "Klass.method")
     assert_nil QC.lock
     sleep 2
@@ -36,7 +36,7 @@ class QueueTest < QCTest
     assert_equal([], job[:args])
   end
 
-  def test_lock_with_future_job_alternative_api
+  def test_lock_with_future_job_with_enqueue_at
     future = Time.now + 2
     QC.enqueue_at(future, "Klass.method")
     assert_nil QC.lock

@@ -53,7 +53,7 @@ module QC
 
     # enqueue_in(t,m,a) inserts a row into the jobs table representing a job
     # to be executed not before the specified time offset.
-    # The seconds argument must be a number. The method and args argument
+    # The seconds argument must be an integer. The method and args argument
     # must be in the form described in the documentation for the #enqueue
     # method.
     def enqueue_in(seconds, method, *args)
