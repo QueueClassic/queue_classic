@@ -36,11 +36,21 @@ class QueueTest < QCTest
     assert_equal([], job[:args])
   end
 
-  def test_lock_with_future_job_with_enqueue_at
+  def test_lock_with_future_job_with_enqueue_at_with_a_time_object
     future = Time.now + 2
     QC.enqueue_at(future, "Klass.method")
     assert_nil QC.lock
     until Time.now >= future do sleep 0.1 end
+    job = QC.lock
+    assert_equal("Klass.method", job[:method])
+    assert_equal([], job[:args])
+  end
+
+  def test_lock_with_future_job_with_enqueue_at_with_a_float_timestamp
+    offset = (Time.now + 2).to_f
+    QC.enqueue_at(offset, "Klass.method")
+    assert_nil QC.lock
+    sleep 2
     job = QC.lock
     assert_equal("Klass.method", job[:method])
     assert_equal([], job[:args])

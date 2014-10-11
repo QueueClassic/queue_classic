@@ -43,11 +43,11 @@ module QC
 
     # enqueue_at(t,m,a) inserts a row into the jobs table representing a job
     # to be executed not before the specified time.
-    # The time argument must be a Time object. The method and args argument
-    # must be in the form described in the documentation for the #enqueue
-    # method.
-    def enqueue_at(time, method, *args)
-      offset = time - Time.now
+    # The time argument must be a Time object or a float timestamp. The method
+    # and args argument must be in the form described in the documentation for
+    # the #enqueue method.
+    def enqueue_at(timestamp, method, *args)
+      offset = Time.at(timestamp) - Time.now
       enqueue_in(offset, method, *args)
     end
 
