@@ -87,7 +87,6 @@ module QC
     result = nil
     data = {:lib => "queue-classic"}.merge(data)
     if block_given?
-      start = Time.now
       result = yield
       data.merge(:elapsed => Integer((Time.now - t0)*1000))
     end

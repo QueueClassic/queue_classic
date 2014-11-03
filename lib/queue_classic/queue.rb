@@ -36,8 +36,8 @@ module QC
     # `'hello', 'world'`.
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
-        s="INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
-        res = conn_adapter.execute(s, name, method, JSON.dump(args))
+        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
+        conn_adapter.execute(s, name, method, JSON.dump(args))
       end
     end
 
