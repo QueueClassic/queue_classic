@@ -57,7 +57,7 @@ module QC
   end
 
   def self.default_conn_adapter
-    return @conn_adapter if @conn_adapter
+    return @conn_adapter if defined?(@conn_adapter) && @conn_adapter
     if rails_connection_sharing_enabled?
       @conn_adapter = ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
     else

@@ -179,7 +179,7 @@ class WorkerTest < QCTest
     set_database 'postgres:///invalid'
 
     conn = PG::Connection.connect(dbname: 'queue_classic_test')
-    worker = QC::Worker.new connection: conn
+    QC::Worker.new connection: conn
 
     conn.close
     reset_database

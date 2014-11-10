@@ -64,8 +64,7 @@ module QC
 
     def validate!(c)
       return c if c.is_a?(PG::Connection)
-      klass = c.class
-      err = "connection must be an instance of PG::Connection, but was #{c}"
+      err = "connection must be an instance of PG::Connection, but was #{c.class}"
       raise(ArgumentError, err)
     end
 
@@ -94,7 +93,7 @@ module QC
     end
 
     def db_url
-      return @db_url if @db_url
+      return @db_url if defined?(@db_url) && @db_url
       url = ENV["QC_DATABASE_URL"] ||
             ENV["DATABASE_URL"]    ||
             raise(ArgumentError, "missing QC_DATABASE_URL or DATABASE_URL")
