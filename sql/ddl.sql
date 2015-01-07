@@ -19,6 +19,8 @@ BEGIN
     || ' WHERE locked_at IS NULL'
     || ' AND q_name = '
     || quote_literal(q_name)
+    || ' AND scheduled_at <= '
+    || quote_literal(now())
     || ' LIMIT '
     || quote_literal(top_boundary)
     || ') limited'
@@ -37,6 +39,8 @@ BEGIN
         || ' WHERE locked_at IS NULL'
         || ' AND q_name = '
         || quote_literal(q_name)
+        || ' AND scheduled_at <= '
+        || quote_literal(now())
         || ' ORDER BY id ASC'
         || ' LIMIT 1'
         || ' OFFSET ' || quote_literal(relative_top)

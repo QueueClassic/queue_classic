@@ -37,7 +37,7 @@ queue_classic provides a simple interface to a PostgreSQL-backed message queue. 
 * [Documentation](http://rubydoc.info/gems/queue_classic/2.2.3/frames)
 * [Usage](#usage)
 * [Setup](#setup)
-* [Upgrade from V2 to V3](#upgrade-from-v2-to-v3)
+* [Upgrade from earlier versions to V3.1](#upgrade-from-earlier-versions)
 * [Configuration](#configuration)
   * [JSON](#json)
   * [Logging](#logging)
@@ -75,6 +75,16 @@ QC.enqueue("Kernel.puts", ["hello", "world"])
 # This method uses a non-default queue.
 p_queue = QC::Queue.new("priority_queue")
 p_queue.enqueue("Kernel.puts", ["hello", "world"])
+```
+
+There is also the possibility to schedule a job at a specified time in the future. It will not be worked off before that specified time.
+
+```ruby
+# Specifying the job execution time exactly.
+QC.enqueue_at(Time.new(2024,01,02,10,00), "Kernel.puts", "hello future")
+
+# Specifying the job execution time as an offset in seconds.
+QC.enqueue_in(60, "Kernel.puts", "hello from 1 minute later")
 ```
 
 ### Working Jobs
@@ -191,7 +201,7 @@ If you don't want to use the automatic database connection, set this environment
 
 By default, queue_classic will use the QC_DATABASE_URL falling back on DATABASE_URL. The URL must be in the following format: `postgres://username:password@localhost/database_name`.  If you use Heroku's PostgreSQL service, this will already be set. If you don't want to set this variable, you can set the connection in an initializer. **QueueClassic will maintain its own connection to the database.** This may double the number of connections to your database.
 
-## Upgrade from V2 to V3
+## Upgrade from earlier versions
 If you are upgrading from a previous version of queue_classic, you might need some new database columns and/or functions. Luckily enough for you, it is easy to do so.
 
 ### Ruby on Rails

@@ -41,6 +41,29 @@ module QC
       end
     end
 
+    # enqueue_at(t,m,a) inserts a row into the jobs table representing a job
+    # to be executed not before the specified time.
+    # The time argument must be a Time object or a float timestamp. The method
+    # and args argument must be in the form described in the documentation for
+    # the #enqueue method.
+    def enqueue_at(timestamp, method, *args)
+      offset = Time.at(timestamp) - Time.now
+      enqueue_in(offset, method, *args)
+    end
+
+    # enqueue_in(t,m,a) inserts a row into the jobs table representing a job
+    # to be executed not before the specified time offset.
+    # The seconds argument must be an integer. The method and args argument
+    # must be in the form described in the documentation for the #enqueue
+    # method.
+    def enqueue_in(seconds, method, *args)
+      QC.log_yield(:measure => 'queue.enqueue') do
+        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args, scheduled_at)
+             VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')"
+        res = conn_adapter.execute(s, name, method, JSON.dump(args))
+      end
+    end
+
     def lock
       QC.log_yield(:measure => 'queue.lock') do
         s = "SELECT * FROM lock_head($1, $2)"
@@ -50,9 +73,9 @@ module QC
             job[:q_name] = r["q_name"]
             job[:method] = r["method"]
             job[:args] = JSON.parse(r["args"])
-            if r["created_at"]
-              job[:created_at] = Time.parse(r["created_at"])
-              ttl = Integer((Time.now - job[:created_at]) * 1000)
+            if r["scheduled_at"]
+              job[:scheduled_at] = Time.parse(r["scheduled_at"])
+              ttl = Integer((Time.now - job[:scheduled_at]) * 1000)
               QC.measure("time-to-lock=#{ttl}ms source=#{name}")
             end
           end
