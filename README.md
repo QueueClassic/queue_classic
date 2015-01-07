@@ -102,7 +102,7 @@ $ QUEUE="priority_queue" bundle exec rake qc:work
 
 Setup a worker to work multiple queues.
 ```bash
-$ QUEUES="priority_queue, secondary_queue" bundle exec rake qc:work
+$ QUEUES="priority_queue,secondary_queue" bundle exec rake qc:work
 ```
 In this scenario, on each iteration of the worker's loop, it will look for jobs in the first queue prior to looking at the second queue. This means that the first queue must be empty before the worker will look at the second queue.
 
