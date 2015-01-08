@@ -167,6 +167,7 @@ gem "queue_classic", "~> 3.0.0"
 ```
 
 Add the database tables and stored procedures.
+
 ```
 rails generate queue_classic:install
 bundle exec rake db:migrate
@@ -214,7 +215,7 @@ You just need to run those lines, which will copy the new required migrations:
 
 ```
 rails generate queue_classic:install
-rake db:migrate
+bundle exec rake db:migrate
 ```
 ### Rake Task
 
