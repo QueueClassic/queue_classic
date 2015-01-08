@@ -169,7 +169,7 @@ gem "queue_classic", "~> 3.0.0"
 Add the database tables and stored procedures.
 ```
 rails generate queue_classic:install
-rake db:migrate
+bundle exec rake db:migrate
 ```
 
 #### Active Job
