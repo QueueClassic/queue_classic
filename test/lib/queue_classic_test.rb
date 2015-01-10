@@ -5,10 +5,13 @@ class QueueClassicTest < QCTest
     assert(QC.default_conn_adapter.is_a?(QC::ConnAdapter))
   end
 
-  def test_default_conn_adapter=
+  def test_assigning_a_default_conn_adapter
+    original_conn_adapter = QC.default_conn_adapter
     connection = QC::ConnAdapter.new
     QC.default_conn_adapter = connection
     assert_equal(QC.default_conn_adapter, connection)
+  ensure
+    QC.default_conn_adapter = original_conn_adapter
   end
 
   def test_unlock_jobs_of_dead_workers
