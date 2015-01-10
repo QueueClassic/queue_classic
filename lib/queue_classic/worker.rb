@@ -106,13 +106,15 @@ module QC
     def process(queue, job)
       start = Time.now
       finished = false
+      original_args = clone_args(job)
       begin
         call(job).tap do
           queue.delete(job[:id])
           finished = true
         end
       rescue => e
-        handle_failure(job, e)
+        original_job = job.merge(args: original_args)
+        handle_failure(original_job, e)
         finished = true
       ensure
         if !finished
@@ -157,6 +159,20 @@ module QC
       names.map do |name|
         QC::Queue.new(name, top_bound).tap do |q|
           q.conn_adapter = adapter
+        end
+      end
+    end
+
+    # Clone the job's arguments to ensure that
+    # handle_failure gets the original arguments
+    # in case of failure, making sure not to clone
+    # un-cloneable objects (such as numbers).
+    def clone_args(job)
+      job[:args].map do |arg|
+        begin
+          arg.clone
+        rescue TypeError
+          arg
         end
       end
     end
