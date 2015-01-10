@@ -27,6 +27,18 @@ class TestWorker < QC::Worker
 end
 
 class WorkerTest < QCTest
+  def test_qc_worker_is_the_default_worker
+    assert_equal QC::Worker, QC.default_worker_class
+  end
+
+  def test_default_worker_can_be_changed
+    original_worker = QC.default_worker_class
+    QC.default_worker_class = TestWorker
+
+    assert_equal TestWorker, QC.default_worker_class
+  ensure
+    QC.default_worker_class = original_worker
+  end
 
   def test_work
     QC.enqueue("TestObject.no_args")

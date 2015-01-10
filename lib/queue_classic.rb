@@ -70,6 +70,14 @@ module QC
     @conn_adapter = conn
   end
 
+  def self.default_worker_class
+    @worker_class ||= QC::Worker
+  end
+
+  def self.default_worker_class=(worker_class)
+    @worker_class = worker_class
+  end
+
   def self.log_yield(data)
     begin
       t0 = Time.now
