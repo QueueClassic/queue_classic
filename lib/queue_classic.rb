@@ -53,7 +53,7 @@ module QC
   end
 
   def self.has_connection?
-    !@conn_adapter.nil?
+    !default_conn_adapter.nil?
   end
 
   def self.default_conn_adapter
@@ -106,7 +106,7 @@ module QC
   # This will unlock all jobs any postgres' PID that is not existing anymore
   # to prevent any infinitely locked jobs
   def self.unlock_jobs_of_dead_workers
-    @conn_adapter.execute("UPDATE #{QC::TABLE_NAME} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
+    default_conn_adapter.execute("UPDATE #{QC::TABLE_NAME} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
   end
 
   private
