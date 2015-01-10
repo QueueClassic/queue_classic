@@ -184,6 +184,7 @@ class WorkerTest < QCTest
     QC::Worker.new connection: conn
 
     conn.close
+  ensure
     reset_database
   end
 
@@ -195,6 +196,7 @@ class WorkerTest < QCTest
     worker.lock_job
 
     QC.default_conn_adapter.disconnect
+  ensure
     reset_database
   end
 
@@ -203,6 +205,7 @@ class WorkerTest < QCTest
 
     assert_raises(ArgumentError) { QC::Worker.new }
 
+  ensure
     reset_database
   end
 
