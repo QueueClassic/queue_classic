@@ -270,9 +270,6 @@ https://groups.google.com/d/forum/queue_classic
 
 ## Hacking on queue_classic
 
-[![Build Status](https://travis-ci.org/QueueClassic/queue_classic.svg?branch=master)](https://travis-ci.org/QueueClassic/queue_classic)
-[![Code Climate](https://codeclimate.com/github/QueueClassic/queue_classic.png)](https://codeclimate.com/github/QueueClassic/queue_classic)
-
 ### Dependencies
 
 * Ruby 1.9.2 (tests work in 1.8.7 but compatibility is not guaranteed or supported)
