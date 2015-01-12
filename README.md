@@ -13,8 +13,9 @@
 
 **IMPORTANT NOTE REGARDING VERSIONS**
 
-**This README is representing the current work for queue_classic 3.1. You can find the README for other versions:**
+**This README is representing the current work for queue_classic edge [unstable]. You can find the README for other versions:**
 
+- current release candidate: [v3.1.X](https://github.com/QueueClassic/queue_classic/tree/3-1-stable)
 - latest stable can be found: [v3.0.X](https://github.com/QueueClassic/queue_classic/tree/3-0-stable)
 - older stable: [v2.2.3](https://github.com/QueueClassic/queue_classic/tree/v2.2.3)
 
