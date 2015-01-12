@@ -109,11 +109,15 @@ module QC
     default_conn_adapter.execute("UPDATE #{QC::TABLE_NAME} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
   end
 
-  private
-  def self.rails_connection_sharing_enabled?
-    enabled = ENV.fetch('QC_RAILS_DATABASE', 'true') != 'false'
-    return false unless enabled
-    return Object.const_defined?("ActiveRecord") && ActiveRecord::Base.respond_to?("connection")
+  # private class methods
+  class << self
+    private
+
+    def rails_connection_sharing_enabled?
+      enabled = ENV.fetch('QC_RAILS_DATABASE', 'true') != 'false'
+      return false unless enabled
+      return Object.const_defined?("ActiveRecord") && ActiveRecord::Base.respond_to?("connection")
+    end
   end
 end
 
