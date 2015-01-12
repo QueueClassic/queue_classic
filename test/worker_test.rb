@@ -40,7 +40,7 @@ class WorkerTest < QCTest
   def test_failed_job
     QC.enqueue("TestObject.not_a_method")
     worker = TestWorker.new
-    worker.work
+    capture_stderr_output { worker.work }
     assert_equal(1, worker.failed_count)
   end
 
