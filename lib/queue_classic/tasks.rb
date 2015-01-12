@@ -6,7 +6,7 @@ namespace :jobs do
 end
 
 namespace :qc do
-  desc "Start a new worker for the (default or $QUEUE) queue"
+  desc "Start a new worker for the (default or $QUEUE / $QUEUES) queue"
   task :work  => :environment do
     @worker = QC::Worker.new
 
@@ -27,7 +27,7 @@ namespace :qc do
     @worker.start
   end
 
-  desc "Returns the number of jobs in the (default or QUEUE) queue"
+  desc "Returns the number of jobs in the (default or $QUEUE / $QUEUES) queue"
   task :count => :environment do
     puts QC.default_queue.count
   end
