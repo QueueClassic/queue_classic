@@ -143,6 +143,13 @@ loop do
 end
 ```
 
+The `qc:work` rake task uses `QC::Worker` by default. However, it's easy to
+inject your own wrker class:
+
+```ruby
+QC.default_worker_class = MyWorker
+```
+
 ## Setup
 
 In addition to installing the rubygem, you will need to prepare your database. Database preparation includes creating a table and loading PL/pgSQL functions. You can issue the database preparation commands using `PSQL(1)` or use a database migration script.

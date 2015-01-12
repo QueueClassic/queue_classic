@@ -70,6 +70,7 @@ module QC
     @conn_adapter = conn
   end
 
+  # The worker class instantiated by QC's rake tasks.
   def self.default_worker_class
     @worker_class ||= QC::Worker
   end
