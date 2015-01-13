@@ -190,48 +190,40 @@ class WorkerTest < QCTest
   end
 
   def test_init_worker_with_arg
-    set_database 'postgres:///invalid'
+    with_database 'postgres:///invalid' do
+      conn = PG::Connection.connect(dbname: 'queue_classic_test')
+      QC::Worker.new connection: conn
 
-    conn = PG::Connection.connect(dbname: 'queue_classic_test')
-    QC::Worker.new connection: conn
-
-    conn.close
-  ensure
-    reset_database
+      conn.close
+    end
   end
 
   def test_init_worker_with_database_url
-    set_database ENV['DATABASE_URL'] || ENV['QC_DATABASE_URL']
+    with_database ENV['DATABASE_URL'] || ENV['QC_DATABASE_URL'] do
+      worker = QC::Worker.new
+      QC.enqueue("TestObject.no_args")
+      worker.lock_job
 
-    worker = QC::Worker.new
-    QC.enqueue("TestObject.no_args")
-    worker.lock_job
-
-    QC.default_conn_adapter.disconnect
-  ensure
-    reset_database
+      QC.default_conn_adapter.disconnect
+    end
   end
 
   def test_init_worker_without_conn
-    set_database nil
-
-    assert_raises(ArgumentError) { QC::Worker.new }
-
-  ensure
-    reset_database
+    with_database nil do
+      assert_raises(ArgumentError) { QC::Worker.new }
+    end
   end
 
   private
 
-  def set_database(url)
+  def with_database(url)
     @database_url = ENV['DATABASE_URL']
     @qc_database_url = ENV['QC_DATABASE_URL']
     ENV['DATABASE_URL'] = ENV['QC_DATABASE_URL'] = url
     @conn_adapter = QC.default_conn_adapter
     QC.default_conn_adapter = nil
-  end
-
-  def reset_database
+    yield
+  ensure
     ENV['DATABASE_URL'] = @database_url
     ENV['QC_DATABASE_URL'] = @qc_database_url
     QC.default_conn_adapter = @conn_adapter
