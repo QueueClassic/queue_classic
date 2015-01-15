@@ -136,7 +136,7 @@ module QC
     # This method will be called when an exception
     # is raised during the execution of the job.
     def handle_failure(job,e)
-      $stderr.puts("count#qc.job-error=1 job=#{job} error=#{e.inspect}")
+      $stderr.puts("count#qc.job-error=1 job=#{job} error=#{e.inspect} at=#{e.backtrace.first}")
     end
 
     # This method should be overriden if
