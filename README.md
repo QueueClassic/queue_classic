@@ -135,8 +135,8 @@ end
 
 worker = MyWorker.new
 
-trap('INT') {exit}
-trap('TERM') {worker.stop}
+trap('INT') { exit }
+trap('TERM') { worker.stop }
 
 loop do
   job = worker.lock_job
