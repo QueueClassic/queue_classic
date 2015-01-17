@@ -1,6 +1,13 @@
 require File.expand_path("../../helper.rb", __FILE__)
 
 class QueueClassicTest < QCTest
+  def test_only_delegate_calls_to_queue_it_understands
+    e = assert_raises(NoMethodError) do
+      QC.probably_not
+    end
+    assert_match "undefined method `probably_not' for QC:Module", e.message
+  end
+
   def test_default_conn_adapter_default_value
     assert(QC.default_conn_adapter.is_a?(QC::ConnAdapter))
   end

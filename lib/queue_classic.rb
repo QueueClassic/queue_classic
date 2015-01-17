@@ -24,13 +24,19 @@ The constant QC::#{const_name} is deprecated and will be removed in the future.
 Please use the method QC.#{config_method} instead.
       MSG
       QC.public_send config_method
+    else
+      super
     end
   end
 
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
   def self.method_missing(sym, *args, &block)
-    default_queue.send(sym, *args, &block)
+    if default_queue.respond_to? sym
+      default_queue.send(sym, *args, &block)
+    else
+      super
+    end
   end
 
   # Ensure QC.respond_to?(:enqueue) equals true (ruby 1.9 only)
