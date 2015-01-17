@@ -56,15 +56,6 @@ Please use the method QC.#{config_method} instead.
     @conn_adapter = conn
   end
 
-  # The worker class instantiated by QC's rake tasks.
-  def self.default_worker_class
-    @worker_class ||= QC::Worker
-  end
-
-  def self.default_worker_class=(worker_class)
-    @worker_class = worker_class
-  end
-
   def self.log_yield(data)
     begin
       t0 = Time.now

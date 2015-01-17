@@ -95,6 +95,27 @@ class ConfigTest < QCTest
     assert_match "QC.fork_worker? instead", warning
   end
 
+  class TestWorker < QC::Worker; end
+
+  def test_default_worker_class
+    assert_equal QC::Worker, QC.default_worker_class
+  end
+
+  def test_configure_default_worker_class_with_env_var
+    with_env "QC_DEFAULT_WORKER_CLASS" => "ConfigTest::TestWorker" do
+      assert_equal TestWorker, QC.default_worker_class
+    end
+  end
+
+  def test_assign_default_worker_class
+    original_worker = QC.default_worker_class
+    QC.default_worker_class = TestWorker
+
+    assert_equal TestWorker, QC.default_worker_class
+  ensure
+    QC.default_worker_class = original_worker
+  end
+
   private
   def with_env(temporary_environment)
     original_environment = {}

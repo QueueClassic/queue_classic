@@ -56,6 +56,18 @@ module QC
       @fork_worker ||= (!ENV["QC_FORK_WORKER"].nil?)
     end
 
+    # The worker class instantiated by QC's rake tasks.
+    def default_worker_class
+
+      @worker_class ||= (ENV["QC_DEFAULT_WORKER_CLASS"] && Kernel.const_get(ENV["QC_DEFAULT_WORKER_CLASS"]) ||
+                         QC::Worker)
+
+    end
+
+    def default_worker_class=(worker_class)
+      @worker_class = worker_class
+    end
+
     # reset memoized configuration
     def reset_config
       # TODO: we might want to think about storing these in a Hash.
@@ -67,6 +79,7 @@ module QC
       @queues = nil
       @top_bound = nil
       @fork_worker = nil
+      @worker_class = nil
     end
   end
 end
