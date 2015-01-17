@@ -35,12 +35,20 @@ class ConfigTest < QCTest
 
   def test_queue_default
     assert_equal "default", QC.queue
+    assert_equal "default", QC.default_queue.name
   end
 
   def test_configure_queue_with_env_var
     with_env "QUEUE" => "priority" do
       assert_equal "priority", QC.queue
+      assert_equal "priority", QC.default_queue.name
     end
+  end
+
+  def test_assign_default_queue
+    QC.default_queue = QC::Queue.new "dispensable"
+    assert_equal "default", QC.queue
+    assert_equal "dispensable", QC.default_queue.name
   end
 
   def test_queues_default

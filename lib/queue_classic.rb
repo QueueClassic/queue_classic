@@ -38,16 +38,6 @@ Please use the method QC.#{config_method} instead.
     default_queue.respond_to?(method_name)
   end
 
-  def self.default_queue=(queue)
-    @default_queue = queue
-  end
-
-  def self.default_queue
-    @default_queue ||= begin
-      Queue.new(QC.queue)
-    end
-  end
-
   def self.has_connection?
     !default_conn_adapter.nil?
   end

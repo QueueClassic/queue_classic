@@ -21,13 +21,22 @@ module QC
       @table_name ||= "queue_classic_jobs"
     end
 
-    # Each row in the table will have a column that
-    # notes the queue. You can point your workers
-    # at different queues but only one at a time.
     def queue
-      @queue ||= ENV["QUEUE"] || "default"
+      @queue = ENV["QUEUE"] || "default"
     end
 
+    # The default queue used by `QC.enqueue`.
+    def default_queue
+      @default_queue ||= Queue.new(QC.queue)
+    end
+
+    def default_queue=(queue)
+      @default_queue = queue
+    end
+
+    # Each row in the table will have a column that
+    # notes the queue. You can point your workers
+    # at different queues.
     def queues
       @queues ||= (ENV["QUEUES"] && ENV["QUEUES"].split(",").map(&:strip)) || []
     end
@@ -54,6 +63,7 @@ module QC
       @wait_time = nil
       @table_name = nil
       @queue = nil
+      @default_queue = nil
       @queues = nil
       @top_bound = nil
       @fork_worker = nil
