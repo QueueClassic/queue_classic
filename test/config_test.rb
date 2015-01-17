@@ -45,6 +45,12 @@ class ConfigTest < QCTest
     end
   end
 
+  def test_configure_queues_with_whitespace
+    with_env "QUEUES" => " one, two, three " do
+      assert_equal %w(one two three), QC.queues
+    end
+  end
+
   def test_top_bound_default
     assert_equal 9, QC.top_bound
   end

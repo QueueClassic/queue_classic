@@ -29,7 +29,7 @@ module QC
     end
 
     def queues
-      (ENV["QUEUES"] && ENV["QUEUES"].split(",")) || []
+      (ENV["QUEUES"] && ENV["QUEUES"].split(",").map(&:strip)) || []
     end
 
     # Set this to 1 for strict FIFO.
