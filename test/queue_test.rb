@@ -131,7 +131,7 @@ class QueueTest < QCTest
 
   def test_enqueue_triggers_notify
     adapter = QC.default_conn_adapter
-    adapter.execute('LISTEN "' + QC::QUEUE + '"')
+    adapter.execute('LISTEN "' + QC.queue + '"')
     adapter.send(:drain_notify)
 
     msgs = adapter.send(:wait_for_notify, 0.25)

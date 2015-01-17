@@ -71,6 +71,14 @@ class ConfigTest < QCTest
     end
   end
 
+  def test_configuration_constants_are_deprecated
+    warning = capture_stderr_output do
+      QC::FORK_WORKER
+    end
+    assert_match "QC::FORK_WORKER is deprecated", warning
+    assert_match "QC.fork_worker? instead", warning
+  end
+
   private
   def with_env(temporary_environment)
     original_environment = {}

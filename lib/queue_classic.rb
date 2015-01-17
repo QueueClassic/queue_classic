@@ -6,13 +6,26 @@ module QC
   # Assign constants for backwards compatibility.
   # They should no longer be used. Prefer the corresponding methods.
   # See +QC::Config+ for more details.
-  APP_NAME = self.app_name
-  WAIT_TIME = self.wait_time
-  TABLE_NAME = self.table_name
-  QUEUE = self.queue
-  QUEUES = self.queues
-  TOP_BOUND = self.top_bound
-  FORK_WORKER = self.fork_worker?
+  DEPRECATED_CONSTANTS = {
+    :APP_NAME => :app_name,
+    :WAIT_TIME => :wait_time,
+    :TABLE_NAME => :table_name,
+    :QUEUE => :queue,
+    :QUEUES => :queues,
+    :TOP_BOUND => :top_bound,
+    :FORK_WORKER => :fork_worker?,
+  }
+
+  def self.const_missing(const_name)
+    if DEPRECATED_CONSTANTS.key? const_name
+      config_method = DEPRECATED_CONSTANTS[const_name]
+      $stderr.puts <<-MSG
+The constant QC::#{const_name} is deprecated and will be removed in the future.
+Please use the method QC.#{config_method} instead.
+      MSG
+      QC.public_send config_method
+    end
+  end
 
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
@@ -31,7 +44,7 @@ module QC
 
   def self.default_queue
     @default_queue ||= begin
-      Queue.new(QUEUE)
+      Queue.new(QC.queue)
     end
   end
 
@@ -98,7 +111,7 @@ module QC
   # This will unlock all jobs any postgres' PID that is not existing anymore
   # to prevent any infinitely locked jobs
   def self.unlock_jobs_of_dead_workers
-    default_conn_adapter.execute("UPDATE #{QC::TABLE_NAME} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
+    default_conn_adapter.execute("UPDATE #{QC.table_name} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
   end
 
   # private class methods

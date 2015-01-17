@@ -74,7 +74,7 @@ module QC
       if conn.status != PGconn::CONNECTION_OK
         QC.log(:error => conn.error)
       end
-      conn.exec("SET application_name = '#{QC::APP_NAME}'")
+      conn.exec("SET application_name = '#{QC.app_name}'")
       conn
     end
 

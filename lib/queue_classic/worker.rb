@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 require_relative 'queue'
 require_relative 'conn_adapter'
 
@@ -16,8 +17,8 @@ module QC
     # q_names:: Names of queues to process. Will process left to right.
     # top_bound:: Offset to the head of the queue. 1 == strict FIFO.
     def initialize(args={})
-      @fork_worker = args[:fork_worker] || QC::FORK_WORKER
-      @wait_interval = args[:wait_interval] || QC::WAIT_TIME
+      @fork_worker = args[:fork_worker] || QC.fork_worker?
+      @wait_interval = args[:wait_interval] || QC.wait_time
 
       if args[:connection]
         @conn_adapter = ConnAdapter.new(args[:connection])
@@ -26,9 +27,9 @@ module QC
       end
 
       @queues = setup_queues(@conn_adapter,
-        (args[:q_name] || QC::QUEUE),
-        (args[:q_names] || QC::QUEUES),
-        (args[:top_bound] || QC::TOP_BOUND))
+        (args[:q_name] || QC.queue),
+        (args[:q_names] || QC.queues),
+        (args[:top_bound] || QC.top_bound))
       log(args.merge(:at => "worker_initialized"))
       @running = true
     end
