@@ -102,6 +102,9 @@ class ConfigTest < QCTest
   end
 
   def test_configure_default_worker_class_with_env_var
+    if RUBY_VERSION =~ /^1\.9\./
+        skip "Kernel.const_get in Ruby 1.9.x does not perform recursive lookups"
+    end
     with_env "QC_DEFAULT_WORKER_CLASS" => "ConfigTest::TestWorker" do
       assert_equal TestWorker, QC.default_worker_class
     end
