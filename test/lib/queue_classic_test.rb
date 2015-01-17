@@ -17,11 +17,11 @@ class QueueClassicTest < QCTest
   def test_unlock_jobs_of_dead_workers
     # Insert a locked job
     adapter = QC::ConnAdapter.new
-    query = "INSERT INTO #{QC::TABLE_NAME} (q_name, method, args, locked_by, locked_at) VALUES ('whatever', 'Kernel.puts', '[\"ok?\"]', 0, (CURRENT_TIMESTAMP))"
+    query = "INSERT INTO #{QC.table_name} (q_name, method, args, locked_by, locked_at) VALUES ('whatever', 'Kernel.puts', '[\"ok?\"]', 0, (CURRENT_TIMESTAMP))"
     adapter.execute(query)
 
     # We should have no unlocked jobs
-    query_locked_jobs = "SELECT * FROM #{QC::TABLE_NAME} WHERE locked_at IS NULL"
+    query_locked_jobs = "SELECT * FROM #{QC.table_name} WHERE locked_at IS NULL"
     res = adapter.connection.exec(query_locked_jobs)
     assert_equal(0, res.count)
 
