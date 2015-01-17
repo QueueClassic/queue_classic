@@ -1,35 +1,18 @@
+require_relative "queue_classic/config"
+
 module QC
-  # You can use the APP_NAME to query for
-  # postgres related process information in the
-  # pg_stat_activity table.
-  APP_NAME = ENV["QC_APP_NAME"] || "queue_classic"
+  extend QC::Config
 
-  # Number of seconds to block on the listen chanel for new jobs.
-  WAIT_TIME = (ENV["QC_LISTEN_TIME"] || 5).to_i
-
-  # Why do you want to change the table name?
-  # Just deal with the default OK?
-  # If you do want to change this, you will
-  # need to update the PL/pgSQL lock_head() function.
-  # Come on. Don't do it.... Just stick with the default.
-  TABLE_NAME = "queue_classic_jobs"
-
-  # Each row in the table will have a column that
-  # notes the queue. You can point your workers
-  # at different queues but only one at a time.
-  QUEUE = ENV["QUEUE"] || "default"
-  QUEUES = (ENV["QUEUES"] && ENV["QUEUES"].split(",")) || []
-
-  # Set this to 1 for strict FIFO.
-  # There is nothing special about 9....
-  TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
-
-  # Set this variable if you wish for
-  # the worker to fork a UNIX process for
-  # each locked job. Remember to re-establish
-  # any database connections. See the worker
-  # for more details.
-  FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
+  # Assign constants for backwards compatibility.
+  # They should no longer be used. Prefer the corresponding methods.
+  # See +QC::Config+ for more details.
+  APP_NAME = self.app_name
+  WAIT_TIME = self.wait_time
+  TABLE_NAME = self.table_name
+  QUEUE = self.queue
+  QUEUES = self.queues
+  TOP_BOUND = self.top_bound
+  FORK_WORKER = self.fork_worker?
 
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
