@@ -217,15 +217,16 @@ class WorkerTest < QCTest
   private
 
   def with_database(url)
-    database_url = ENV['DATABASE_URL']
-    qc_database_url = ENV['QC_DATABASE_URL']
+    original_conn_adapter = QC.default_conn_adapter
+    original_database_url = ENV['DATABASE_URL']
+    original_qc_database_url = ENV['QC_DATABASE_URL']
+
     ENV['DATABASE_URL'] = ENV['QC_DATABASE_URL'] = url
-    conn_adapter = QC.default_conn_adapter
     QC.default_conn_adapter = nil
     yield
   ensure
-    ENV['DATABASE_URL'] = database_url
-    ENV['QC_DATABASE_URL'] = qc_database_url
-    QC.default_conn_adapter = conn_adapter
+    ENV['DATABASE_URL'] = original_database_url
+    ENV['QC_DATABASE_URL'] = original_qc_database_url
+    QC.default_conn_adapter = original_conn_adapter
   end
 end
