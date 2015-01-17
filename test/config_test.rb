@@ -1,6 +1,14 @@
 require_relative "helper"
 
 class ConfigTest < QCTest
+  def setup
+    QC.reset_config
+  end
+
+  def teardown
+    QC.reset_config
+  end
+
   def test_app_name_default
     assert_equal "queue_classic", QC.app_name
   end
