@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.license       = "MIT"
 
   files = []
-  files << "readme.md"
+  files << "README.md"
   files << Dir["sql/**/*.sql"]
   files << Dir["{lib,test}/**/*.rb"]
   s.files = files
