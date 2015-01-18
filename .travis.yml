@@ -4,7 +4,8 @@ before_script:
 env:
   - QC_DATABASE_URL="postgres://postgres@localhost/queue_classic_test"
 rvm:
-  - 2.1.1
+  - 2.2
+  - 2.1
   - 2.0.0
   - 1.9.3
 addons:
