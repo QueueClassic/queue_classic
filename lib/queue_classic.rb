@@ -33,7 +33,7 @@ Please use the method QC.#{config_method} instead.
   # default queue. This facilitates QC.enqueue()
   def self.method_missing(sym, *args, &block)
     if default_queue.respond_to? sym
-      default_queue.send(sym, *args, &block)
+      default_queue.public_send(sym, *args, &block)
     else
       super
     end
