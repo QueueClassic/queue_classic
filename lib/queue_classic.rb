@@ -49,17 +49,19 @@ Please use the method QC.#{config_method} instead.
   end
 
   def self.default_conn_adapter
-    return @conn_adapter if defined?(@conn_adapter) && @conn_adapter
-    if rails_connection_sharing_enabled?
-      @conn_adapter = ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
+    t = Thread.current
+    return t[:qc_conn_adapter] if t[:qc_conn_adapter]
+    adapter = if rails_connection_sharing_enabled?
+      ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
     else
-      @conn_adapter = ConnAdapter.new
+      ConnAdapter.new
     end
-    @conn_adapter
+
+    t[:qc_conn_adapter] = adapter
   end
 
   def self.default_conn_adapter=(conn)
-    @conn_adapter = conn
+    Thread.current[:qc_conn_adapter] = conn
   end
 
   def self.log_yield(data)

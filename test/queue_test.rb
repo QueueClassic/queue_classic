@@ -129,6 +129,47 @@ class QueueTest < QCTest
     QC.default_queue = nil
   end
 
+  def test_multi_threaded_server_can_specified_connection
+    adapter1 = QC::ConnAdapter.new
+    adapter2 = QC::ConnAdapter.new
+    q1 = q2 = nil
+
+    QC.default_conn_adapter = adapter1
+
+    t1 = Thread.new do
+      QC.default_conn_adapter = adapter1
+      q1 = QC::Queue.new('queue1').conn_adapter
+    end
+
+    t2 = Thread.new do
+      QC.default_conn_adapter = adapter2
+      q2 = QC::Queue.new('queue2').conn_adapter
+    end
+
+    t1.join
+    t2.join
+
+    assert_equal adapter1, q1
+    assert_equal adapter2, q2
+  end
+
+  def test_multi_threaded_server_each_thread_acquires_unique_connection
+    q1 = q2 = nil
+
+    t1 = Thread.new do
+      q1 = QC::Queue.new('queue1').conn_adapter
+    end
+
+    t2 = Thread.new do
+      q2 = QC::Queue.new('queue2').conn_adapter
+    end
+
+    t1.join
+    t2.join
+
+    refute_equal q1, q2
+  end
+
   def test_enqueue_triggers_notify
     adapter = QC.default_conn_adapter
     adapter.execute('LISTEN "' + QC.queue + '"')
