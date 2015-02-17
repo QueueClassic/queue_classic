@@ -145,7 +145,7 @@ end
 ```
 
 The `qc:work` rake task uses `QC::Worker` by default. However, it's easy to
-inject your own wrker class:
+inject your own worker class:
 
 ```ruby
 QC.default_worker_class = MyWorker
