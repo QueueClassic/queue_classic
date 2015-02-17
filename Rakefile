@@ -1,5 +1,6 @@
 $:.unshift("lib")
 
+require "bundler/gem_tasks"
 require "rake/testtask"
 require "./lib/queue_classic"
 require "./lib/queue_classic/tasks"

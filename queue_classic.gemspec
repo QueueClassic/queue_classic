@@ -1,22 +1,24 @@
-#encoding: UTF-8
-Gem::Specification.new do |s|
-  s.name          = "queue_classic"
-  s.email         = "r@32k.io"
-  s.version       = "3.1.0.RC1"
-  s.description   = "queue_classic is a queueing library for Ruby apps. (Rails, Sinatra, Etc...) queue_classic features asynchronous job polling, database maintained locks and no ridiculous dependencies. As a matter of fact, queue_classic only requires pg."
-  s.summary       = "Simple, efficient worker queue for Ruby & PostgreSQL."
-  s.authors       = ["Ryan Smith (♠ ace hacker)"]
-  s.homepage      = "http://github.com/QueueClassic/queue_classic"
-  s.license       = "MIT"
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'queue_classic/version'
 
-  files = []
-  files << "README.md"
-  files << Dir["sql/**/*.sql"]
-  files << Dir["{lib,test}/**/*.rb"]
-  s.files = files
-  s.test_files = s.files.select {|path| path =~ /^test\/.*_test.rb/}
+Gem::Specification.new do |spec|
+  spec.name          = "queue_classic"
+  spec.email         = "r@32k.io"
+  spec.version       = QC::VERSION
+  spec.description   = "queue_classic is a queueing library for Ruby apps. (Rails, Sinatra, Etc...) queue_classic features asynchronous job polling, database maintained locks and no ridiculous dependencies. As a matter of fact, queue_classic only requires pg."
+  spec.summary       = "Simple, efficient worker queue for Ruby & PostgreSQL."
+  spec.authors       = ["Ryan Smith (♠ ace hacker)"]
+  spec.homepage      = "http://github.com/QueueClassic/queue_classic"
+  spec.license       = "MIT"
 
-  s.require_paths = %w[lib]
+  spec.files         = `git ls-files -z`.split("\x0")
+  spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
+  spec.require_paths = ["lib"]
 
-  s.add_dependency "pg", ">= 0.17", "< 0.19"
+  spec.require_paths = %w[lib]
+
+  spec.add_dependency "pg", ">= 0.17", "< 0.19"
 end
