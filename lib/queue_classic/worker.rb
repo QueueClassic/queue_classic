@@ -156,7 +156,7 @@ module QC
     def setup_queues(adapter, queue, queues, top_bound)
       names = queues.length > 0 ? queues : [queue]
       names.map do |name|
-        QC::Queue.new(name, top_bound).tap do |q|
+        QC::Queue.new(name, top_bound: top_bound).tap do |q|
           q.conn_adapter = adapter
         end
       end

@@ -7,9 +7,10 @@ module QC
   class Queue
 
     attr_reader :name, :top_bound
-    def initialize(name, top_bound=nil)
+    def initialize(name, options = {})
       @name = name
-      @top_bound = top_bound || QC.top_bound
+      @adapter = options[:conn_adapter]
+      @top_bound = options.fetch(:top_bound) { QC.top_bound }
     end
 
     def conn_adapter=(a)

@@ -12,6 +12,12 @@ class QueueTest < QCTest
     assert_equal(true, QC.respond_to?(:enqueue))
   end
 
+  def test_connection_adapter_in_constructor
+    adapter = QC::ConnAdapter.new
+    queue = QC::Queue.new("test", conn_adapter: adapter)
+    assert_equal queue.conn_adapter, adapter
+  end
+
   def test_lock
     queue = QC::Queue.new("queue_classic_jobs")
     queue.enqueue("Klass.method")
