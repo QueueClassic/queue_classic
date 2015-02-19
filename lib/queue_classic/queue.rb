@@ -103,9 +103,27 @@ module QC
       end
     end
 
-    def count
+    # Count the number of jobs in a specific queue. By default this return all
+    # jobs, including ones that are scheduled in the future.
+    #
+    # You can specify what to count by passing in an argument to count. Possible
+    # values are :all, :ready and :scheduled.
+    #
+    # :all, default, will count all jobs
+    # :ready will only count jobs that are ready to be processed by a worker
+    # :scheduled will only count jobs that are scheduled to be processed at a
+    # later time.
+    def count(what = :all)
+      condition = {
+        all: "",
+        ready: " AND scheduled_at <= now()",
+        scheduled: " AND scheduled_at > now()",
+      }.fetch(what) do
+        raise ArgumentError, "Invalid thing to count"
+      end
+
       QC.log_yield(:measure => 'queue.count') do
-        s = "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1"
+        s = "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1#{condition}"
         r = conn_adapter.execute(s, name)
         r["count"].to_i
       end
