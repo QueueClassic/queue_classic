@@ -176,6 +176,22 @@ class WorkerTest < QCTest
     assert_equal(0, worker.failed_count)
   end
 
+  def test_work_off_until_no_jobs_are_left
+    QC.enqueue("TestObject.no_args")
+    QC.enqueue("TestObject.no_args")
+    QC.enqueue("TestObject.no_args")
+
+    assert_equal 3, QC.count
+    worker = TestWorker.new
+    Timeout::timeout(2) { worker.work_off }
+    assert_equal 0, QC.count
+  end
+
+  def test_work_off_does_not_wait_for_job
+    worker = TestWorker.new
+    Timeout::timeout(1) { worker.work_off }
+  end
+
   def test_init_worker_with_arg
     with_database 'postgres:///invalid' do
       conn = PG::Connection.connect(dbname: 'queue_classic_test')
