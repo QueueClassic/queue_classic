@@ -47,7 +47,7 @@ module QC
     # and args argument must be in the form described in the documentation for
     # the #enqueue method.
     def enqueue_at(timestamp, method, *args)
-      offset = Time.at(timestamp) - Time.now
+      offset = Time.at(timestamp).to_i - Time.now.to_i
       enqueue_in(offset, method, *args)
     end
 

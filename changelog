@@ -1,3 +1,6 @@
+Unreleased
+- Fixed a bug in the offset calculation of `.enqueue_at`.
+
 Version 3.0.0rc
 - Improved signal handling
 
