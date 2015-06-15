@@ -239,9 +239,10 @@ All configuration takes place in the form of environment vars. See [queue_classi
 
 ## JSON
 
-If you are running PostgreSQL 9.2 or higher, queue_classic will use the [json](http://www.postgresql.org/docs/9.2/static/datatype-json.html) datatype for storing arguments. Versions 9.1 and lower will use the 'text' column. If you have installed queue_classic prior to version 2.1.4 and are running PostgreSQL >= 9.2, run the following to switch to using the json type:
+If you are running PostgreSQL 9.4 or higher, queue_classic will use the [jsonb](http://www.postgresql.org/docs/9.4/static/datatype-json.html) datatype for new tables. Versions 9.2 and 9.3 will use the `json` data type and versions 9.1 and lower will use the `text` data type.
+If you are updating queue_classic and are running PostgreSQL >= 9.4, run the following to switch to `jsonb`:
 ```
-alter table queue_classic_jobs alter column args type json using (args::json);
+alter table queue_classic_jobs alter column args type jsonb using (args::jsonb);
 ```
 
 ## Logging

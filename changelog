@@ -1,5 +1,6 @@
 Unreleased
 - Fixed a bug in the offset calculation of `.enqueue_at`.
+- Use the jsonb type for the args column from now on. If not available, fall back to json or text.
 
 Version 3.0.0rc
 - Improved signal handling
