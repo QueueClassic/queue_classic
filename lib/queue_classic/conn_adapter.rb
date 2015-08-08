@@ -48,6 +48,13 @@ module QC
       end
     end
 
+    def server_version
+      @server_version ||= begin
+                            version = execute("SHOW server_version_num;")["server_version_num"]
+                            version && version.to_i
+                          end
+    end
+
     private
 
     def wait_for_notify(t)
