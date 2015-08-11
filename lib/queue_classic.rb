@@ -100,7 +100,10 @@ Please use the method QC.#{config_method} instead.
   # This will unlock all jobs any postgres' PID that is not existing anymore
   # to prevent any infinitely locked jobs
   def self.unlock_jobs_of_dead_workers
-    default_conn_adapter.execute("UPDATE #{QC.table_name} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
+    server_version_num = default_conn_adapter.execute("SHOW server_version_num;")["server_version_num"]
+    pid_string = server_version_num && server_version_num.to_i < 90200 ? "procpid" : "pid"
+
+    default_conn_adapter.execute("UPDATE #{QC.table_name} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT #{pid_string} FROM pg_stat_activity);")
   end
 
   # private class methods
