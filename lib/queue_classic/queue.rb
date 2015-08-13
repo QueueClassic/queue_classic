@@ -34,9 +34,10 @@ module QC
     # The args are stored as a collection and then splatted inside the worker.
     # Examples of args include: `'hello world'`, `['hello world']`,
     # `'hello', 'world'`.
+    # This method returns a hash with the id of the enqueued job.
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
-        s = "INSERT INTO #{QC.table_name} (q_name, method, args) VALUES ($1, $2, $3)"
+        s = "INSERT INTO #{QC.table_name} (q_name, method, args) VALUES ($1, $2, $3) RETURNING id"
         conn_adapter.execute(s, name, method, JSON.dump(args))
       end
     end
@@ -46,6 +47,7 @@ module QC
     # The time argument must be a Time object or a float timestamp. The method
     # and args argument must be in the form described in the documentation for
     # the #enqueue method.
+    # This method returns a hash with the id of the enqueued job.
     def enqueue_at(timestamp, method, *args)
       offset = Time.at(timestamp).to_i - Time.now.to_i
       enqueue_in(offset, method, *args)
@@ -56,10 +58,12 @@ module QC
     # The seconds argument must be an integer. The method and args argument
     # must be in the form described in the documentation for the #enqueue
     # method.
+    # This method returns a hash with the id of the enqueued job.
     def enqueue_in(seconds, method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
         s = "INSERT INTO #{QC.table_name} (q_name, method, args, scheduled_at)
-             VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')"
+             VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')
+             RETURNING id"
         conn_adapter.execute(s, name, method, JSON.dump(args))
       end
     end

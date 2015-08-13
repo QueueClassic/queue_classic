@@ -186,4 +186,23 @@ class QueueTest < QCTest
     assert_equal(1, msgs.length)
   end
 
+  def test_enqueue_returns_job_id
+    enqueued_job = QC.enqueue("Klass.method")
+    locked_job = QC.lock
+    assert_equal enqueued_job, "id" => locked_job[:id]
+  end
+
+  def test_enqueue_in_returns_job_id
+    enqueued_job = QC.enqueue_in(1, "Klass.method")
+    sleep 1
+    locked_job = QC.lock
+    assert_equal enqueued_job, "id" => locked_job[:id]
+  end
+
+  def test_enqueue_at_returns_job_id
+    enqueued_job = QC.enqueue_at(Time.now + 1, "Klass.method")
+    sleep 1
+    locked_job = QC.lock
+    assert_equal enqueued_job, "id" => locked_job[:id]
+  end
 end
