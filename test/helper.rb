@@ -61,4 +61,28 @@ class QCTest < Minitest::Test
   ensure
     original_environment.each { |name, value| ENV[name] = value }
   end
+
+  def stub_any_instance(class_name, method_name, definition)
+    new_method_name = "new_#{method_name}"
+    original_method_name = "original_#{method_name}"
+
+    method_present = class_name.instance_methods(false).include? method_name
+
+    if method_present
+      class_name.send(:alias_method, original_method_name, method_name)
+      class_name.send(:define_method, new_method_name, definition)
+      class_name.send(:alias_method, method_name, new_method_name)
+
+      yield
+    else
+      message = "#{class_name} does not have method #{method_name}."
+      message << "\nAvailable methods: #{class_name.instance_methods(false)}"
+      raise ArgumentError.new message
+    end
+  ensure
+    if method_present
+      class_name.send(:alias_method, method_name, original_method_name)
+      class_name.send(:undef_method, new_method_name)
+    end
+  end
 end
