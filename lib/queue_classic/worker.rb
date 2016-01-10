@@ -102,7 +102,7 @@ module QC
     # then it is deleted from the queue.
     # If the job has raised an exception the responsibility of what
     # to do with the job is delegated to Worker#handle_failure.
-    # If the job is not finished and an INT signal is traped,
+    # If the job is not finished and an INT signal is trapped,
     # this method will unlock the job in the queue.
     def process(queue, job)
       start = Time.now
