@@ -65,8 +65,8 @@ Please use the method QC.#{config_method} instead.
   end
 
   def self.log_yield(data)
+    t0 = Time.now
     begin
-      t0 = Time.now
       yield
     rescue => e
       log({:at => "error", :error => e.inspect}.merge(data))
