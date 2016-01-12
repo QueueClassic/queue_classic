@@ -1,12 +1,9 @@
-$: << File.expand_path("lib")
-$: << File.expand_path("test")
-
 require "bundler"
 Bundler.setup :default, :test
 
 ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
 
-require "queue_classic"
+require_relative '../lib/queue_classic'
 require "stringio"
 require "minitest/autorun"
 
