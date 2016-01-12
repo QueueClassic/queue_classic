@@ -17,10 +17,10 @@ class QueueTest < QCTest
     queue.enqueue("Klass.method")
     job = queue.lock
     # See helper.rb for more information about the large initial id number.
-    assert_equal((2**34).to_s, job[:id])
-    assert_equal("queue_classic_jobs", job[:q_name])
-    assert_equal("Klass.method", job[:method])
-    assert_equal([], job[:args])
+    assert_equal((2**34).to_s, job.id)
+    assert_equal("queue_classic_jobs", job.queue.name)
+    assert_equal("Klass.method", job.method_name)
+    assert_equal([], job.args)
   end
 
   def test_lock_when_empty
@@ -33,9 +33,9 @@ class QueueTest < QCTest
     assert_nil QC.lock
     sleep 2
     job = QC.lock
-    assert_equal("Klass.method", job[:method])
-    assert_equal([], job[:args])
-    assert_equal((now + 2).to_i, job[:scheduled_at].to_i)
+    assert_equal("Klass.method", job.method_name)
+    assert_equal([], job.args)
+    assert_equal((now + 2).to_i, job.scheduled_at.to_i)
   end
 
   def test_lock_with_future_job_with_enqueue_at_with_a_time_object
@@ -44,9 +44,9 @@ class QueueTest < QCTest
     assert_nil QC.lock
     until Time.now >= future do sleep 0.1 end
     job = QC.lock
-    assert_equal("Klass.method", job[:method])
-    assert_equal([], job[:args])
-    assert_equal(future.to_i, job[:scheduled_at].to_i)
+    assert_equal("Klass.method", job.method_name)
+    assert_equal([], job.args)
+    assert_equal(future.to_i, job.scheduled_at.to_i)
   end
 
   def test_lock_with_future_job_with_enqueue_at_with_a_float_timestamp
@@ -55,8 +55,8 @@ class QueueTest < QCTest
     assert_nil QC.lock
     sleep 2
     job = QC.lock
-    assert_equal("Klass.method", job[:method])
-    assert_equal([], job[:args])
+    assert_equal("Klass.method", job.method_name)
+    assert_equal([], job.args)
   end
 
   def test_count
@@ -67,7 +67,7 @@ class QueueTest < QCTest
   def test_delete
     QC.enqueue("Klass.method")
     assert_equal(1, QC.count)
-    QC.delete(QC.lock[:id])
+    QC.delete(QC.lock.id)
     assert_equal(0, QC.count)
   end
 
@@ -95,7 +95,7 @@ class QueueTest < QCTest
     queue = QC::Queue.new("queue_classic_jobs")
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
-    queue.delete(queue.lock[:id])
+    queue.delete(queue.lock.id)
     assert_equal(0, queue.count)
   end
 
@@ -189,20 +189,20 @@ class QueueTest < QCTest
   def test_enqueue_returns_job_id
     enqueued_job = QC.enqueue("Klass.method")
     locked_job = QC.lock
-    assert_equal enqueued_job, "id" => locked_job[:id]
+    assert_equal enqueued_job, "id" => locked_job.id
   end
 
   def test_enqueue_in_returns_job_id
     enqueued_job = QC.enqueue_in(1, "Klass.method")
     sleep 1
     locked_job = QC.lock
-    assert_equal enqueued_job, "id" => locked_job[:id]
+    assert_equal enqueued_job, "id" => locked_job.id
   end
 
   def test_enqueue_at_returns_job_id
     enqueued_job = QC.enqueue_at(Time.now + 1, "Klass.method")
     sleep 1
     locked_job = QC.lock
-    assert_equal enqueued_job, "id" => locked_job[:id]
+    assert_equal enqueued_job, "id" => locked_job.id
   end
 end

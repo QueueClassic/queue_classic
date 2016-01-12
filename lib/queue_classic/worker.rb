@@ -69,28 +69,25 @@ module QC
     # Blocks on locking a job, and once a job is locked,
     # it will process the job.
     def work
-      queue, job = lock_job
-      if queue && job
-        QC.log_yield(:at => "work", :job => job[:id]) do
-          process(queue, job)
+      job = lock_job
+      if job
+        QC.log_yield(:at => "work", :job => job.id) do
+          process(job)
         end
       end
     end
 
     # Attempt to lock a job in the queue's table.
-    # If a job can be locked, this method returns an array with
-    # 2 elements. The first element is the queue from which the job was locked
-    # and the second is a hash representation of the job.
+    # If a job can be locked, this method returns a Job object.
     # If a job is returned, its locked_at column has been set in the
     # job's row. It is the caller's responsibility to delete the job row
     # from the table when the job is complete.
     def lock_job
       log(:at => "lock_job")
-      job = nil
       while @running
         @queues.each do |queue|
           if job = queue.lock
-            return [queue, job]
+            return job
           end
         end
         @conn_adapter.wait(@wait_interval, *@queues.map {|q| q.name})
@@ -104,12 +101,12 @@ module QC
     # to do with the job is delegated to Worker#handle_failure.
     # If the job is not finished and an INT signal is trapped,
     # this method will unlock the job in the queue.
-    def process(queue, job)
+    def process(job)
       start = Time.now
       finished = false
       begin
         call(job).tap do
-          queue.delete(job[:id])
+          job.queue.delete(job.id)
           finished = true
         end
       rescue => e
@@ -117,10 +114,10 @@ module QC
         finished = true
       ensure
         if !finished
-          queue.unlock(job[:id])
+          job.queue.unlock(job.id)
         end
         ttp = Integer((Time.now - start) * 1000)
-        QC.measure("time-to-process=#{ttp} source=#{queue.name}")
+        QC.measure("time-to-process=#{ttp} source=#{job.queue.name}")
       end
     end
 
@@ -128,14 +125,16 @@ module QC
     # to grab the ruby object from memory. We send the method to
     # the object and pass the args.
     def call(job)
-      args = job[:args]
-      receiver_str, _, message = job[:method].rpartition('.')
+      args = job.args
+      receiver_str, _, message = job.method_name.rpartition('.')
       receiver = eval(receiver_str)
       receiver.send(message, *args)
     end
 
     # This method will be called when an exception
     # is raised during the execution of the job.
+    # First argument is the Job that failed.
+    # Second argument is the exception.
     def handle_failure(job,e)
       $stderr.puts("count#qc.job-error=1 job=#{job} error=#{e.inspect} at=#{e.backtrace.first}")
     end

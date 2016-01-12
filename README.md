@@ -128,9 +128,20 @@ require 'queue_classic'
 FailedQueue = QC::Queue.new("failed_jobs")
 
 class MyWorker < QC::Worker
-  def handle_failure(job, e)
-    FailedQueue.enqueue(job[:method], *job[:args])
+
+  # Execute the Job.
+  def call(job)
+     # Do something with the job
   end
+  
+  # This method will be called when an exception
+  # is raised during the execution of the job.
+  # First argument is the Job that failed.
+  # Second argument is the exception.
+  def handle_failure(job, e)
+    FailedQueue.enqueue(job.method_name, *job.args)
+  end
+  
 end
 
 worker = MyWorker.new

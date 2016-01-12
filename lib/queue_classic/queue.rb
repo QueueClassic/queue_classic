@@ -1,4 +1,5 @@
 require_relative 'conn_adapter'
+require_relative 'job'
 require 'json'
 require 'time'
 
@@ -68,21 +69,20 @@ module QC
       end
     end
 
+    # lock() lock a job
+    # This method returns a Job.
     def lock
       QC.log_yield(:measure => 'queue.lock') do
         s = "SELECT * FROM lock_head($1, $2)"
         if r = conn_adapter.execute(s, name, top_bound)
-          {}.tap do |job|
-            job[:id] = r["id"]
-            job[:q_name] = r["q_name"]
-            job[:method] = r["method"]
-            job[:args] = JSON.parse(r["args"])
-            if r["scheduled_at"]
-              job[:scheduled_at] = Time.parse(r["scheduled_at"])
-              ttl = Integer((Time.now - job[:scheduled_at]) * 1000)
-              QC.measure("time-to-lock=#{ttl}ms source=#{name}")
-            end
+          job = QC::Job.new(r['id'], self, r['method'], JSON.parse(r['args']))
+          if r["scheduled_at"]
+            scheduled_at = Time.parse(r["scheduled_at"])
+            job.scheduled_at = scheduled_at
+            ttl = Integer((Time.now - scheduled_at) * 1000)
+            QC.measure("time-to-lock=#{ttl}ms source=#{name}")
           end
+          job
         end
       end
     end
