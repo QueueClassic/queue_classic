@@ -128,9 +128,28 @@ require 'queue_classic'
 FailedQueue = QC::Queue.new("failed_jobs")
 
 class MyWorker < QC::Worker
+
+  # A job contain these attributes:
+  # :id Integer, the job id
+  # :method String, containing the object and method
+  # :args String, the arguments
+  # :q_name String, the queue name
+  # :scheduled_at Time, the scheduled time if the job was scheduled
+
+  # Execute the job using the methods and arguments
+  def call(job)
+     # Do something with the job
+     ...
+  end
+  
+  # This method will be called when an exception
+  # is raised during the execution of the job.
+  # First argument is the job that failed.
+  # Second argument is the exception.
   def handle_failure(job, e)
     FailedQueue.enqueue(job[:method], *job[:args])
   end
+    
 end
 
 worker = MyWorker.new
