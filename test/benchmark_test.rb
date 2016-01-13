@@ -1,4 +1,4 @@
-require File.expand_path("../helper.rb", __FILE__)
+require_relative 'helper'
 
 if ENV["QC_BENCHMARK"]
   class BenchmarkTest < QCTest
