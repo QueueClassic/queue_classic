@@ -129,7 +129,7 @@ FailedQueue = QC::Queue.new("failed_jobs")
 
 class MyWorker < QC::Worker
 
-  # A job contain these attributes:
+  # A job is a Hash containing these attributes:
   # :id Integer, the job id
   # :method String, containing the object and method
   # :args String, the arguments
