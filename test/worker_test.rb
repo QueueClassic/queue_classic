@@ -13,11 +13,17 @@ end
 # how to override the worker to handle failures the way
 # you want.
 class TestWorker < QC::Worker
-  attr_accessor :failed_count
+  attr_accessor :failed_count, :successes
 
   def initialize(args={})
     super(args.merge(:connection => QC.default_conn_adapter.connection))
     @failed_count = 0
+    @successes = []
+  end
+
+  def handle_success(job, result)
+    @successes << result
+    super
   end
 
   def handle_failure(job,e)
@@ -34,6 +40,8 @@ class WorkerTest < QCTest
     worker.work
     assert_equal(0, QC.count)
     assert_equal(0, worker.failed_count)
+    assert_equal(1, worker.successes.length)
+    assert_equal(nil, worker.successes[0])
   end
 
   def test_failed_job
@@ -41,6 +49,7 @@ class WorkerTest < QCTest
     worker = TestWorker.new
     capture_stderr_output { worker.work }
     assert_equal(1, worker.failed_count)
+    assert_equal(0, worker.successes.length)
   end
 
   def test_failed_job_is_logged
@@ -75,6 +84,8 @@ class WorkerTest < QCTest
     r = worker.work
     assert_nil(r)
     assert_equal(0, worker.failed_count)
+    assert_equal(1, worker.successes.length)
+    assert_equal(nil, worker.successes[0])
   end
 
   def test_work_with_one_arg
@@ -83,6 +94,8 @@ class WorkerTest < QCTest
     r = worker.work
     assert_equal("1", r)
     assert_equal(0, worker.failed_count)
+    assert_equal(1, worker.successes.length)
+    assert_equal("1", worker.successes[0])
   end
 
   def test_work_with_two_args
@@ -91,6 +104,8 @@ class WorkerTest < QCTest
     r = worker.work
     assert_equal(["1", 2], r)
     assert_equal(0, worker.failed_count)
+    assert_equal(1, worker.successes.length)
+    assert_equal(["1", 2], worker.successes[0])
   end
 
   def test_work_custom_queue
@@ -100,6 +115,8 @@ class WorkerTest < QCTest
     r = worker.work
     assert_equal(["1", 2], r)
     assert_equal(0, worker.failed_count)
+    assert_equal(1, worker.successes.length)
+    assert_equal(["1", 2], worker.successes[0])
   end
 
   def test_worker_listens_on_chan
@@ -114,6 +131,8 @@ class WorkerTest < QCTest
       r = worker.work
       assert_equal(["1", 2], r)
       assert_equal(0, worker.failed_count)
+      assert_equal(1, worker.successes.length)
+      assert_equal(["1", 2], worker.successes[0])
     end
     sleep(0.5) #Give the thread some time to start the worker.
     p_queue.enqueue("TestObject.two_args", "1", 2)
@@ -148,6 +167,9 @@ class WorkerTest < QCTest
       assert_equal(["1", 2], r)
       assert_equal(0, worker.failed_count)
     end
+    assert_equal(2, worker.successes.length)
+    assert_equal(["1", 2], worker.successes[0])
+    assert_equal(["1", 2], worker.successes[1])
   end
 
   def test_worker_works_multiple_queue_left_to_right
@@ -174,6 +196,8 @@ class WorkerTest < QCTest
     r = worker.work
     assert_equal(42, r)
     assert_equal(0, worker.failed_count)
+    assert_equal(1, worker.successes.length)
+    assert_equal(42, worker.successes[0])
   end
 
   def test_init_worker_with_arg

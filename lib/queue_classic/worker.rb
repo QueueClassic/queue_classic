@@ -108,7 +108,8 @@ module QC
       start = Time.now
       finished = false
       begin
-        call(job).tap do
+        call(job).tap do |result|
+          handle_success(job, result)
           queue.delete(job[:id])
           finished = true
         end
@@ -136,8 +137,17 @@ module QC
 
     # This method will be called when an exception
     # is raised during the execution of the job.
+    # First argument is the job that failed.
+    # Second argument is the exception.
     def handle_failure(job,e)
       $stderr.puts("count#qc.job-error=1 job=#{job} error=#{e.inspect} at=#{e.backtrace.first}")
+    end
+
+    # This method will be called when the
+    # execution of the job raise no exception.
+    # First argument is the job that failed.
+    # Second argument is the job execution result.
+    def handle_success(job, result)
     end
 
     # This method should be overriden if
