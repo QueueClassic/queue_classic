@@ -142,6 +142,14 @@ class MyWorker < QC::Worker
      ...
   end
   
+  # This method will be called when the
+  # execution of the job raise no exception.
+  # First argument is the job that failed.
+  # Second argument is the job execution result.
+  def handle_success(job, result)
+    $stdout.puts("success job=#{job} result=#{result}")
+  end
+    
   # This method will be called when an exception
   # is raised during the execution of the job.
   # First argument is the job that failed.
