@@ -121,7 +121,7 @@ class WorkerTest < QCTest
     t.join
   end
 
-  def test_worker_ueses_one_conn
+  def test_worker_uses_one_conn
     skip "This test is broken and needs to be fixed."
 
     QC.enqueue("TestObject.no_args")
