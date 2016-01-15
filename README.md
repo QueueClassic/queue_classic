@@ -15,9 +15,9 @@
 
 **This README is representing the current work for queue_classic edge [unstable]. You can find the README for other versions:**
 
-- current release candidate: [v3.1.X](https://github.com/QueueClassic/queue_classic/tree/3-1-stable)
-- latest stable can be found: [v3.0.X](https://github.com/QueueClassic/queue_classic/tree/3-0-stable)
-- older stable: [v2.2.3](https://github.com/QueueClassic/queue_classic/tree/v2.2.3)
+- current release candidate: [v3.2.0.RC1](https://github.com/QueueClassic/queue_classic/tree/v3.2.0.RC1)
+- latest stable can be found: [v3.1.x](https://github.com/QueueClassic/queue_classic/tree/3-1-stable)
+- older stable: [v3.0.x](https://github.com/QueueClassic/queue_classic/tree/3-0-stable)
 
 
 ## What is queue_classic?
@@ -141,7 +141,7 @@ class MyWorker < QC::Worker
      # Do something with the job
      ...
   end
-  
+
   # This method will be called when an exception
   # is raised during the execution of the job.
   # First argument is the job that failed.
@@ -149,7 +149,7 @@ class MyWorker < QC::Worker
   def handle_failure(job, e)
     FailedQueue.enqueue(job[:method], *job[:args])
   end
-    
+
 end
 
 worker = MyWorker.new
