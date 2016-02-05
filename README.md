@@ -311,7 +311,8 @@ https://groups.google.com/d/forum/queue_classic
 $ bundle
 $ createdb queue_classic_test
 $ export QC_DATABASE_URL="postgres://username:pass@localhost/queue_classic_test"
-$ rake
+$ bundle exec rake                      # run all tests
+$ bundle exec ruby test/queue_test.rb   # run a single test
 ```
 
 ## License
