@@ -158,8 +158,8 @@ trap('INT') { exit }
 trap('TERM') { worker.stop }
 
 loop do
-  job = worker.lock_job
-  Timeout::timeout(5) { worker.process(job) }
+  queue, job = worker.lock_job
+  Timeout::timeout(5) { worker.process(queue, job) }
 end
 ```
 
