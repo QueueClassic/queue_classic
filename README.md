@@ -190,7 +190,7 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 Declare dependencies in Gemfile.
 ```ruby
 source "https://rubygems.org"
-gem "queue_classic", "~> 3.1.0"
+gem "queue_classic"
 ```
 
 Add the database tables and stored procedures.
