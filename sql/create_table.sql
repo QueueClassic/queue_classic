@@ -1,26 +1,25 @@
-do $$ begin
+DO $$ BEGIN
 
 CREATE TABLE queue_classic_jobs (
   id bigserial PRIMARY KEY,
-  q_name text not null check (length(q_name) > 0),
-  method text not null check (length(method) > 0),
-  args   text not null,
+  q_name text NOT NULL CHECK (length(q_name) > 0),
+  method text NOT NULL CHECK (length(method) > 0),
+  args   text NOT NULL,
   locked_at timestamptz,
   locked_by integer,
-  created_at timestamptz default now(),
-  scheduled_at timestamptz default now()
+  created_at timestamptz DEFAULT now(),
+  scheduled_at timestamptz DEFAULT now()
 );
 
 -- If jsonb type is available, use it for the args column
-if exists (select 1 from pg_type where typname = 'jsonb') then
-  alter table queue_classic_jobs alter column args type jsonb using args::jsonb;
+IF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'jsonb') THEN
+  ALTER TABLE queue_classic_jobs ALTER COLUMN args TYPE jsonb USING args::jsonb;
 -- Otherwise, use json type for the args column if available
-elsif exists (select 1 from pg_type where typname = 'json') then
-  alter table queue_classic_jobs alter column args type json using args::json;
-end if;
+ELSIF EXISTS (SELECT 1 FROM pg_type WHERE typname = 'json') THEN
+  ALTER TABLE queue_classic_jobs ALTER COLUMN args TYPE json USING args::json;
+END IF;
 
-end $$ language plpgsql;
+END $$ LANGUAGE plpgsql;
 
 CREATE INDEX idx_qc_on_name_only_unlocked ON queue_classic_jobs (q_name, id) WHERE locked_at IS NULL;
 CREATE INDEX idx_qc_on_scheduled_at_only_unlocked ON queue_classic_jobs (scheduled_at, id) WHERE locked_at IS NULL;
-
