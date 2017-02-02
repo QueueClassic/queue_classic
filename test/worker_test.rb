@@ -5,7 +5,12 @@ module TestObject
   def no_args; return nil; end
   def one_arg(a); return a; end
   def two_args(a,b); return [a,b]; end
+  def many_args(*args); return args; end
   def forty_two; OpenStruct.new(number: 42); end
+  def mutate_args_and_fail(numbers)
+    numbers.map! {|number| number * 2 }
+    raise 'Problem!'
+  end
 end
 
 # This not only allows me to test what happens
@@ -14,6 +19,7 @@ end
 # you want.
 class TestWorker < QC::Worker
   attr_accessor :failed_count
+  attr_accessor :last_failed_job
 
   def initialize(args={})
     super(args.merge(:connection => QC.default_conn_adapter.connection))
@@ -22,6 +28,7 @@ class TestWorker < QC::Worker
 
   def handle_failure(job,e)
     @failed_count += 1
+    @last_failed_job = job
     super
   end
 end
@@ -41,6 +48,13 @@ class WorkerTest < QCTest
     worker = TestWorker.new
     capture_stderr_output { worker.work }
     assert_equal(1, worker.failed_count)
+  end
+
+  def test_handle_failure_gets_original_args
+    QC.enqueue("TestObject.mutate_args_and_fail", [1, 2, 3])
+    worker = TestWorker.new
+    worker.work
+    assert_equal([1, 2, 3], worker.last_failed_job[:args].first)
   end
 
   def test_failed_job_is_logged
@@ -90,6 +104,15 @@ class WorkerTest < QCTest
     worker = TestWorker.new
     r = worker.work
     assert_equal(["1", 2], r)
+    assert_equal(0, worker.failed_count)
+  end
+
+  def test_worker_handles_all_json_type
+    args = 1, 2.3, 4e56, "7", [8], {"9" => "10"}
+    QC.enqueue("TestObject.many_args", *args)
+    worker = TestWorker.new
+    r = worker.work
+    assert_equal(args, r)
     assert_equal(0, worker.failed_count)
   end
 
