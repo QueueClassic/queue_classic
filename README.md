@@ -264,6 +264,24 @@ If you are updating queue_classic and are running PostgreSQL >= 9.4, run the fol
 alter table queue_classic_jobs alter column args type jsonb using (args::jsonb);
 ```
 
+## Forking
+There are many reasons why you would and would not want your worker to fork.
+An argument against forking may be that you want low latency in your job
+execution. An argument in favor of forking is that your jobs leak memory and do
+all sorts of crazy things, thus warranting the cleanup that fork allows.
+Nevertheless, forking is not enabled by default. To instruct your worker to
+fork, ensure the following shell variable is set:
+
+```bash
+$ export QC_FORK_WORKER='true'
+```
+
+One last note on forking. It is often the case that after Ruby forks a process,
+some sort of setup needs to be done. For instance, you may want to re-establish
+a database connection, or get a new file descriptor. queue_classic's worker
+provides a hook that is called immediately after `Kernel.fork`. To use this hook
+subclass the worker and override `setup_child()`.
+
 ## Logging
 
 By default queue_classic does not talk very much.
