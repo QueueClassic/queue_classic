@@ -9,9 +9,9 @@ env:
     - QC_BENCHMARK=true
     - QC_BENCHMARK_MAX_TIME_DEQUEUE=60
 rvm:
-  - 2.4.0
-  - 2.3.3
-  - 2.2.6
+  - 2.4.1
+  - 2.3.4
+  - 2.2.7
   - 2.1.10
   - 2.0.0
   - 1.9.3
