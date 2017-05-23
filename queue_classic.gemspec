@@ -20,5 +20,5 @@ Gem::Specification.new do |spec|
 
   spec.require_paths = %w[lib]
 
-  spec.add_dependency "pg", ">= 0.17", "< 0.20"
+  spec.add_dependency "pg", ">= 0.17", "< 0.21"
 end
