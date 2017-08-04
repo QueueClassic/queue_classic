@@ -12,7 +12,7 @@ module QC
     # This method takes a single hash argument. The following keys are read:
     # fork_worker:: Worker forks each job execution.
     # wait_interval:: Time to wait between failed lock attempts
-    # connection:: PGConn object.
+    # connection:: PG::Connection object.
     # q_name:: Name of a single queue to process.
     # q_names:: Names of queues to process. Will process left to right.
     # top_bound:: Offset to the head of the queue. 1 == strict FIFO.
