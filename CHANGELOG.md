@@ -4,23 +4,26 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
+...
+
+## [3.2.0.RC1] - 2016-01-15
+
+## [3.1.0] - 2015-02-17
+
+## [3.1.0.RC1] - 2015-01-07
+
+## [3.0.3] - 2015-01-05
+
+## [3.0.2] - 2014-10-10
+
+## [3.0.1] - 2014-09-02
+
+## [3.0.0] - 2014-08-21
+
 - Fixed a bug in the offset calculation of `.enqueue_at`.
 - Use the jsonb type for the args column from now on. If not available, fall back to json or text.
 - `enqueue`, `enqueue_at`, `enqueue_in` return job hash with id.
 - Fixed unlock query for versions below Postgres 9.2
-
-## [3.0.0] - 2014-08-21
-
-### Added
-
-- Worker instrumentation
-- Enable connection sharing for workers #203
-
-### Changed
-
-- handle_failure method gets access to queue from which the failing job originated #215
-- Print job exceptions to STDERR
-- Account for locked_at in job_count query #197
 
 ## [3.0.0rc] - 2014-01-07
 
@@ -193,6 +196,12 @@ qc:drop)
 
 ## [0.1.6] - 2011-02-03
 
+[3.2.0.RC1]: https://github.com/QueueClassic/queue_classic/compare/v3.1.0...v3.2.0.RC1
+[3.1.0]: https://github.com/QueueClassic/queue_classic/compare/v3.1.0.RC1...v3.1.0
+[3.1.0.RC1]: https://github.com/QueueClassic/queue_classic/compare/v3.0.3...v3.1.0.RC1
+[3.0.3]: https://github.com/QueueClassic/queue_classic/compare/v3.0.2...v3.0.3
+[3.0.2]: https://github.com/QueueClassic/queue_classic/compare/v3.0.1...v3.0.2
+[3.0.1]: https://github.com/QueueClassic/queue_classic/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/QueueClassic/queue_classic/compare/v3.0.0rc...v3.0.0
 [3.0.0rc]: https://github.com/QueueClassic/queue_classic/compare/v3.0.0beta...v3.0.0rc
 [3.0.0beta]: https://github.com/QueueClassic/queue_classic/compare/v2.3.0beta...v3.0.0beta
