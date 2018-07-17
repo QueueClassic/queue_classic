@@ -9,11 +9,8 @@ env:
     - QC_BENCHMARK=true
     - QC_BENCHMARK_MAX_TIME_DEQUEUE=60
 rvm:
-  - 2.4.1
-  - 2.3.4
-  - 2.2.7
-  - 2.1.10
-  - 2.0.0
-  - 1.9.3
+  - 2.5.1
+  - 2.4.4
+  - 2.3.7
 addons:
   postgresql: 9.3

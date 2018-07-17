@@ -3,6 +3,7 @@ Unreleased
 - Use the jsonb type for the args column from now on. If not available, fall back to json or text.
 - `enqueue`, `enqueue_at`, `enqueue_in` return job hash with id.
 - Fixed unlock query for versions below Postgres 9.2
+- Change ruby versions tested in Travis to currently supported ones.
 
 Version 3.0.0rc
 - Improved signal handling
