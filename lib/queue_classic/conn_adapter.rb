@@ -19,7 +19,7 @@ module QC
           result = []
           r.each {|t| result << t}
           result.length > 1 ? result : result.pop
-        rescue PGError => e
+        rescue PG::Error => e
           QC.log(:error => e.inspect)
           @connection.reset
           raise
@@ -77,8 +77,8 @@ module QC
 
     def establish_new
       QC.log(:at => "establish_conn")
-      conn = PGconn.connect(*normalize_db_url(db_url))
-      if conn.status != PGconn::CONNECTION_OK
+      conn = PG.connect(*normalize_db_url(db_url))
+      if conn.status != PG::CONNECTION_OK
         QC.log(:error => conn.error)
       end
       conn.exec("SET application_name = '#{QC.app_name}'")

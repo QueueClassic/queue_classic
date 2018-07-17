@@ -2,7 +2,7 @@ require_relative 'helper'
 
 class QueueTest < QCTest
 
-  ResetError = Class.new(PGError)
+  ResetError = Class.new(PG::Error)
 
   def test_enqueue
     QC.enqueue("Klass.method")
@@ -105,7 +105,7 @@ class QueueTest < QCTest
     queue.enqueue("Klass.method")
     assert_equal(1, queue.count)
     conn = queue.conn_adapter.connection
-    def conn.exec(*args); raise(PGError); end
+    def conn.exec(*args); raise(PG::Error); end
     def conn.reset(*args); raise(ResetError)  end
     # We ensure that the reset method is called on the connection.
     assert_raises(PG::Error, ResetError) {queue.enqueue("Klass.other_method")}
