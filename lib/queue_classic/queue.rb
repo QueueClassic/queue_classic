@@ -17,6 +17,7 @@ module QC
     end
 
     def conn_adapter
+      @adapter = nil if defined?(@adapter) && !@adapter.active?
       @adapter ||= QC.default_conn_adapter
     end
 

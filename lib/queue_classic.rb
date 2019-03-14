@@ -50,7 +50,8 @@ Please use the method QC.#{config_method} instead.
 
   def self.default_conn_adapter
     t = Thread.current
-    return t[:qc_conn_adapter] if t[:qc_conn_adapter]
+    return t[:qc_conn_adapter] if t[:qc_conn_adapter] && t[:qc_conn_adapter].active?
+
     adapter = if rails_connection_sharing_enabled?
       ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
     else

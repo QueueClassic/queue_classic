@@ -112,6 +112,26 @@ class QueueTest < QCTest
     queue.conn_adapter.disconnect
   end
 
+  def test_enqueue_retry_after_bad_query
+    queue = QC::Queue.new("queue_classic_jobs")
+    queue.conn_adapter = QC::ConnAdapter.new
+    conn = queue.conn_adapter.connection
+    conn.exec('select pg_terminate_backend(pg_backend_pid())') rescue nil
+    queue.enqueue("Klass.method")
+    assert_equal(1, queue.count)
+    queue.conn_adapter.disconnect
+  end
+
+  def test_enqueue_retry_after_connection_close
+    queue = QC::Queue.new("queue_classic_jobs")
+    queue.conn_adapter = QC::ConnAdapter.new
+    conn = queue.conn_adapter.connection
+    conn.close
+    queue.enqueue("Klass.method")
+    assert_equal(1, queue.count)
+    queue.conn_adapter.disconnect
+  end
+
   def test_custom_default_queue
     queue_class = Class.new do
       attr_accessor :jobs

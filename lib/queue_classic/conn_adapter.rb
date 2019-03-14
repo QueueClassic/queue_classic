@@ -55,6 +55,11 @@ module QC
                           end
     end
 
+    def active?
+      !@connection.finished? &&
+        @connection.transaction_status < PG::Connection::PQTRANS_INERROR
+    end
+
     private
 
     def wait_for_notify(t)
