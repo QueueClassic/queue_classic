@@ -1,14 +1,12 @@
 # queue_classic
+A simple, efficient worker queue for Ruby & PostgreSQL
 
-<p align="center">
-  <b>Simple, efficient worker queue for Ruby & PostgreSQL</b>
-  <br />
-  <a href="https://travis-ci.org/QueueClassic/queue_classic"><img src="http://img.shields.io/travis/QueueClassic/queue_classic/master.svg?style=flat" /></a>
 
-  <a href="https://codeclimate.com/github/QueueClassic/queue_classic"><img src="http://img.shields.io/codeclimate/github/QueueClassic/queue_classic.svg?style=flat" /></a>
+[![CircleCI](https://circleci.com/gh/QueueClassic/queue_classic/tree/master.svg?style=svg)](https://circleci.com/gh/QueueClassic/queue_classic/tree/master)
 
-  <a href="http://badge.fury.io/rb/queue_classic"><img src="http://img.shields.io/gem/v/queue_classic.svg?style=flat" alt="Gem Version" height="18"></a>
-</p>
+[![Code Climate](http://img.shields.io/codeclimate/github/QueueClassic/queue_classic.svg?style=flat)](https://codeclimate.com/github/QueueClassic/queue_classic)
+
+[![Gem Version](http://img.shields.io/gem/v/queue_classic.svg?style=flat)](http://badge.fury.io/rb/queue_classic)
 
 
 **IMPORTANT NOTE REGARDING VERSIONS**
@@ -35,7 +33,7 @@ queue_classic provides a simple interface to a PostgreSQL-backed message queue. 
 
 ## Table of content
 
-* [Documentation](http://rubydoc.info/gems/queue_classic/2.2.3/frames)
+* [Documentation](https://www.rubydoc.info/gems/queue_classic/)
 * [Usage](#usage)
 * [Setup](#setup)
 * [Upgrade from earlier versions to V3.1](#upgrade-from-earlier-versions)
