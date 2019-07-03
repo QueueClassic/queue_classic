@@ -24,7 +24,7 @@ jobs:
       - run:
           name: Install Ruby gems
           command: |
-            bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3 --no-document
+            bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
       - save_cache:
           key: v1-qc-bundler-{{ $CIRCLE_JOB }}-{{ checksum "Gemfile.lock" }}
           paths:
