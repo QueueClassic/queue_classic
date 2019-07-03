@@ -1,0 +1,49 @@
+version: 2
+
+jobs:
+  test_ruby_2_5_4:
+    environment:
+      QC_DATABASE_URL: postgres://postgres@localhost/queue_classic_test
+      QC_BENCHMARK: true
+      QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
+    docker:
+      - image: circleci/ruby:2.5.4
+        environment:
+          RAILS_ENV: test
+          RACK_ENV: test
+      - image: circleci/postgres:9.5.18-alpine
+    steps:
+      - checkout
+      - run:
+          name: Install env dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install postgresql-client
+      - restore_cache:
+          key: v1-qc-bundler-{{ $CIRCLE_JOB }}-{{ checksum "Gemfile.lock" }}
+      - run:
+          name: Install Ruby gems
+          command: |
+            bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3 --no-document
+      - save_cache:
+          key: v1-qc-bundler-{{ $CIRCLE_JOB }}-{{ checksum "Gemfile.lock" }}
+          paths:
+            - ~/project/vendor/bundle
+      - run:
+          name: Create database
+          command: |
+            psql -c 'create database queue_classic_test;' -U postgres
+      - run:
+          name: Minitest
+          command: |
+            bundle exec rake
+      - store_artifacts:
+          path: test/reports/
+      - store_test_results:
+          path: test/reports/
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test_ruby_2_5_4

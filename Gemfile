@@ -4,6 +4,7 @@ source 'https://rubygems.org' do
   gemspec
 
   group :test do
-    gem 'minitest', '~> 5.5.1'
+    gem 'minitest', '~> 5.8'
+    gem 'minitest-reporters'
   end
 end
