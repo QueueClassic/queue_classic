@@ -5,6 +5,7 @@ Unreleased
 - Fixed unlock query for versions below Postgres 9.2
 - Change ruby versions tested in Travis to currently supported ones.
 - Switched project to use CircleCI, as it's way more consistent speed wise
+- Automatically retry after a connection reset #294
 
 Version 3.0.0rc
 - Improved signal handling
