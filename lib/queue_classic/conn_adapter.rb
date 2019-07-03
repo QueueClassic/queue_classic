@@ -82,8 +82,8 @@ module QC
         QC.log(:error => conn.error)
       end
 
-      if conn.server_version < 96000
-        raise "This version of Queue Classic does not support Postgres older than 9.6 (96000). This version is #{conn.server_version}. If you need that support, please use an older version."
+      if conn.server_version < 90600
+        raise "This version of Queue Classic does not support Postgres older than 9.6 (90600). This version is #{conn.server_version}. If you need that support, please use an older version."
       end
 
       conn.exec("SET application_name = '#{QC.app_name}'")
