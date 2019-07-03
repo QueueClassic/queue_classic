@@ -176,15 +176,6 @@ class WorkerTest < QCTest
     assert_equal(0, worker.failed_count)
   end
 
-  def test_init_worker_with_arg
-    with_database 'postgres:///invalid' do
-      conn = PG.connect(dbname: 'queue_classic_test')
-      QC::Worker.new connection: conn
-
-      conn.close
-    end
-  end
-
   def test_init_worker_with_database_url
     with_database ENV['DATABASE_URL'] || ENV['QC_DATABASE_URL'] do
       worker = QC::Worker.new
