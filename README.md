@@ -1,10 +1,7 @@
 # queue_classic
 A simple, efficient worker queue for Ruby & PostgreSQL
 
-
 [![CircleCI](https://circleci.com/gh/QueueClassic/queue_classic/tree/master.svg?style=svg)](https://circleci.com/gh/QueueClassic/queue_classic/tree/master)
-
-[![Code Climate](http://img.shields.io/codeclimate/github/QueueClassic/queue_classic.svg?style=flat)](https://codeclimate.com/github/QueueClassic/queue_classic)
 
 [![Gem Version](http://img.shields.io/gem/v/queue_classic.svg?style=flat)](http://badge.fury.io/rb/queue_classic)
 
