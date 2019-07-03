@@ -259,9 +259,9 @@ class WorkerTest < QCTest
           worker.work
         end
       ensure
-        message = "SyntaxError unexpectedly unlocked the job in the queue."
-        message << "\nErrors:\n#{errors}" unless errors.empty?
-        refute unlocked, message
+        message = ["SyntaxError unexpectedly unlocked the job in the queue."]
+        message << "Errors:\n#{errors}" unless errors.empty?
+        refute unlocked, message.join("\n")
       end
     end
   end
@@ -285,9 +285,9 @@ class WorkerTest < QCTest
           worker.work
         end
       ensure
-        message = "LoadError unexpectedly unlocked the job in the queue."
-        message << "\nErrors:\n#{errors}" unless errors.empty?
-        refute unlocked, message
+        message = ["LoadError unexpectedly unlocked the job in the queue."]
+        message << "Errors:\n#{errors}" unless errors.empty?
+        refute unlocked, message.join("\n")
       end
     end
   end
@@ -311,9 +311,9 @@ class WorkerTest < QCTest
           worker.work
         end
       ensure
-        message = "NoMemoryError unexpectedly unlocked the job in the queue."
-        message << "\nErrors:\n#{errors}" unless errors.empty?
-        refute unlocked, message
+        message = ["NoMemoryError unexpectedly unlocked the job in the queue."]
+        message << "Errors:\n#{errors}" unless errors.empty?
+        refute unlocked, message.join("\n")
       end
     end
   end
