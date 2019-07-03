@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module QC
   module Setup
     Root = File.expand_path("../..", File.dirname(__FILE__))

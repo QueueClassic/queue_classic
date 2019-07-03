@@ -1,5 +1,15 @@
+# frozen_string_literal: true
+
 require "bundler"
+require "minitest/reporters"
+
 Bundler.setup :default, :test
+
+if ENV['CIRCLECI'] == "true"
+  Minitest::Reporters.use! Minitest::Reporters::JUnitReporter.new
+else
+  Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
+end
 
 ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
 

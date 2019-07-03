@@ -1,14 +1,9 @@
 # queue_classic
+A simple, efficient worker queue for Ruby & PostgreSQL
 
-<p align="center">
-  <b>Simple, efficient worker queue for Ruby & PostgreSQL</b>
-  <br />
-  <a href="https://travis-ci.org/QueueClassic/queue_classic"><img src="http://img.shields.io/travis/QueueClassic/queue_classic/master.svg?style=flat" /></a>
+[![CircleCI](https://circleci.com/gh/QueueClassic/queue_classic/tree/master.svg?style=svg)](https://circleci.com/gh/QueueClassic/queue_classic/tree/master)
 
-  <a href="https://codeclimate.com/github/QueueClassic/queue_classic"><img src="http://img.shields.io/codeclimate/github/QueueClassic/queue_classic.svg?style=flat" /></a>
-
-  <a href="http://badge.fury.io/rb/queue_classic"><img src="http://img.shields.io/gem/v/queue_classic.svg?style=flat" alt="Gem Version" height="18"></a>
-</p>
+[![Gem Version](http://img.shields.io/gem/v/queue_classic.svg?style=flat)](http://badge.fury.io/rb/queue_classic)
 
 
 **IMPORTANT NOTE REGARDING VERSIONS**
@@ -35,7 +30,7 @@ queue_classic provides a simple interface to a PostgreSQL-backed message queue. 
 
 ## Table of content
 
-* [Documentation](http://rubydoc.info/gems/queue_classic/2.2.3/frames)
+* [Documentation](https://www.rubydoc.info/gems/queue_classic/)
 * [Usage](#usage)
 * [Setup](#setup)
 * [Upgrade from earlier versions to V3.1](#upgrade-from-earlier-versions)
@@ -189,13 +184,14 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 
 Declare dependencies in Gemfile.
 ```ruby
-source "https://rubygems.org"
-gem "queue_classic"
+source 'https://rubygems.org' do
+  gem 'queue_classic'
+end
 ```
 
 Add the database tables and stored procedures.
 
-```
+```bash
 rails generate queue_classic:install
 bundle exec rake db:migrate
 ```
@@ -226,14 +222,15 @@ Starting with with queue_classic 3.1, Rails is automatically detected and its co
 
 If you don't want to use the automatic database connection, set this environment variable to false: `export QC_RAILS_DATABASE=false`
 
-**Note on using ActiveRecord migrations:** If you use the migration, and you wish to use commands that reset the database from the stored schema (e.g. `rake db:reset`), your application must be configured with `config.active_record.schema_format = :sql` in `config/application.rb`.  If you don't do this, the PL/pgSQL function that queue_classic creates will be lost when you reset the database.
+**Note on using ActiveRecord migrations:** If you use the migration, and you wish to use commands that reset the database from the stored schema (e.g. `rake db:reset`), your application must be configured with `config.active_record.schema_format = :sql` in `config/application.rb`. If you don't do this, the PL/pgSQL function that queue_classic creates will be lost when you reset the database.
 
 
 #### Other Ruby apps
 
-By default, queue_classic will use the QC_DATABASE_URL falling back on DATABASE_URL. The URL must be in the following format: `postgres://username:password@localhost/database_name`.  If you use Heroku's PostgreSQL service, this will already be set. If you don't want to set this variable, you can set the connection in an initializer. **QueueClassic will maintain its own connection to the database.** This may double the number of connections to your database.
+By default, queue_classic will use the QC_DATABASE_URL falling back on DATABASE_URL. The URL must be in the following format: `postgres://username:password@localhost/database_name`. If you use Heroku's PostgreSQL service, this will already be set. If you don't want to set this variable, you can set the connection in an initializer. **QueueClassic will maintain its own connection to the database.** This may double the number of connections to your database.
 
 ## Upgrade from earlier versions
+
 If you are upgrading from a previous version of queue_classic, you might need some new database columns and/or functions. Luckily enough for you, it is easy to do so.
 
 ### Ruby on Rails
@@ -270,16 +267,18 @@ By default queue_classic does not talk very much.
 If you find yourself in a situation where you need to know what's happening inside QC, there are two different kind of logging you can enable: DEBUG and MEASURE.
 
 ### Measure
+
 This will output the time to process and that kind of thing. To enable it, set the `QC_MEASURE`:
 
-```
+```bash
 export QC_MEASURE="true"
 ```
 
 ### Debug
+
 You can enable the debug output by setting the `DEBUG` environment variable:
 
-```
+```bash
 export DEBUG="true"
 ```
 
@@ -292,18 +291,13 @@ If you think you have found a bug, feel free to open an issue. Use the following
 3. List what actually happened.
 4. Provide sample codes & commands which will reproduce the problem.
 
-If you have general questions about how to use queue_classic, send a message to the mailing list:
-
-https://groups.google.com/d/forum/queue_classic
-
 ## Hacking on queue_classic
 
 ### Dependencies
 
-* Ruby 1.9.2
-* Postgres ~> 9.0
-* Rubygem: pg ~> 0.11.0
-* For JRuby, see [queue_classic_java](https://github.com/bdon/queue_classic_java)
+* Ruby 2.4, 2.5 or 2.6
+* Postgres ~> 9.6
+* Rubygem: pg ~> 0.17
 
 ### Running Tests
 

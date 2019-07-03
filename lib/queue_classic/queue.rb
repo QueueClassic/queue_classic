@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'conn_adapter'
 require 'json'
 require 'time'
@@ -5,8 +7,8 @@ require 'time'
 module QC
   # The queue class maps a queue abstraction onto a database table.
   class Queue
-
     attr_reader :name, :top_bound
+
     def initialize(name, top_bound=nil)
       @name = name
       @top_bound = top_bound || QC.top_bound
@@ -38,7 +40,16 @@ module QC
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
         s = "INSERT INTO #{QC.table_name} (q_name, method, args) VALUES ($1, $2, $3) RETURNING id"
-        conn_adapter.execute(s, name, method, JSON.dump(args))
+        begin
+          retries ||= 0
+          conn_adapter.execute(s, name, method, JSON.dump(args))
+        rescue PG::Error
+          if (retries += 1) < 2
+            retry
+          else
+            raise
+          end
+        end
       end
     end
 
@@ -64,7 +75,16 @@ module QC
         s = "INSERT INTO #{QC.table_name} (q_name, method, args, scheduled_at)
              VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')
              RETURNING id"
-        conn_adapter.execute(s, name, method, JSON.dump(args))
+        begin
+          retries ||= 0
+          conn_adapter.execute(s, name, method, JSON.dump(args))
+        rescue PG::Error
+          if (retries += 1) < 2
+            retry
+          else
+            raise
+          end
+        end
       end
     end
 
@@ -114,6 +134,5 @@ module QC
         r["count"].to_i
       end
     end
-
   end
 end

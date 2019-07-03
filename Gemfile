@@ -1,9 +1,12 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
 
-gem "rake"
+source 'https://rubygems.org' do
+  gem 'rake'
 
-gemspec
+  gemspec
 
-group :test do
-  gem 'minitest', '~> 5.5.1'
+  group :test do
+    gem 'minitest', '~> 5.8'
+    gem 'minitest-reporters'
+  end
 end

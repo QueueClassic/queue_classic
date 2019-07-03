@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'helper'
 
 module TestObject
@@ -174,15 +176,6 @@ class WorkerTest < QCTest
     r = worker.work
     assert_equal(42, r)
     assert_equal(0, worker.failed_count)
-  end
-
-  def test_init_worker_with_arg
-    with_database 'postgres:///invalid' do
-      conn = PG::Connection.connect(dbname: 'queue_classic_test')
-      QC::Worker.new connection: conn
-
-      conn.close
-    end
   end
 
   def test_init_worker_with_database_url

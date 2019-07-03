@@ -2,28 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## Unreleased
-
-...
-
-## [3.2.0.RC1] - 2016-01-15
-
-## [3.1.0] - 2015-02-17
-
-## [3.1.0.RC1] - 2015-01-07
-
-## [3.0.3] - 2015-01-05
-
-## [3.0.2] - 2014-10-10
-
-## [3.0.1] - 2014-09-02
-
-## [3.0.0] - 2014-08-21
-
+## Unreleased, 3.3.0
 - Fixed a bug in the offset calculation of `.enqueue_at`.
 - Use the jsonb type for the args column from now on. If not available, fall back to json or text.
 - `enqueue`, `enqueue_at`, `enqueue_in` return job hash with id.
 - Fixed unlock query for versions below Postgres 9.2
+- Change ruby versions tested in Travis to currently supported ones.
+- Switched project to use CircleCI, as it's way more consistent speed wise
+- Automatically retry after a connection reset #294
+- Change to only support >= Postgres 9.6. We will be bringing in newer changes and testing on only 9.6+ going forward.
+- Change to only support currently supported Ruby versions: 2.4, 2.5 and 2.6.
 
 ## [3.0.0rc] - 2014-01-07
 
@@ -88,7 +76,6 @@ All notable changes to this project will be documented in this file.
 - Added rdoc style docs for worker class
 
 ## [2.0.5]
-
 
 - Allow term signal to halt the lock_job function
 
@@ -196,41 +183,4 @@ qc:drop)
 
 ## [0.1.6] - 2011-02-03
 
-[3.2.0.RC1]: https://github.com/QueueClassic/queue_classic/compare/v3.1.0...v3.2.0.RC1
-[3.1.0]: https://github.com/QueueClassic/queue_classic/compare/v3.1.0.RC1...v3.1.0
-[3.1.0.RC1]: https://github.com/QueueClassic/queue_classic/compare/v3.0.3...v3.1.0.RC1
-[3.0.3]: https://github.com/QueueClassic/queue_classic/compare/v3.0.2...v3.0.3
-[3.0.2]: https://github.com/QueueClassic/queue_classic/compare/v3.0.1...v3.0.2
-[3.0.1]: https://github.com/QueueClassic/queue_classic/compare/v3.0.0...v3.0.1
-[3.0.0]: https://github.com/QueueClassic/queue_classic/compare/v3.0.0rc...v3.0.0
-[3.0.0rc]: https://github.com/QueueClassic/queue_classic/compare/v3.0.0beta...v3.0.0rc
-[3.0.0beta]: https://github.com/QueueClassic/queue_classic/compare/v2.3.0beta...v3.0.0beta
-[2.2.3]: https://github.com/QueueClassic/queue_classic/compare/v2.3.0beta...v2.2.3
-[2.3.0beta]: https://github.com/QueueClassic/queue_classic/compare/v2.2.2...v2.3.0beta
-[2.2.2]: https://github.com/QueueClassic/queue_classic/compare/v2.2.1...v2.2.2
-[2.2.1]: https://github.com/QueueClassic/queue_classic/compare/v2.2.0...v2.2.1
-[2.2.0]: https://github.com/QueueClassic/queue_classic/compare/v2.1.4...v2.2.0
-[2.1.4]: https://github.com/QueueClassic/queue_classic/compare/v2.1.3...v2.1.4
-[2.1.3]: https://github.com/QueueClassic/queue_classic/compare/v2.1.2...v2.1.3
-[2.1.2]: https://github.com/QueueClassic/queue_classic/compare/v2.1.1...v2.1.2
-[2.1.1]: https://github.com/QueueClassic/queue_classic/compare/v2.1.0...v2.1.1
-[2.1.0]: https://github.com/QueueClassic/queue_classic/compare/v2.0.5...v2.1.0
-[2.0.5]: https://github.com/QueueClassic/queue_classic/compare/v2.0.4...v2.0.5
-[2.0.4]: https://github.com/QueueClassic/queue_classic/compare/v2.0.3...v2.0.4
-[2.0.3]: https://github.com/QueueClassic/queue_classic/compare/v2.0.2...v2.0.3
-[2.0.2]: https://github.com/QueueClassic/queue_classic/compare/v2.0.1...v2.0.2
-[2.0.1]: https://github.com/QueueClassic/queue_classic/compare/v2.0.0...v2.0.1
-[2.0.0]: https://github.com/QueueClassic/queue_classic/compare/v1.0.2...v2.0.0
-[1.0.2]: https://github.com/QueueClassic/queue_classic/compare/v1.0.1...v1.0.2
-[1.0.1]: https://github.com/QueueClassic/queue_classic/compare/v1.0.0rc1...v1.0.1
-[1.0.0rc1]: https://github.com/QueueClassic/queue_classic/compare/v0.3.6pre...v1.0.0rc1
-[0.3.6pre]: https://github.com/QueueClassic/queue_classic/compare/v0.3.5pre...v0.3.6pre
-[0.3.5pre]: https://github.com/QueueClassic/queue_classic/compare/v0.3.4pre...v0.3.5pre
-[0.3.4pre]: https://github.com/QueueClassic/queue_classic/compare/v0.3.3pre...v0.3.4pre
-[0.3.3pre]: https://github.com/QueueClassic/queue_classic/compare/v0.3.2...v0.3.3pre
-[0.3.2]: https://github.com/QueueClassic/queue_classic/compare/v0.3.1...v0.3.2
-[0.3.1]: https://github.com/QueueClassic/queue_classic/compare/v0.2.2...v0.3.1
-[0.2.2]: https://github.com/QueueClassic/queue_classic/compare/v0.2.1...v0.2.2
-[0.2.1]: https://github.com/QueueClassic/queue_classic/compare/v0.2.0...v0.2.1
-[0.2.0]: https://github.com/QueueClassic/queue_classic/compare/v0.1.6...v0.2.0
-[0.1.6]: https://github.com/QueueClassic/queue_classic/releases/tag/v0.1.6
+- Early release
