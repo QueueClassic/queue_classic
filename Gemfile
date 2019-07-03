@@ -1,9 +1,10 @@
-source "https://rubygems.org"
+source 'https://rubygems.org' do
+  gem 'rake'
 
-gem "rake"
+  gemspec
 
-gemspec
-
-group :test do
-  gem 'minitest', '~> 5.5.1'
+  group :test do
+    gem 'minitest', '~> 5.8'
+    gem 'minitest-reporters'
+  end
 end
