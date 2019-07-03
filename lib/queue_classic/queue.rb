@@ -41,7 +41,7 @@ module QC
         begin
           retries ||= 0
           conn_adapter.execute(s, name, method, JSON.dump(args))
-        rescue PGError
+        rescue PG::Error
           if (retries += 1) < 2
             retry
           else
@@ -76,7 +76,7 @@ module QC
         begin
           retries ||= 0
           conn_adapter.execute(s, name, method, JSON.dump(args))
-        rescue PGError
+        rescue PG::Error
           if (retries += 1) < 2
             retry
           else

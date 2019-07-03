@@ -128,7 +128,7 @@ class QueueTest < QCTest
     conn = queue.conn_adapter.connection
     conn.exec('select pg_terminate_backend(pg_backend_pid())') rescue nil
     # Simulate permanent connection error
-    def conn.exec(*args); raise(PGError); end
+    def conn.exec(*args); raise(PG::Error); end
     # Ensure that the error is reraised on second time
     assert_raises(PG::Error) {queue.enqueue("Klass.other_method")}
     queue.conn_adapter.disconnect
@@ -150,7 +150,7 @@ class QueueTest < QCTest
     conn = queue.conn_adapter.connection
     conn.exec('select pg_terminate_backend(pg_backend_pid())') rescue nil
     # Simulate permanent connection error
-    def conn.exec(*args); raise(PGError); end
+    def conn.exec(*args); raise(PG::Error); end
     # Ensure that the error is reraised on second time
     assert_raises(PG::Error) {queue.enqueue_in(10,"Klass.method")}
     queue.conn_adapter.disconnect
