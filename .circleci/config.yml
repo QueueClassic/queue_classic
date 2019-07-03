@@ -3,7 +3,7 @@ version: 2
 jobs:
   test_ruby_2_5_4:
     environment:
-      QC_DATABASE_URL: postgres://root@localhost/circle_test
+      QC_DATABASE_URL: postgres://postgres@127.0.0.1/queue_classic_test
       QC_BENCHMARK: true
       QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
     docker:
@@ -12,6 +12,9 @@ jobs:
           RAILS_ENV: test
           RACK_ENV: test
       - image: circleci/postgres:9.6.6-alpine
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: queue_classic_test
     steps:
       - checkout
       - run:
@@ -20,13 +23,13 @@ jobs:
             sudo apt-get update
             sudo apt-get install postgresql-client
       - restore_cache:
-          key: v1-qc-bundler-{{ checksum "Gemfile" }}
+          key: v1-qc-bundler-{{ checksum "Gemfile" }}-{{ checksum "queue_classic.gemspec" }}
       - run:
           name: Install Ruby gems
           command: |
             bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
       - save_cache:
-          key: v1-qc-bundler-{{ checksum "Gemfile" }}
+          key: v1-qc-bundler-{{ checksum "Gemfile" }}-{{ checksum "queue_classic.gemspec" }}
           paths:
             - ~/project/vendor/bundle
       - run:
