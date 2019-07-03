@@ -9,6 +9,7 @@ jobs:
         RACK_ENV: test
         POSTGRES_USER: root
         PGHOST: 127.0.0.1
+        DATABASE_URL: postgres://postgres@127.0.0.1/circle_test
         QC_DATABASE_URL: postgres://postgres@127.0.0.1/circle_test
         QC_BENCHMARK: true
         QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
