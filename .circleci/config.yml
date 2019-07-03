@@ -12,6 +12,7 @@ jobs:
         environment:
           RAILS_ENV: test
           RACK_ENV: test
+          PGHOST: 127.0.0.1
       - image: circleci/postgres:9.6.6-alpine
         environment:
           POSTGRES_USER: postgres
@@ -36,7 +37,7 @@ jobs:
       - run:
           name: Create database
           command: |
-            psql -c 'create database circle_test;' -U postgres
+            psql -h 127.0.0.1 -c 'create database circle_test;' -U postgres
       - run:
           name: Minitest
           command: |
