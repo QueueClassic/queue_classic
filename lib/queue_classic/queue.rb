@@ -38,7 +38,16 @@ module QC
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
         s = "INSERT INTO #{QC.table_name} (q_name, method, args) VALUES ($1, $2, $3) RETURNING id"
-        conn_adapter.execute(s, name, method, JSON.dump(args))
+        begin
+          retries ||= 0
+          conn_adapter.execute(s, name, method, JSON.dump(args))
+        rescue PGError
+          if (retries += 1) < 2
+            retry
+          else
+            raise
+          end
+        end
       end
     end
 
@@ -64,7 +73,16 @@ module QC
         s = "INSERT INTO #{QC.table_name} (q_name, method, args, scheduled_at)
              VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')
              RETURNING id"
-        conn_adapter.execute(s, name, method, JSON.dump(args))
+        begin
+          retries ||= 0
+          conn_adapter.execute(s, name, method, JSON.dump(args))
+        rescue PGError
+          if (retries += 1) < 2
+            retry
+          else
+            raise
+          end
+        end
       end
     end
 
