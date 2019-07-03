@@ -123,16 +123,16 @@ class WorkerTest < QCTest
     t.join
   end
 
-  def test_worker_uses_one_conn
-    skip "This test is broken and needs to be fixed."
-
+  def test_worker_reuses_conn
     QC.enqueue("TestObject.no_args")
+    count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
     worker = TestWorker.new
     worker.work
-    assert_equal(
-      1,
-      QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity WHERE datname = current_database()")["count"].to_i,
-      "Multiple connections found -- are there open connections to #{ QC.default_conn_adapter.send(:db_url) } in other terminals?"
+
+    new_count = QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i;
+    assert(
+      new_count == count,
+      "Worker should not initialize new connections to #{ QC.default_conn_adapter.send(:db_url) }."
     )
   end
 
