@@ -194,6 +194,130 @@ class WorkerTest < QCTest
     end
   end
 
+  def test_worker_unlocks_job_on_signal_exception
+    job_details = QC.enqueue("Kernel.eval", "raise SignalException.new('INT')")
+    worker = TestWorker.new
+
+    unlocked = nil
+
+    fake_unlock = Proc.new do |job_id|
+      if job_id == job_details['id']
+        unlocked = true
+      end
+      original_unlock(job_id)
+    end
+
+    stub_any_instance(QC::Queue, :unlock, fake_unlock) do
+      begin
+        worker.work
+      rescue SignalException
+      ensure
+        assert unlocked, "SignalException failed to unlock the job in the queue."
+      end
+    end
+  end
+
+  def test_worker_unlocks_job_on_system_exit
+    job_details = QC.enqueue("Kernel.eval", "raise SystemExit.new")
+    worker = TestWorker.new
+
+    unlocked = nil
+
+    fake_unlock = Proc.new do |job_id|
+      if job_id == job_details['id']
+        unlocked = true
+      end
+      original_unlock(job_id)
+    end
+
+    stub_any_instance(QC::Queue, :unlock, fake_unlock) do
+      begin
+        worker.work
+      rescue SystemExit
+      ensure
+        assert unlocked, "SystemExit failed to unlock the job in the queue."
+      end
+    end
+  end
+
+  def test_worker_does_not_unlock_jobs_on_syntax_error
+    job_details = QC.enqueue("Kernel.eval", "bad syntax")
+    worker = TestWorker.new
+
+    unlocked = nil
+
+    fake_unlock = Proc.new do |job_id|
+      if job_id == job_details['id']
+        unlocked = true
+      end
+      original_unlock(job_id)
+    end
+
+    stub_any_instance(QC::Queue, :unlock, fake_unlock) do
+      begin
+        errors = capture_stderr_output do
+          worker.work
+        end
+      ensure
+        message = "SyntaxError unexpectedly unlocked the job in the queue."
+        message << "\nErrors:\n#{errors}" unless errors.empty?
+        refute unlocked, message
+      end
+    end
+  end
+
+  def test_worker_does_not_unlock_jobs_on_load_error
+    job_details = QC.enqueue("Kernel.eval", "require 'not_a_real_file'")
+    worker = TestWorker.new
+
+    unlocked = nil
+
+    fake_unlock = Proc.new do |job_id|
+      if job_id == job_details['id']
+        unlocked = true
+      end
+      original_unlock(job_id)
+    end
+
+    stub_any_instance(QC::Queue, :unlock, fake_unlock) do
+      begin
+        errors = capture_stderr_output do
+          worker.work
+        end
+      ensure
+        message = "LoadError unexpectedly unlocked the job in the queue."
+        message << "\nErrors:\n#{errors}" unless errors.empty?
+        refute unlocked, message
+      end
+    end
+  end
+
+  def test_worker_does_not_unlock_jobs_on_no_memory_error
+    job_details = QC.enqueue("Kernel.eval", "raise NoMemoryError.new")
+    worker = TestWorker.new
+
+    unlocked = nil
+
+    fake_unlock = Proc.new do |job_id|
+      if job_id == job_details['id']
+        unlocked = true
+      end
+      original_unlock(job_id)
+    end
+
+    stub_any_instance(QC::Queue, :unlock, fake_unlock) do
+      begin
+        errors = capture_stderr_output do
+          worker.work
+        end
+      ensure
+        message = "NoMemoryError unexpectedly unlocked the job in the queue."
+        message << "\nErrors:\n#{errors}" unless errors.empty?
+        refute unlocked, message
+      end
+    end
+  end
+
   private
 
   def with_database(url)
