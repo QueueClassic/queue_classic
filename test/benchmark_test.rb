@@ -1,4 +1,6 @@
-require File.expand_path("../helper.rb", __FILE__)
+# frozen_string_literal: true
+
+require_relative 'helper'
 
 if ENV["QC_BENCHMARK"]
   class BenchmarkTest < QCTest

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require File.expand_path("../../helper.rb", __FILE__)
 
 class QueueClassicRailsConnectionTest < QCTest

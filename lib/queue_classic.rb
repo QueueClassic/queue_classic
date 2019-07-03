@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative "queue_classic/config"
 
 module QC
@@ -65,8 +67,8 @@ Please use the method QC.#{config_method} instead.
   end
 
   def self.log_yield(data)
+    t0 = Time.now
     begin
-      t0 = Time.now
       yield
     rescue => e
       log({:at => "error", :error => e.inspect}.merge(data))
@@ -100,7 +102,8 @@ Please use the method QC.#{config_method} instead.
   # This will unlock all jobs any postgres' PID that is not existing anymore
   # to prevent any infinitely locked jobs
   def self.unlock_jobs_of_dead_workers
-    default_conn_adapter.execute("UPDATE #{QC.table_name} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
+    pid_column = default_conn_adapter.server_version < 90200 ? "procpid" : "pid"
+    default_conn_adapter.execute("UPDATE #{QC.table_name} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT #{pid_column} FROM pg_stat_activity);")
   end
 
   # private class methods

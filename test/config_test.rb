@@ -1,4 +1,6 @@
-require_relative "helper"
+# frozen_string_literal: true
+
+require_relative 'helper'
 
 class ConfigTest < QCTest
   def setup

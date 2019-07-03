@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # -*- coding: utf-8 -*-
 require_relative 'queue'
 require_relative 'conn_adapter'
@@ -12,7 +14,7 @@ module QC
     # This method takes a single hash argument. The following keys are read:
     # fork_worker:: Worker forks each job execution.
     # wait_interval:: Time to wait between failed lock attempts
-    # connection:: PGConn object.
+    # connection:: PG::Connection object.
     # q_name:: Name of a single queue to process.
     # q_names:: Names of queues to process. Will process left to right.
     # top_bound:: Offset to the head of the queue. 1 == strict FIFO.
@@ -120,7 +122,7 @@ module QC
     # then it is deleted from the queue.
     # If the job has raised an exception the responsibility of what
     # to do with the job is delegated to Worker#handle_failure.
-    # If the job is not finished and an INT signal is traped,
+    # If the job is not finished and an INT signal is trapped,
     # this method will unlock the job in the queue.
     def process(queue, job)
       start = Time.now
@@ -130,7 +132,10 @@ module QC
           queue.delete(job[:id])
           finished = true
         end
-      rescue => e
+      rescue StandardError, ScriptError, NoMemoryError => e
+        # We really only want to unlock the job for signal and system exit
+        # exceptions. If we encounter a ScriptError or a NoMemoryError any
+        # future run will likely encounter the same error.
         handle_failure(job, e)
         finished = true
       ensure
@@ -152,8 +157,8 @@ module QC
       receiver.send(message, *args)
     end
 
-    # This method will be called when an exception
-    # is raised during the execution of the job.
+    # This method will be called when a StandardError, ScriptError or
+    # NoMemoryError is raised during the execution of the job.
     def handle_failure(job,e)
       $stderr.puts("count#qc.job-error=1 job=#{job} error=#{e.inspect} at=#{e.backtrace.first}")
     end
