@@ -1,7 +1,8 @@
-version: 2
+version: 2.1
 
 jobs:
   test_ruby_2_5_4:
+    parallelism: 2
     environment:
       QC_DATABASE_URL: postgres://postgres@127.0.0.1/queue_classic_test
       QC_BENCHMARK: true
