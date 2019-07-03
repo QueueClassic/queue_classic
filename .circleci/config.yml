@@ -32,10 +32,6 @@ jobs:
           paths:
             - ~/project/vendor/bundle
       - run:
-          name: Create database
-          command: |
-            psql -h 127.0.0.1 -c 'create database circle_test;' -U postgres
-      - run:
           name: Minitest
           command: |
             bundle exec rake
