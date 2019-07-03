@@ -62,23 +62,17 @@ BEGIN
   USING unlocked;
 
   RETURN;
-END;
-$$ LANGUAGE plpgsql;
+END $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION lock_head(tname varchar)
-RETURNS SETOF queue_classic_jobs AS $$
-BEGIN
+CREATE OR REPLACE FUNCTION lock_head(tname varchar) RETURNS SETOF queue_classic_jobs AS $$ BEGIN
   RETURN QUERY EXECUTE 'SELECT * FROM lock_head($1,10)' USING tname;
-END;
-$$ LANGUAGE plpgsql;
+END $$ LANGUAGE plpgsql;
 
 -- queue_classic_notify function and trigger
-create function queue_classic_notify() returns trigger as $$ begin
-  perform pg_notify(new.q_name, '');
-  return null;
-end $$ language plpgsql;
+CREATE FUNCTION queue_classic_notify() RETURNS TRIGGER AS $$ BEGIN
+  perform pg_notify(new.q_name, ''); RETURN NULL;
+END $$ LANGUAGE plpgsql;
 
-create trigger queue_classic_notify
-after insert on queue_classic_jobs
-for each row
-execute procedure queue_classic_notify();
+CREATE TRIGGER queue_classic_notify
+AFTER INSERT ON queue_classic_jobs FOR EACH ROW
+EXECUTE PROCEDURE queue_classic_notify();

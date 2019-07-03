@@ -1,4 +1,6 @@
-require_relative "helper"
+# frozen_string_literal: true
+
+require_relative 'helper'
 
 class ConfigTest < QCTest
   def setup
@@ -117,17 +119,5 @@ class ConfigTest < QCTest
     assert_equal TestWorker, QC.default_worker_class
   ensure
     QC.default_worker_class = original_worker
-  end
-
-  private
-  def with_env(temporary_environment)
-    original_environment = {}
-    temporary_environment.each do |name, value|
-      original_environment[name] = ENV[name]
-      ENV[name] = value
-    end
-    yield
-  ensure
-    original_environment.each { |name, value| ENV[name] = value }
   end
 end

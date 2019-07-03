@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require File.expand_path("../../helper.rb", __FILE__)
 
 class QueueClassicRailsConnectionTest < QCTest
@@ -22,10 +24,10 @@ class QueueClassicRailsConnectionTest < QCTest
   end
 
   def test_does_not_use_active_record_connection_if_env_var_set
-    ENV['QC_RAILS_DATABASE'] = 'false'
-    connection = get_connection
-    assert_raises(MockExpectationError) { connection.verify }
-    ENV['QC_RAILS_DATABASE'] = 'true'
+    with_env 'QC_RAILS_DATABASE' => 'false' do
+      connection = get_connection
+      assert_raises(MockExpectationError) { connection.verify }
+    end
   end
 
   private

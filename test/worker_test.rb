@@ -1,4 +1,6 @@
-require File.expand_path("../helper.rb", __FILE__)
+# frozen_string_literal: true
+
+require_relative 'helper'
 
 module TestObject
   extend self
@@ -121,7 +123,7 @@ class WorkerTest < QCTest
     t.join
   end
 
-  def test_worker_ueses_one_conn
+  def test_worker_uses_one_conn
     skip "This test is broken and needs to be fixed."
 
     QC.enqueue("TestObject.no_args")
@@ -129,7 +131,7 @@ class WorkerTest < QCTest
     worker.work
     assert_equal(
       1,
-      QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity where datname = current_database()")["count"].to_i,
+      QC.default_conn_adapter.execute("SELECT count(*) from pg_stat_activity WHERE datname = current_database()")["count"].to_i,
       "Multiple connections found -- are there open connections to #{ QC.default_conn_adapter.send(:db_url) } in other terminals?"
     )
   end
@@ -174,15 +176,6 @@ class WorkerTest < QCTest
     r = worker.work
     assert_equal(42, r)
     assert_equal(0, worker.failed_count)
-  end
-
-  def test_init_worker_with_arg
-    with_database 'postgres:///invalid' do
-      conn = PG::Connection.connect(dbname: 'queue_classic_test')
-      QC::Worker.new connection: conn
-
-      conn.close
-    end
   end
 
   def test_init_worker_with_database_url

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 $:.unshift("lib")
 
 require "bundler/gem_tasks"
@@ -11,5 +13,4 @@ Rake::TestTask.new do |t|
   t.test_files = FileList['test/**/*_test.rb']
   t.verbose = true
   t.warning = true
-  t.ruby_opts << "-rubygems" if RUBY_VERSION < "1.9"
 end

@@ -1,12 +1,19 @@
-$: << File.expand_path("lib")
-$: << File.expand_path("test")
+# frozen_string_literal: true
 
 require "bundler"
+require "minitest/reporters"
+
 Bundler.setup :default, :test
+
+if ENV['CIRCLECI'] == "true"
+  Minitest::Reporters.use! Minitest::Reporters::JUnitReporter.new
+else
+  Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
+end
 
 ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
 
-require "queue_classic"
+require_relative '../lib/queue_classic'
 require "stringio"
 require "minitest/autorun"
 
@@ -51,4 +58,14 @@ class QCTest < Minitest::Test
     $stdout = original_stdout
   end
 
+  def with_env(temporary_environment)
+    original_environment = {}
+    temporary_environment.each do |name, value|
+      original_environment[name] = ENV[name]
+      ENV[name] = value
+    end
+    yield
+  ensure
+    original_environment.each { |name, value| ENV[name] = value }
+  end
 end
