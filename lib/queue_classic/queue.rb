@@ -5,8 +5,8 @@ require 'time'
 module QC
   # The queue class maps a queue abstraction onto a database table.
   class Queue
-
     attr_reader :name, :top_bound
+
     def initialize(name, top_bound=nil)
       @name = name
       @top_bound = top_bound || QC.top_bound
@@ -132,6 +132,5 @@ module QC
         r["count"].to_i
       end
     end
-
   end
 end

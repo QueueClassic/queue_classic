@@ -58,7 +58,6 @@ module QC
 
     # The worker class instantiated by QC's rake tasks.
     def default_worker_class
-
       @worker_class ||= (ENV["QC_DEFAULT_WORKER_CLASS"] && Kernel.const_get(ENV["QC_DEFAULT_WORKER_CLASS"]) ||
                          QC::Worker)
 

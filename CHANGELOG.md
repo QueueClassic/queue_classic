@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Unreleased, 3.3.0
 - Fixed a bug in the offset calculation of `.enqueue_at`.
 - Use the jsonb type for the args column from now on. If not available, fall back to json or text.
 - `enqueue`, `enqueue_at`, `enqueue_in` return job hash with id.
@@ -8,6 +8,8 @@
 - Change ruby versions tested in Travis to currently supported ones.
 - Switched project to use CircleCI, as it's way more consistent speed wise
 - Automatically retry after a connection reset #294
+- Change to only support >= Postgres 9.6. We will be bringing in newer changes and testing on only 9.6+ going forward.
+- Change to only support currently supported Ruby versions: 2.4, 2.5 and 2.6.
 
 ## Version 3.0.0rc
 - Improved signal handling
