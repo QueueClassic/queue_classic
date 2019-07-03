@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module QC
   module Config
     # You can use the APP_NAME to query for

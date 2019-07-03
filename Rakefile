@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 $:.unshift("lib")
 
 require "bundler/gem_tasks"
