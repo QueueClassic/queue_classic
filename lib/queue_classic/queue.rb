@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'conn_adapter'
 require 'json'
 require 'time'

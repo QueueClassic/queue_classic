@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # -*- coding: utf-8 -*-
 require_relative 'queue'
 require_relative 'conn_adapter'
