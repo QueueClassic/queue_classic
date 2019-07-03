@@ -4,7 +4,7 @@ jobs:
   test_ruby_2_5_4:
     parallelism: 2
     environment:
-      QC_DATABASE_URL: postgres://root@127.0.0.1/circle_test
+      QC_DATABASE_URL: postgres://postgres@127.0.0.1/circle_test
       QC_BENCHMARK: true
       QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
     docker:
@@ -34,7 +34,7 @@ jobs:
       - run:
           name: Create database
           command: |
-            psql -h 127.0.0.1 -c 'create database circle_test;' -U root
+            psql -h 127.0.0.1 -c 'create database circle_test;' -U postgres
       - run:
           name: Minitest
           command: |
