@@ -112,6 +112,50 @@ class QueueTest < QCTest
     queue.conn_adapter.disconnect
   end
 
+  def test_enqueue_retry
+    queue = QC::Queue.new("queue_classic_jobs")
+    queue.conn_adapter = QC::ConnAdapter.new
+    conn = queue.conn_adapter.connection
+    conn.exec('select pg_terminate_backend(pg_backend_pid())') rescue nil
+    queue.enqueue("Klass.method")
+    assert_equal(1, queue.count)
+    queue.conn_adapter.disconnect
+  end
+
+  def test_enqueue_stops_retrying_on_permanent_error
+    queue = QC::Queue.new("queue_classic_jobs")
+    queue.conn_adapter = QC::ConnAdapter.new
+    conn = queue.conn_adapter.connection
+    conn.exec('select pg_terminate_backend(pg_backend_pid())') rescue nil
+    # Simulate permanent connection error
+    def conn.exec(*args); raise(PG::Error); end
+    # Ensure that the error is reraised on second time
+    assert_raises(PG::Error) {queue.enqueue("Klass.other_method")}
+    queue.conn_adapter.disconnect
+  end
+
+  def test_enqueue_in_retry
+    queue = QC::Queue.new("queue_classic_jobs")
+    queue.conn_adapter = QC::ConnAdapter.new
+    conn = queue.conn_adapter.connection
+    conn.exec('select pg_terminate_backend(pg_backend_pid())') rescue nil
+    queue.enqueue_in(10,"Klass.method")
+    assert_equal(1, queue.count)
+    queue.conn_adapter.disconnect
+  end
+
+  def test_enqueue_in_stops_retrying_on_permanent_error
+    queue = QC::Queue.new("queue_classic_jobs")
+    queue.conn_adapter = QC::ConnAdapter.new
+    conn = queue.conn_adapter.connection
+    conn.exec('select pg_terminate_backend(pg_backend_pid())') rescue nil
+    # Simulate permanent connection error
+    def conn.exec(*args); raise(PG::Error); end
+    # Ensure that the error is reraised on second time
+    assert_raises(PG::Error) {queue.enqueue_in(10,"Klass.method")}
+    queue.conn_adapter.disconnect
+  end
+
   def test_custom_default_queue
     queue_class = Class.new do
       attr_accessor :jobs
