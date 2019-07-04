@@ -13,6 +13,7 @@ jobs:
         QC_DATABASE_URL: postgres://postgres@127.0.0.1/circle_test
         QC_BENCHMARK: true
         QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
+        BUNDLE_GEMFILE: ~/project/test/rails-tests/Gemfile523
     - image: circleci/postgres:9.6.6-alpine
     steps:
     - checkout
