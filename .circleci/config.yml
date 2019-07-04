@@ -14,8 +14,8 @@ jobs:
         QC_BENCHMARK: true
         QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
     - image: circleci/postgres:9.6.6-alpine
+    working_directory: ~/project/test/rails-tests/
     steps:
-    - working_directory: ~/project/test/rails-tests/
     - checkout
     - restore_cache:
         key: rails-5-2-3-{{ checksum "Gemfile523" }}
