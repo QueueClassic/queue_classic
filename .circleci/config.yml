@@ -158,4 +158,4 @@ workflows:
     - test_ruby_2_4_6
     - test_ruby_2_5_4
     - test_ruby_2_6_3
-    - test_ruby_2_6_3_pg_latest
+    - test_fresh_install_rails_5_2_3
