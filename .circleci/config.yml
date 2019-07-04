@@ -14,22 +14,23 @@ jobs:
         QC_BENCHMARK: true
         QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
     - image: circleci/postgres:9.6.6-alpine
-    working_directory: ~/project/test/rails-tests/
     steps:
     - checkout
     - restore_cache:
-        key: rails-5-2-3-{{ checksum "Gemfile523" }}
+        key: rails-5-2-3-{{ checksum "test/rails-tests/Gemfile523" }}
     - run:
         name: Install Ruby gems
         command: |
+          cd test/rails-tests/
           bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs=4 --retry=3
     - save_cache:
-        key: rails-5-2-3-{{ checksum "Gemfile523" }}
+        key: rails-5-2-3-{{ checksum "test/rails-tests/Gemfile523" }}
         paths:
         - ~/project/test/rails-tests/vendor/bundle
     - run:
         name: Install rails, add QC and run migrations
         command: |
+          cd test/rails-tests/
           sh rails523.sh
   test_ruby_2_4_6:
     docker:
