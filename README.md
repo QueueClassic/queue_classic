@@ -13,8 +13,9 @@
 
 **IMPORTANT NOTE REGARDING VERSIONS**
 
-**This README is representing the current work for queue_classic 3.1. You can find the README for other versions:**
+**This README is representing the current work for queue_classic edge [unstable]. You can find the README for other versions:**
 
+- current release candidate: [v3.1.X](https://github.com/QueueClassic/queue_classic/tree/3-1-stable)
 - latest stable can be found: [v3.0.X](https://github.com/QueueClassic/queue_classic/tree/3-0-stable)
 - older stable: [v2.2.3](https://github.com/QueueClassic/queue_classic/tree/v2.2.3)
 
@@ -134,13 +135,20 @@ end
 
 worker = MyWorker.new
 
-trap('INT') {exit}
-trap('TERM') {worker.stop}
+trap('INT') { exit }
+trap('TERM') { worker.stop }
 
 loop do
   job = worker.lock_job
   Timeout::timeout(5) { worker.process(job) }
 end
+```
+
+The `qc:work` rake task uses `QC::Worker` by default. However, it's easy to
+inject your own worker class:
+
+```ruby
+QC.default_worker_class = MyWorker
 ```
 
 ## Setup
@@ -231,9 +239,10 @@ All configuration takes place in the form of environment vars. See [queue_classi
 
 ## JSON
 
-If you are running PostgreSQL 9.2 or higher, queue_classic will use the [json](http://www.postgresql.org/docs/9.2/static/datatype-json.html) datatype for storing arguments. Versions 9.1 and lower will use the 'text' column. If you have installed queue_classic prior to version 2.1.4 and are running PostgreSQL >= 9.2, run the following to switch to using the json type:
+If you are running PostgreSQL 9.4 or higher, queue_classic will use the [jsonb](http://www.postgresql.org/docs/9.4/static/datatype-json.html) datatype for new tables. Versions 9.2 and 9.3 will use the `json` data type and versions 9.1 and lower will use the `text` data type.
+If you are updating queue_classic and are running PostgreSQL >= 9.4, run the following to switch to `jsonb`:
 ```
-alter table queue_classic_jobs alter column args type json using (args::json);
+alter table queue_classic_jobs alter column args type jsonb using (args::jsonb);
 ```
 
 ## Logging
@@ -272,7 +281,7 @@ https://groups.google.com/d/forum/queue_classic
 
 ### Dependencies
 
-* Ruby 1.9.2 (tests work in 1.8.7 but compatibility is not guaranteed or supported)
+* Ruby 1.9.2
 * Postgres ~> 9.0
 * Rubygem: pg ~> 0.11.0
 * For JRuby, see [queue_classic_java](https://github.com/bdon/queue_classic_java)

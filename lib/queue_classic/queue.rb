@@ -9,7 +9,7 @@ module QC
     attr_reader :name, :top_bound
     def initialize(name, top_bound=nil)
       @name = name
-      @top_bound = top_bound || QC::TOP_BOUND
+      @top_bound = top_bound || QC.top_bound
     end
 
     def conn_adapter=(a)
@@ -34,9 +34,10 @@ module QC
     # The args are stored as a collection and then splatted inside the worker.
     # Examples of args include: `'hello world'`, `['hello world']`,
     # `'hello', 'world'`.
+    # This method returns a hash with the id of the enqueued job.
     def enqueue(method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
-        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args) VALUES ($1, $2, $3)"
+        s = "INSERT INTO #{QC.table_name} (q_name, method, args) VALUES ($1, $2, $3) RETURNING id"
         conn_adapter.execute(s, name, method, JSON.dump(args))
       end
     end
@@ -46,8 +47,9 @@ module QC
     # The time argument must be a Time object or a float timestamp. The method
     # and args argument must be in the form described in the documentation for
     # the #enqueue method.
+    # This method returns a hash with the id of the enqueued job.
     def enqueue_at(timestamp, method, *args)
-      offset = Time.at(timestamp) - Time.now
+      offset = Time.at(timestamp).to_i - Time.now.to_i
       enqueue_in(offset, method, *args)
     end
 
@@ -56,10 +58,12 @@ module QC
     # The seconds argument must be an integer. The method and args argument
     # must be in the form described in the documentation for the #enqueue
     # method.
+    # This method returns a hash with the id of the enqueued job.
     def enqueue_in(seconds, method, *args)
       QC.log_yield(:measure => 'queue.enqueue') do
-        s = "INSERT INTO #{TABLE_NAME} (q_name, method, args, scheduled_at)
-             VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')"
+        s = "INSERT INTO #{QC.table_name} (q_name, method, args, scheduled_at)
+             VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')
+             RETURNING id"
         conn_adapter.execute(s, name, method, JSON.dump(args))
       end
     end
@@ -85,27 +89,27 @@ module QC
 
     def unlock(id)
       QC.log_yield(:measure => 'queue.unlock') do
-        s = "UPDATE #{TABLE_NAME} set locked_at = null where id = $1"
+        s = "UPDATE #{QC.table_name} set locked_at = null where id = $1"
         conn_adapter.execute(s, id)
       end
     end
 
     def delete(id)
       QC.log_yield(:measure => 'queue.delete') do
-        conn_adapter.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)
+        conn_adapter.execute("DELETE FROM #{QC.table_name} where id = $1", id)
       end
     end
 
     def delete_all
       QC.log_yield(:measure => 'queue.delete_all') do
-        s = "DELETE FROM #{TABLE_NAME} WHERE q_name = $1"
+        s = "DELETE FROM #{QC.table_name} WHERE q_name = $1"
         conn_adapter.execute(s, name)
       end
     end
 
     def count
       QC.log_yield(:measure => 'queue.count') do
-        s = "SELECT COUNT(*) FROM #{TABLE_NAME} WHERE q_name = $1"
+        s = "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1"
         r = conn_adapter.execute(s, name)
         r["count"].to_i
       end

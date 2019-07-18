@@ -1,40 +1,42 @@
+require_relative "queue_classic/config"
+
 module QC
-  # You can use the APP_NAME to query for
-  # postgres related process information in the
-  # pg_stat_activity table.
-  APP_NAME = ENV["QC_APP_NAME"] || "queue_classic"
+  extend QC::Config
 
-  # Number of seconds to block on the listen chanel for new jobs.
-  WAIT_TIME = (ENV["QC_LISTEN_TIME"] || 5).to_i
+  # Assign constants for backwards compatibility.
+  # They should no longer be used. Prefer the corresponding methods.
+  # See +QC::Config+ for more details.
+  DEPRECATED_CONSTANTS = {
+    :APP_NAME => :app_name,
+    :WAIT_TIME => :wait_time,
+    :TABLE_NAME => :table_name,
+    :QUEUE => :queue,
+    :QUEUES => :queues,
+    :TOP_BOUND => :top_bound,
+    :FORK_WORKER => :fork_worker?,
+  }
 
-  # Why do you want to change the table name?
-  # Just deal with the default OK?
-  # If you do want to change this, you will
-  # need to update the PL/pgSQL lock_head() function.
-  # Come on. Don't do it.... Just stick with the default.
-  TABLE_NAME = "queue_classic_jobs"
-
-  # Each row in the table will have a column that
-  # notes the queue. You can point your workers
-  # at different queues but only one at a time.
-  QUEUE = ENV["QUEUE"] || "default"
-  QUEUES = (ENV["QUEUES"] && ENV["QUEUES"].split(",")) || []
-
-  # Set this to 1 for strict FIFO.
-  # There is nothing special about 9....
-  TOP_BOUND = (ENV["QC_TOP_BOUND"] || 9).to_i
-
-  # Set this variable if you wish for
-  # the worker to fork a UNIX process for
-  # each locked job. Remember to re-establish
-  # any database connections. See the worker
-  # for more details.
-  FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
+  def self.const_missing(const_name)
+    if DEPRECATED_CONSTANTS.key? const_name
+      config_method = DEPRECATED_CONSTANTS[const_name]
+      $stderr.puts <<-MSG
+The constant QC::#{const_name} is deprecated and will be removed in the future.
+Please use the method QC.#{config_method} instead.
+      MSG
+      QC.public_send config_method
+    else
+      super
+    end
+  end
 
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
   def self.method_missing(sym, *args, &block)
-    default_queue.send(sym, *args, &block)
+    if default_queue.respond_to? sym
+      default_queue.public_send(sym, *args, &block)
+    else
+      super
+    end
   end
 
   # Ensure QC.respond_to?(:enqueue) equals true (ruby 1.9 only)
@@ -42,32 +44,24 @@ module QC
     default_queue.respond_to?(method_name)
   end
 
-  def self.default_queue=(queue)
-    @default_queue = queue
-  end
-
-  def self.default_queue
-    @default_queue ||= begin
-      Queue.new(QUEUE)
-    end
-  end
-
   def self.has_connection?
     !default_conn_adapter.nil?
   end
 
   def self.default_conn_adapter
-    return @conn_adapter if defined?(@conn_adapter) && @conn_adapter
-    if rails_connection_sharing_enabled?
-      @conn_adapter = ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
+    t = Thread.current
+    return t[:qc_conn_adapter] if t[:qc_conn_adapter]
+    adapter = if rails_connection_sharing_enabled?
+      ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
     else
-      @conn_adapter = ConnAdapter.new
+      ConnAdapter.new
     end
-    @conn_adapter
+
+    t[:qc_conn_adapter] = adapter
   end
 
   def self.default_conn_adapter=(conn)
-    @conn_adapter = conn
+    Thread.current[:qc_conn_adapter] = conn
   end
 
   def self.log_yield(data)
@@ -106,7 +100,7 @@ module QC
   # This will unlock all jobs any postgres' PID that is not existing anymore
   # to prevent any infinitely locked jobs
   def self.unlock_jobs_of_dead_workers
-    default_conn_adapter.execute("UPDATE #{QC::TABLE_NAME} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
+    default_conn_adapter.execute("UPDATE #{QC.table_name} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
   end
 
   # private class methods

@@ -1,6 +1,13 @@
 require File.expand_path("../../helper.rb", __FILE__)
 
 class QueueClassicTest < QCTest
+  def test_only_delegate_calls_to_queue_it_understands
+    e = assert_raises(NoMethodError) do
+      QC.probably_not
+    end
+    assert_match "undefined method `probably_not' for QC:Module", e.message
+  end
+
   def test_default_conn_adapter_default_value
     assert(QC.default_conn_adapter.is_a?(QC::ConnAdapter))
   end
@@ -17,11 +24,11 @@ class QueueClassicTest < QCTest
   def test_unlock_jobs_of_dead_workers
     # Insert a locked job
     adapter = QC::ConnAdapter.new
-    query = "INSERT INTO #{QC::TABLE_NAME} (q_name, method, args, locked_by, locked_at) VALUES ('whatever', 'Kernel.puts', '[\"ok?\"]', 0, (CURRENT_TIMESTAMP))"
+    query = "INSERT INTO #{QC.table_name} (q_name, method, args, locked_by, locked_at) VALUES ('whatever', 'Kernel.puts', '[\"ok?\"]', 0, (CURRENT_TIMESTAMP))"
     adapter.execute(query)
 
     # We should have no unlocked jobs
-    query_locked_jobs = "SELECT * FROM #{QC::TABLE_NAME} WHERE locked_at IS NULL"
+    query_locked_jobs = "SELECT * FROM #{QC.table_name} WHERE locked_at IS NULL"
     res = adapter.connection.exec(query_locked_jobs)
     assert_equal(0, res.count)
 

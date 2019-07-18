@@ -28,12 +28,14 @@ class QueueTest < QCTest
   end
 
   def test_lock_with_future_job_with_enqueue_in
+    now = Time.now
     QC.enqueue_in(2, "Klass.method")
     assert_nil QC.lock
     sleep 2
     job = QC.lock
     assert_equal("Klass.method", job[:method])
     assert_equal([], job[:args])
+    assert_equal((now + 2).to_i, job[:scheduled_at].to_i)
   end
 
   def test_lock_with_future_job_with_enqueue_at_with_a_time_object
@@ -44,6 +46,7 @@ class QueueTest < QCTest
     job = QC.lock
     assert_equal("Klass.method", job[:method])
     assert_equal([], job[:args])
+    assert_equal(future.to_i, job[:scheduled_at].to_i)
   end
 
   def test_lock_with_future_job_with_enqueue_at_with_a_float_timestamp
@@ -129,9 +132,50 @@ class QueueTest < QCTest
     QC.default_queue = nil
   end
 
+  def test_multi_threaded_server_can_specified_connection
+    adapter1 = QC::ConnAdapter.new
+    adapter2 = QC::ConnAdapter.new
+    q1 = q2 = nil
+
+    QC.default_conn_adapter = adapter1
+
+    t1 = Thread.new do
+      QC.default_conn_adapter = adapter1
+      q1 = QC::Queue.new('queue1').conn_adapter
+    end
+
+    t2 = Thread.new do
+      QC.default_conn_adapter = adapter2
+      q2 = QC::Queue.new('queue2').conn_adapter
+    end
+
+    t1.join
+    t2.join
+
+    assert_equal adapter1, q1
+    assert_equal adapter2, q2
+  end
+
+  def test_multi_threaded_server_each_thread_acquires_unique_connection
+    q1 = q2 = nil
+
+    t1 = Thread.new do
+      q1 = QC::Queue.new('queue1').conn_adapter
+    end
+
+    t2 = Thread.new do
+      q2 = QC::Queue.new('queue2').conn_adapter
+    end
+
+    t1.join
+    t2.join
+
+    refute_equal q1, q2
+  end
+
   def test_enqueue_triggers_notify
     adapter = QC.default_conn_adapter
-    adapter.execute('LISTEN "' + QC::QUEUE + '"')
+    adapter.execute('LISTEN "' + QC.queue + '"')
     adapter.send(:drain_notify)
 
     msgs = adapter.send(:wait_for_notify, 0.25)
@@ -142,4 +186,23 @@ class QueueTest < QCTest
     assert_equal(1, msgs.length)
   end
 
+  def test_enqueue_returns_job_id
+    enqueued_job = QC.enqueue("Klass.method")
+    locked_job = QC.lock
+    assert_equal enqueued_job, "id" => locked_job[:id]
+  end
+
+  def test_enqueue_in_returns_job_id
+    enqueued_job = QC.enqueue_in(1, "Klass.method")
+    sleep 1
+    locked_job = QC.lock
+    assert_equal enqueued_job, "id" => locked_job[:id]
+  end
+
+  def test_enqueue_at_returns_job_id
+    enqueued_job = QC.enqueue_at(Time.now + 1, "Klass.method")
+    sleep 1
+    locked_job = QC.lock
+    assert_equal enqueued_job, "id" => locked_job[:id]
+  end
 end
