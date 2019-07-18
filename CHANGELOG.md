@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 - Automatically retry after a connection reset #294
 - Change to only support >= Postgres 9.6. We will be bringing in newer changes and testing on only 9.6+ going forward.
 - Change to only support currently supported Ruby versions: 2.4, 2.5 and 2.6.
+- Add tests for installing fresh on rails 5.2.3 + running migrations
 
 ## [3.0.0rc] - 2014-01-07
 
