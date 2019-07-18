@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 source 'https://rubygems.org' do
-  gem 'rake'
+  gem 'rake', '12.3.2'
 
   gemspec
 
