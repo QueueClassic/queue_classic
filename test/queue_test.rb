@@ -67,15 +67,13 @@ class QueueTest < QCTest
 
     QC.enqueue("Klass.method")
     assert_equal(2, QC.count)
-    assert_equal(2, QC.count(:all))
-    assert_equal(2, QC.count(:ready))
-    assert_equal(0, QC.count(:scheduled))
+    assert_equal(2, QC.count_ready)
+    assert_equal(0, QC.count_scheduled)
 
     QC.enqueue_in(60, "Klass.method")
     assert_equal(3, QC.count)
-    assert_equal(3, QC.count(:all))
-    assert_equal(2, QC.count(:ready))
-    assert_equal(1, QC.count(:scheduled))
+    assert_equal(2, QC.count_ready)
+    assert_equal(1, QC.count_scheduled)
 
     assert_raises(ArgumentError) do
       QC.count(:potatoes)
