@@ -2,19 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
-## [MASTER] - WIP - 2019-07-18
-- Fixed a bug in the offset calculation of `.enqueue_at`.
+## [4.0.0-alpha1] - 2019-07-18
+
+Updates:
+- [Change to only support >= Postgres 9.6. We will be bringing in newer changes and testing on only 9.6+ going forward.](https://github.com/QueueClassic/queue_classic/pull/307)
+- [Change to only support currently supported Ruby versions: 2.4, 2.5 and 2.6.](https://github.com/QueueClassic/queue_classic/pull/305)
+- [Use skip-locked](https://github.com/QueueClassic/queue_classic/pull/303)
+- [Add abilty to count ready and scheduled jobs](https://github.com/QueueClassic/queue_classic/pull/255)
+
+Bug fixes:
+- [Switched project to use CircleCI, as it's way more consistent speed wise](https://github.com/QueueClassic/queue_classic/pull/304)
+- [Automatically retry after a connection reset #294](https://github.com/QueueClassic/queue_classic/pull/294)
+- [Add tests for installing fresh on rails 5.2.3 + running migrations](https://github.com/QueueClassic/queue_classic/pull/308)
+- [Don't recuse Time.now errors](https://github.com/QueueClassic/queue_classic/pull/310)
 - Use the jsonb type for the args column from now on. If not available, fall back to json or text.
 - `enqueue`, `enqueue_at`, `enqueue_in` return job hash with id.
-- Fixed unlock query for versions below Postgres 9.2
-- Change ruby versions tested in Travis to currently supported ones.
-- Switched project to use CircleCI, as it's way more consistent speed wise
-- Automatically retry after a connection reset #294
-- Change to only support >= Postgres 9.6. We will be bringing in newer changes and testing on only 9.6+ going forward.
-- Change to only support currently supported Ruby versions: 2.4, 2.5 and 2.6.
-- Add tests for installing fresh on rails 5.2.3 + running migrations
-- Bump to version 4, breaking changes (requirements of ruby, postgres)
-- Use skip-locked see - https://github.com/QueueClassic/queue_classic/pull/303
+- Fixed a bug in the offset calculation of `.enqueue_at`.
 
 ## [3.0.0rc] - 2014-01-07
 

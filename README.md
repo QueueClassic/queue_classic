@@ -7,8 +7,9 @@ A simple, efficient worker queue for Ruby & PostgreSQL
 
 **IMPORTANT NOTE: This README is representing the current work for queue_classic, which is generally the pending next version. You can find the README for other versions:**
 
-* current release candidate: [v3.2.0.RC1](https://github.com/QueueClassic/queue_classic/tree/v3.2.0.RC1)
-* latest stable can be found: [v3.1.x](https://github.com/QueueClassic/queue_classic/tree/3-1-stable)
+You can always find the latest and previous releases here:
+
+https://github.com/QueueClassic/queue_classic/releases
 
 ## What is queue_classic?
 
@@ -18,23 +19,19 @@ A major benefit is the ability to enqueue inside transactions, ensuring things a
 
 ## Features
 
-* Leverage of PostgreSQL's listen/notify, and row locking.
+* Leverage of PostgreSQL's listen/notify, skip locked, and row locking.
 * Support for multiple queues with heterogeneous workers.
 * JSON data format.
-* Forking workers.
 * Workers can work multiple queues.
-* Reduced row contention using a [relaxed FIFO](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf) technique.
+* ~~Forking workers.~~ (currently apparently broken https://github.com/QueueClassic/queue_classic/issues/207, a WIP fix exists but isn't merged tested yet https://github.com/QueueClassic/queue_classic/pull/216)
 
 ### Requirements
 
-For this version, edge, the requirements are as follows:
+For this version, the requirements are as follows:
 * Ruby 2.4, 2.5 or 2.6
 * Postgres ~> 9.6
 * Rubygem: pg ~> 0.17
 
-Older versions support older versions of Postgres and Ruby:
-* latest stable can be found: [v3.1.x](https://github.com/QueueClassic/queue_classic/tree/3-1-stable)
-* older stable: [v3.0.x](https://github.com/QueueClassic/queue_classic/tree/3-0-stable)
 
 ## Table of contents
 
@@ -300,12 +297,6 @@ If you think you have found a bug, feel free to open an issue. Use the following
 4. Provide sample codes & commands which will reproduce the problem.
 
 ## Hacking on queue_classic
-
-### Dependencies
-
-* Ruby 2.4, 2.5 or 2.6
-* Postgres ~> 9.6
-* Rubygem: pg ~> 0.17
 
 ### Running Tests
 
