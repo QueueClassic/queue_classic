@@ -10,7 +10,7 @@ rails new qctest523 --api --database=postgresql --skip-test-unit --skip-keeps --
 cd qctest523
 
 # get the db setup, run any default migrations
-gem install rake -v 12.3.2
+bundle install
 bundle exec rails db:drop:all
 bundle exec rails db:create
 bundle exec rails db:migrate
