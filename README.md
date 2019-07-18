@@ -5,30 +5,38 @@ A simple, efficient worker queue for Ruby & PostgreSQL
 
 [![Gem Version](http://img.shields.io/gem/v/queue_classic.svg?style=flat)](http://badge.fury.io/rb/queue_classic)
 
+**IMPORTANT NOTE: This README is representing the current work for queue_classic, which is generally the pending next version. You can find the README for other versions:**
 
-**IMPORTANT NOTE REGARDING VERSIONS**
-
-**This README is representing the current work for queue_classic edge [unstable]. You can find the README for other versions:**
-
-- current release candidate: [v3.2.0.RC1](https://github.com/QueueClassic/queue_classic/tree/v3.2.0.RC1)
-- latest stable can be found: [v3.1.x](https://github.com/QueueClassic/queue_classic/tree/3-1-stable)
-- older stable: [v3.0.x](https://github.com/QueueClassic/queue_classic/tree/3-0-stable)
-
+* current release candidate: [v3.2.0.RC1](https://github.com/QueueClassic/queue_classic/tree/v3.2.0.RC1)
+* latest stable can be found: [v3.1.x](https://github.com/QueueClassic/queue_classic/tree/3-1-stable)
 
 ## What is queue_classic?
 
 queue_classic provides a simple interface to a PostgreSQL-backed message queue. queue_classic specializes in concurrent locking and minimizing database load while providing a simple, intuitive developer experience. queue_classic assumes that you are already using PostgreSQL in your production environment and that adding another dependency (e.g. redis, beanstalkd, 0mq) is undesirable.
 
+A major benefit is the ability to enqueue inside transactions, ensuring things are done only when your changes are commited.
+
 ## Features
 
-* Leverage of PostgreSQL's listen/notify & row locking.
+* Leverage of PostgreSQL's listen/notify, and row locking.
 * Support for multiple queues with heterogeneous workers.
 * JSON data format.
 * Forking workers.
 * Workers can work multiple queues.
 * Reduced row contention using a [relaxed FIFO](http://www.cs.tau.ac.il/~shanir/nir-pubs-web/Papers/Lock_Free.pdf) technique.
 
-## Table of content
+### Requirements
+
+For this version, edge, the requirements are as follows:
+* Ruby 2.4, 2.5 or 2.6
+* Postgres ~> 9.6
+* Rubygem: pg ~> 0.17
+
+Older versions support older versions of Postgres and Ruby:
+* latest stable can be found: [v3.1.x](https://github.com/QueueClassic/queue_classic/tree/3-1-stable)
+* older stable: [v3.0.x](https://github.com/QueueClassic/queue_classic/tree/3-0-stable)
+
+## Table of contents
 
 * [Documentation](https://www.rubydoc.info/gems/queue_classic/)
 * [Usage](#usage)
@@ -43,14 +51,14 @@ queue_classic provides a simple interface to a PostgreSQL-backed message queue. 
 
 ## Usage
 
-There are 2 ways to use queue_classic.
+There are 2 ways to use queue_classic:
 
 * Producing Jobs
 * Working Jobs
 
 ### Producing Jobs
 
-The first argument is a string which represents a ruby object and a method name. The second argument(s) will be passed along as arguments to the method invocation defined by the first argument. The set of arguments will be encoded as JSON in the database.
+The first argument is a string which represents a ruby object and a method name. The second argument(s) will be passed along as arguments to the method defined by the first argument. The set of arguments will be encoded as JSON and stored in the database.
 
 ```ruby
 # This method has no arguments.
@@ -73,13 +81,13 @@ p_queue = QC::Queue.new("priority_queue")
 p_queue.enqueue("Kernel.puts", ["hello", "world"])
 ```
 
-There is also the possibility to schedule a job at a specified time in the future. It will not be worked off before that specified time.
+There is also the ability to schedule a job to run at a specified time in the future. The job will become processable after the specified time, and will be processed as-soon-as-possible.
 
 ```ruby
-# Specifying the job execution time exactly.
+# Specify the job execution time exactly
 QC.enqueue_at(Time.new(2024,01,02,10,00), "Kernel.puts", "hello future")
 
-# Specifying the job execution time as an offset in seconds.
+# Specify the job execution time as an offset in seconds
 QC.enqueue_in(60, "Kernel.puts", "hello from 1 minute later")
 ```
 
@@ -89,28 +97,33 @@ There are two ways to work jobs. The first approach is to use the Rake task. The
 
 #### Rake Task
 
-Require queue_classic in your Rakefile.
+Require queue_classic in your Rakefile:
 
 ```ruby
 require 'queue_classic'
 require 'queue_classic/tasks'
 ```
 
-Start the worker via the Rakefile.
+##### Work all queues
+Start the worker via the Rakefile:
+
 ```bash
 $ bundle exec rake qc:work
 ```
 
-Setup a worker to work a non-default queue.
+##### Work a single specific queue
+Setup a worker to work only a specific, non-default queue:
+
 ```bash
 $ QUEUE="priority_queue" bundle exec rake qc:work
 ```
 
-Setup a worker to work multiple queues.
+##### Work multiple queues
+In this scenario, on each iteration of the worker's loop, it will look for jobs in the first queue prior to looking at the second queue. This means that the first queue must be empty before the worker will look at the second queue.
+
 ```bash
 $ QUEUES="priority_queue,secondary_queue" bundle exec rake qc:work
 ```
-In this scenario, on each iteration of the worker's loop, it will look for jobs in the first queue prior to looking at the second queue. This means that the first queue must be empty before the worker will look at the second queue.
 
 #### Custom Worker
 
@@ -123,7 +136,6 @@ require 'queue_classic'
 FailedQueue = QC::Queue.new("failed_jobs")
 
 class MyWorker < QC::Worker
-
   # A job is a Hash containing these attributes:
   # :id Integer, the job id
   # :method String, containing the object and method
@@ -144,7 +156,6 @@ class MyWorker < QC::Worker
   def handle_failure(job, e)
     FailedQueue.enqueue(job[:method], *job[:args])
   end
-
 end
 
 worker = MyWorker.new
@@ -158,8 +169,7 @@ loop do
 end
 ```
 
-The `qc:work` rake task uses `QC::Worker` by default. However, it's easy to
-inject your own worker class:
+The `qc:work` rake task uses `QC::Worker` by default. However, it's easy to inject your own worker class:
 
 ```ruby
 QC.default_worker_class = MyWorker
@@ -167,7 +177,7 @@ QC.default_worker_class = MyWorker
 
 ## Setup
 
-In addition to installing the rubygem, you will need to prepare your database. Database preparation includes creating a table and loading PL/pgSQL functions. You can issue the database preparation commands using `PSQL(1)` or use a database migration script.
+In addition to installing the rubygem, you will need to prepare your database. Database preparation includes creating a table and loading PL/pgSQL functions. You can issue the database preparation commands using `psql` or use a database migration script.
 
 ### Quick Start
 
@@ -182,29 +192,37 @@ $ ruby -r queue_classic -e "QC::Worker.new.work"
 
 ### Ruby on Rails Setup
 
-Declare dependencies in Gemfile.
+Declare dependencies in Gemfile:
+
 ```ruby
 source 'https://rubygems.org' do
   gem 'queue_classic'
 end
 ```
 
-Add the database tables and stored procedures.
+Install queue_classic, which adds the needed migrations for the database tables and stored procedures:
 
 ```bash
 rails generate queue_classic:install
 bundle exec rake db:migrate
 ```
 
+#### Database connection
+
+Starting with with queue_classic 3.1, Rails is automatically detected and its connection is used. If you don't want to use the automatic database connection, set this environment variable to false: `export QC_RAILS_DATABASE=false`
+
+**Note on using ActiveRecord migrations:** If you use the migration, and you wish to use commands that reset the database from the stored schema (e.g. `rake db:reset`), your application must be configured with `config.active_record.schema_format = :sql` in `config/application.rb`. If you don't do this, the PL/pgSQL function that queue_classic creates will be lost when you reset the database.
+
 #### Active Job
 
-If you use Rails 4.2+, all you need to do is to set `config.active_job.queue_adapter = :queue_classic` in your `application.rb`. Everything else will be taken care for you. You can now use the Active Job functionality from now.
+If you use Rails 4.2+ and want to use Active Job, all you need to do is to set `config.active_job.queue_adapter = :queue_classic` in your `application.rb`. Everything else will be taken care for you. You can now use the Active Job functionality from now.
 
 Just for your information, queue_classic detects your database connection and uses it.
 
-### Rake Task Setup
 
-Alternatively, you can use the Rake task to prepare your database.
+### Plain Ruby Setup
+
+If you're not using rails, you can use the Rake task to prepare your database:
 
 ```bash
 # Creating the table and functions
@@ -214,36 +232,26 @@ $ bundle exec rake qc:create
 $ bundle exec rake qc:drop
 ```
 
-### Database connection
-
-#### Ruby on Rails
-
-Starting with with queue_classic 3.1, Rails is automatically detected and its connection is used.
-
-If you don't want to use the automatic database connection, set this environment variable to false: `export QC_RAILS_DATABASE=false`
-
-**Note on using ActiveRecord migrations:** If you use the migration, and you wish to use commands that reset the database from the stored schema (e.g. `rake db:reset`), your application must be configured with `config.active_record.schema_format = :sql` in `config/application.rb`. If you don't do this, the PL/pgSQL function that queue_classic creates will be lost when you reset the database.
-
-
-#### Other Ruby apps
+#### Database connection
 
 By default, queue_classic will use the QC_DATABASE_URL falling back on DATABASE_URL. The URL must be in the following format: `postgres://username:password@localhost/database_name`. If you use Heroku's PostgreSQL service, this will already be set. If you don't want to set this variable, you can set the connection in an initializer. **QueueClassic will maintain its own connection to the database.** This may double the number of connections to your database.
 
-## Upgrade from earlier versions
+## Upgrading from earlier versions
 
 If you are upgrading from a previous version of queue_classic, you might need some new database columns and/or functions. Luckily enough for you, it is easy to do so.
 
 ### Ruby on Rails
 
-You just need to run those lines, which will copy the new required migrations:
+These two commands will add the newer migrations:
 
-```
+```bash
 rails generate queue_classic:install
 bundle exec rake db:migrate
 ```
+
 ### Rake Task
 
-This rake task will get you covered:
+This rake task will update you to the latest version:
 ```bash
 # Updating the table and functions
 $ bundle exec rake qc:update
@@ -255,9 +263,9 @@ All configuration takes place in the form of environment vars. See [queue_classi
 
 ## JSON
 
-If you are running PostgreSQL 9.4 or higher, queue_classic will use the [jsonb](http://www.postgresql.org/docs/9.4/static/datatype-json.html) datatype for new tables. Versions 9.2 and 9.3 will use the `json` data type and versions 9.1 and lower will use the `text` data type.
-If you are updating queue_classic and are running PostgreSQL >= 9.4, run the following to switch to `jsonb`:
-```
+Queue Classic will use the [jsonb](https://www.postgresql.org/docs/9.6/datatype-json.html) datatype for new tables. If you are updating queue_classic, and are running PostgreSQL >= 9.6, run the following to switch to `jsonb`:
+
+```sql
 alter table queue_classic_jobs alter column args type jsonb using (args::jsonb);
 ```
 
@@ -268,7 +276,7 @@ If you find yourself in a situation where you need to know what's happening insi
 
 ### Measure
 
-This will output the time to process and that kind of thing. To enable it, set the `QC_MEASURE`:
+This will output the time to process and some more statistics. To enable it, set the `QC_MEASURE`:
 
 ```bash
 export QC_MEASURE="true"
@@ -286,7 +294,7 @@ export DEBUG="true"
 
 If you think you have found a bug, feel free to open an issue. Use the following template for the new issue:
 
-1. List Versions: Ruby, PostgreSQL, queue_classic.
+1. List your versions: Ruby, PostgreSQL, queue_classic.
 2. Define what you would have expected to happen.
 3. List what actually happened.
 4. Provide sample codes & commands which will reproduce the problem.
