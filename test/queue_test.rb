@@ -64,6 +64,20 @@ class QueueTest < QCTest
   def test_count
     QC.enqueue("Klass.method")
     assert_equal(1, QC.count)
+
+    QC.enqueue("Klass.method")
+    assert_equal(2, QC.count)
+    assert_equal(2, QC.count_ready)
+    assert_equal(0, QC.count_scheduled)
+
+    QC.enqueue_in(60, "Klass.method")
+    assert_equal(3, QC.count)
+    assert_equal(2, QC.count_ready)
+    assert_equal(1, QC.count_scheduled)
+
+    assert_raises(ArgumentError) do
+      QC.count(:potatoes)
+    end
   end
 
   def test_delete

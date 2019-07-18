@@ -131,10 +131,26 @@ module QC
       end
     end
 
+    # Count the number of jobs in a specific queue. This returns all
+    # jobs, including ones that are scheduled in the future.
     def count
-      QC.log_yield(:measure => 'queue.count') do
-        s = "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1"
-        r = conn_adapter.execute(s, name)
+      _count('queue.count', "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1")
+    end
+
+    # Count the number of jobs in a specific queue, except ones scheduled in the future
+    def count_ready
+      _count('queue.count_scheduled', "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1 AND scheduled_at <= now()")
+    end
+
+    # Count the number of jobs in a specific queue scheduled in the future
+    def count_scheduled
+      _count('queue.count_scheduled', "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1 AND scheduled_at > now()")
+    end
+
+    private
+    def _count(metric_name, sql)
+      QC.log_yield(measure: metric_name) do
+        r = conn_adapter.execute(sql, name)
         r["count"].to_i
       end
     end
