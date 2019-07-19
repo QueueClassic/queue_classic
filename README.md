@@ -17,6 +17,12 @@ queue_classic provides a simple interface to a PostgreSQL-backed message queue. 
 
 A major benefit is the ability to enqueue inside transactions, ensuring things are done only when your changes are commited.
 
+## Other related projects
+
+* [Queue Classic Plus](https://github.com/rainforestapp/queue_classic_plus) - adds support for retrying with specific exceptions, transaction processing of jobs, metric collection, etc
+* [Queue Classic Admin](https://github.com/QueueClassic/queue_classic_admin) - Admin interface for queue_classic
+* [Queue Classic Matchers](https://github.com/rainforestapp/queue_classic_matchers) - RSpec matchers for queue_classic
+
 ## Features
 
 * Leverage of PostgreSQL's listen/notify, skip locked, and row locking.
