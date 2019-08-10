@@ -53,13 +53,17 @@ Please use the method QC.#{config_method} instead.
   def self.default_conn_adapter
     t = Thread.current
     return t[:qc_conn_adapter] if t[:qc_conn_adapter]
-    adapter = if rails_connection_sharing_enabled?
-      ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
-    else
-      ConnAdapter.new
+
+    if rails_connection_sharing_enabled?
+      # AR connection should never be memoized, as call to
+      # ActiveRecord::Base.clear_active_connections! in current thread
+      # will cause it to return to AR pool, and it will become shared
+      # between memoized value and pool. And Rails does
+      # clear_active_connections! after each request
+      return ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
     end
 
-    t[:qc_conn_adapter] = adapter
+    t[:qc_conn_adapter] = ConnAdapter.new
   end
 
   def self.default_conn_adapter=(conn)
