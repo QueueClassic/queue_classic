@@ -19,7 +19,7 @@ module QC
     end
 
     def conn_adapter
-      @adapter ||= QC.default_conn_adapter
+      @adapter || QC.default_conn_adapter
     end
 
     # enqueue(m,a) inserts a row into the jobs table and trigger a notification.
