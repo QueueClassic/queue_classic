@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## `master`
+
+Bug fixes:
+- [Fix excess memoization of `ConnAdapter` instances causing single global connection shared between threads and connections taken from ActiveRecord becoming shared between its pool and QC](https://github.com/QueueClassic/queue_classic/pull/318)
+
 ## [4.0.0-alpha1] - 2019-07-18
 
 Updates:
