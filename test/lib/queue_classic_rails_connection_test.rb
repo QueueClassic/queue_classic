@@ -91,8 +91,4 @@ class QueueClassicRailsConnectionTest < QCTest
     QC.default_conn_adapter
     connection
   end
-
-  def stub_activerecord_module
-
-  end
 end
