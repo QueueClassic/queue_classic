@@ -3,23 +3,72 @@
 require File.expand_path("../../helper.rb", __FILE__)
 
 class QueueClassicRailsConnectionTest < QCTest
-  def before_setup
-    Object.send :const_set, :ActiveRecord, Module.new
-    ActiveRecord.const_set :Base, Module.new
+  # Stubs ActiveRecord::Base with empty module. Works if real
+  # ActiveRecord is loaded too, restoring it when unstubbing.
+  class StubActiveRecord
+    def stub
+      stub_module
+      stub_base
+    end
 
+    def unstub
+      unstub_base
+      unstub_module
+    end
+
+    private
+
+    def stub_module
+      unless Object.const_defined? :ActiveRecord
+        Object.send :const_set, :ActiveRecord, Module.new
+        @module_stubbed = true
+      else
+        @module_stubbed = false
+      end
+    end
+
+    def unstub_module
+      if @module_stubbed
+        Object.send :remove_const, :ActiveRecord
+      end
+    end
+
+    def stub_base
+      if Object.const_defined? 'ActiveRecord::Base'
+        @activerecord_orig = ActiveRecord::Base
+        ActiveRecord.send :remove_const, :Base
+      else
+        @activerecord_orig = nil
+      end
+      ActiveRecord.const_set :Base, Module.new
+    end
+
+    def unstub_base
+      ActiveRecord.send :remove_const, :Base
+      if @activerecord_orig
+        ActiveRecord.send :const_set, :Base, @activerecord_orig
+      end
+    end
+  end
+
+  def setup
+    super
+    @active_record_stub = StubActiveRecord.new
+    @active_record_stub.stub
     @original_conn_adapter = QC.default_conn_adapter
     QC.default_conn_adapter = nil
   end
 
-  def after_teardown
-    ActiveRecord.send :remove_const, :Base
-    Object.send :remove_const, :ActiveRecord
-
+  def teardown
+    @active_record_stub.unstub
     QC.default_conn_adapter = @original_conn_adapter
+    super
   end
 
   def test_uses_active_record_connection_if_exists
-    connection = get_connection
+    connection = with_env 'QC_RAILS_DATABASE' => nil do
+      get_connection
+    end
     assert connection.verify
   end
 
@@ -41,5 +90,9 @@ class QueueClassicRailsConnectionTest < QCTest
 
     QC.default_conn_adapter
     connection
+  end
+
+  def stub_activerecord_module
+
   end
 end

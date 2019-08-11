@@ -3,7 +3,7 @@
 require "bundler"
 require "minitest/reporters"
 
-Bundler.setup :default, :test
+Bundler.setup :default, :development, :test
 
 if ENV['CIRCLECI'] == "true"
   Minitest::Reporters.use! Minitest::Reporters::JUnitReporter.new
@@ -12,6 +12,10 @@ else
 end
 
 ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
+# Rails integration is enabled if ActiveRecord module constant is
+# present, and it will be present after tests that use
+# ActiveRecord. So forcifully disable Rails by default.
+ENV["QC_RAILS_DATABASE"] = "false"
 
 require_relative '../lib/queue_classic'
 require "stringio"
@@ -25,6 +29,7 @@ class QCTest < Minitest::Test
 
   def teardown
     QC.delete_all
+    reset_globals
   end
 
   def init_db
@@ -91,5 +96,10 @@ class QCTest < Minitest::Test
       class_name.send(:alias_method, method_name, original_method_name)
       class_name.send(:undef_method, new_method_name)
     end
+  end
+
+  def reset_globals
+    QC.default_conn_adapter = nil
+    QC.default_queue = nil
   end
 end
