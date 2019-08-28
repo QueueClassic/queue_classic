@@ -91,9 +91,20 @@ module QC
     def lock
       QC.log_yield(:measure => 'queue.lock') do
         s = <<~SQL
-          UPDATE queue_classic_jobs SET locked_at = now(), locked_by = pg_backend_pid()
-          WHERE id IN ( SELECT id FROM queue_classic_jobs WHERE locked_at IS NULL AND
-          q_name = $1 AND scheduled_at <= now() LIMIT 1 FOR NO KEY UPDATE SKIP LOCKED )
+          UPDATE queue_classic_jobs
+          SET
+            locked_at = now(),
+            locked_by = pg_backend_pid()
+          WHERE id IN (
+            SELECT id
+            FROM queue_classic_jobs
+            WHERE
+              locked_at IS NULL AND
+              q_name = $1 AND
+              scheduled_at <= now()
+            LIMIT 1
+            FOR NO KEY UPDATE SKIP LOCKED
+          )
           RETURNING *
         SQL
 
