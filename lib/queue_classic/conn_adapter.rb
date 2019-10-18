@@ -6,10 +6,17 @@ require 'pg'
 module QC
   class ConnAdapter
 
-    attr_accessor :connection
-    def initialize(c=nil)
-      @connection = c.nil? ? establish_new : validate!(c)
+    def initialize(active_record_connection_share)
+      @active_record_connection_share = active_record_connection_share
       @mutex = Mutex.new
+    end
+
+    def connection
+      if @active_record_connection_share
+        ActiveRecord::Base.connection.raw_connection
+      else
+        @_connection ||= establish_new
+      end
     end
 
     def execute(stmt, *params)
@@ -17,13 +24,13 @@ module QC
         QC.log(:at => "exec_sql", :sql => stmt.inspect)
         begin
           params = nil if params.empty?
-          r = @connection.exec(stmt, params)
+          r = connection.exec(stmt, params)
           result = []
           r.each {|t| result << t}
           result.length > 1 ? result : result.pop
         rescue PG::Error => e
           QC.log(:error => e.inspect)
-          @connection.reset
+          connection.reset
           raise
         end
       end
@@ -32,10 +39,10 @@ module QC
     def wait(time, *channels)
       @mutex.synchronize do
         listen_cmds = channels.map {|c| 'LISTEN "' + c.to_s + '"'}
-        @connection.exec(listen_cmds.join(';'))
+        connection.exec(listen_cmds.join(';'))
         wait_for_notify(time)
         unlisten_cmds = channels.map {|c| 'UNLISTEN "' + c.to_s + '"'}
-        @connection.exec(unlisten_cmds.join(';'))
+        connection.exec(unlisten_cmds.join(';'))
         drain_notify
       end
     end
@@ -43,7 +50,7 @@ module QC
     def disconnect
       @mutex.synchronize do
         begin
-          @connection.close
+          connection.close
         rescue => e
           QC.log(:at => 'disconnect', :error => e.message)
         end
@@ -61,12 +68,12 @@ module QC
 
     def wait_for_notify(t)
       Array.new.tap do |msgs|
-        @connection.wait_for_notify(t) {|event, pid, msg| msgs << msg}
+        connection.wait_for_notify(t) {|event, pid, msg| msgs << msg}
       end
     end
 
     def drain_notify
-      until @connection.notifies.nil?
+      until connection.notifies.nil?
         QC.log(:at => "drain_notifications")
       end
     end
