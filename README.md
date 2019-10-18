@@ -264,14 +264,6 @@ $ bundle exec rake qc:update
 
 All configuration takes place in the form of environment vars. See [queue_classic.rb](https://github.com/QueueClassic/queue_classic/blob/master/lib/queue_classic.rb#L23-62) for a list of options.
 
-## JSON
-
-Queue Classic will use the [jsonb](https://www.postgresql.org/docs/9.6/datatype-json.html) datatype for new tables. If you are updating queue_classic, and are running PostgreSQL >= 9.6, run the following to switch to `jsonb`:
-
-```sql
-alter table queue_classic_jobs alter column args type jsonb using (args::jsonb);
-```
-
 ## Logging
 
 By default queue_classic does not talk very much.
