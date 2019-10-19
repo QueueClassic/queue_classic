@@ -190,7 +190,11 @@ class WorkerTest < QCTest
 
   def test_init_worker_without_conn
     with_database nil do
-      assert_raises(ArgumentError) { QC::Worker.new }
+      assert_raises(ArgumentError) do
+        worker = QC::Worker.new
+        QC.enqueue("TestObject.no_args")
+        worker.lock_job
+      end
     end
   end
 
