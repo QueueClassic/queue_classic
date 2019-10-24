@@ -3,7 +3,7 @@ jobs:
   test_fresh_install_rails_5_2_3:
     parallelism: 2
     docker:
-    - image: circleci/ruby:2.6.3
+    - image: circleci/ruby:2.6
       environment:
         RAILS_ENV: test
         RACK_ENV: test
@@ -21,9 +21,9 @@ jobs:
         command: |
           cd test/rails-tests/
           sh rails523.sh
-  test_ruby_2_4_6:
+  test_ruby_2_4:
     docker:
-    - image: circleci/ruby:2.4.6
+    - image: circleci/ruby:2.4
       environment:
         RAILS_ENV: test
         RACK_ENV: test
@@ -61,9 +61,9 @@ jobs:
         path: test/reports/
     - store_test_results:
         path: test/reports/
-  test_ruby_2_5_4:
+  test_ruby_2_5:
     docker:
-    - image: circleci/ruby:2.5.4
+    - image: circleci/ruby:2.5
       environment:
         RAILS_ENV: test
         RACK_ENV: test
@@ -101,9 +101,9 @@ jobs:
         path: test/reports/
     - store_test_results:
         path: test/reports/
-  test_ruby_2_6_3:
+  test_ruby_2_6:
     docker:
-    - image: circleci/ruby:2.6.3
+    - image: circleci/ruby:2.6
       environment:
         RAILS_ENV: test
         RACK_ENV: test
@@ -145,7 +145,7 @@ workflows:
   version: 2
   test:
     jobs:
-    - test_ruby_2_4_6
-    - test_ruby_2_5_4
-    - test_ruby_2_6_3
+    - test_ruby_2_4
+    - test_ruby_2_5
+    - test_ruby_2_6
     - test_fresh_install_rails_5_2_3
