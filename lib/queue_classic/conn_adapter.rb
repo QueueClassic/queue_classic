@@ -6,13 +6,14 @@ require 'pg'
 module QC
   class ConnAdapter
 
-    def initialize(active_record_connection_share)
-      @active_record_connection_share = active_record_connection_share
+    def initialize(args={})
+      @active_record_connection_share = args[:active_record_connection_share]
+      @_connection = args[:connection]
       @mutex = Mutex.new
     end
 
     def connection
-      if @active_record_connection_share
+      if @active_record_connection_share && Object.const_defined?('ActiveRecord')
         ActiveRecord::Base.connection.raw_connection
       else
         @_connection ||= establish_new

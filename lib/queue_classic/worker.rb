@@ -23,7 +23,7 @@ module QC
       @wait_interval = args[:wait_interval] || QC.wait_time
 
       if args[:connection]
-        @conn_adapter = ConnAdapter.new(args[:connection])
+        @conn_adapter = ConnAdapter.new(connection: args[:connection])
       else
         @conn_adapter = QC.default_conn_adapter
       end
