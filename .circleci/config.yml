@@ -145,7 +145,7 @@ workflows:
   version: 2
   test:
     jobs:
-    - test_ruby_2_4_6
-    - test_ruby_2_5_4
-    - test_ruby_2_6_3
+    - test_ruby_2_4_9
+    - test_ruby_2_5_7
+    - test_ruby_2_6_5
     - test_fresh_install_rails_5_2_3
