@@ -117,7 +117,7 @@ module QC
             job[:method] = r["method"]
             job[:args] = JSON.parse(r["args"])
             if r["scheduled_at"]
-              job[:scheduled_at] = Time.parse(r["scheduled_at"])
+              job[:scheduled_at] = r["scheduled_at"].kind_of?(Time) ? r["scheduled_at"] : Time.parse(r["scheduled_at"])
               ttl = Integer((Time.now - job[:scheduled_at]) * 1000)
               QC.measure("time-to-lock=#{ttl}ms source=#{name}")
             end
