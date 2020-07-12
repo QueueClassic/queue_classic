@@ -34,7 +34,7 @@ A major benefit is the ability to enqueue inside transactions, ensuring things a
 ### Requirements
 
 For this version, the requirements are as follows:
-* Ruby 2.4, 2.5 or 2.6
+* Ruby 2.4, 2.5, 2.6 or 2.7
 * Postgres ~> 9.6
 * Rubygem: pg ~> 0.17
 
