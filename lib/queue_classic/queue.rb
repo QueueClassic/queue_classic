@@ -90,6 +90,15 @@ module QC
       end
     end
 
+    def mark_as_completed(q_name, id)
+      QC.log_yield(:measure => 'queue.complete') do
+        s = "UPDATE #{TABLE_NAME} set q_name = $1 where id = $2"
+        q_name_completed = "#{q_name}_completed"
+
+        conn_adapter.execute(s, q_name_completed, id)
+      end
+    end
+
     def delete(id)
       QC.log_yield(:measure => 'queue.delete') do
         conn_adapter.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)

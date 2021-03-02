@@ -108,7 +108,11 @@ module QC
       finished = false
       begin
         call(job).tap do
-          queue.delete(job[:id])
+          if QC::DELETE_QUEUE == true
+            queue.delete(job[:id])
+          else
+            queue.mark_as_completed(job[:q_name], job[:id])
+          end
           finished = true
         end
       rescue => e
