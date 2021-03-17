@@ -6,10 +6,12 @@ module QC
   # The queue class maps a queue abstraction onto a database table.
   class Queue
 
-    attr_reader :name, :top_bound
+    # successful_fate (:delete, :mark_as_completed)
+    attr_reader :name, :top_bound, :successful_fate
     def initialize(name, top_bound=nil)
       @name = name
       @top_bound = top_bound || QC::TOP_BOUND
+      @successful_fate = QC::SUCCESSFUL_FATE
     end
 
     def conn_adapter=(a)
@@ -18,6 +20,10 @@ module QC
 
     def conn_adapter
       @adapter ||= QC.default_conn_adapter
+    end
+
+    def handle_success!(job)
+      send(successful_fate, job)
     end
 
     # enqueue(m,a) inserts a row into the jobs table and trigger a notification.
@@ -90,18 +96,18 @@ module QC
       end
     end
 
-    def mark_as_completed(q_name, id)
+    def mark_as_completed(job)
       QC.log_yield(:measure => 'queue.complete') do
         s = "UPDATE #{TABLE_NAME} set q_name = $1 where id = $2"
-        q_name_completed = "#{q_name}_completed"
+        q_name_completed = "#{job[:q_name]}_completed"
 
-        conn_adapter.execute(s, q_name_completed, id)
+        conn_adapter.execute(s, q_name_completed, job[:id])
       end
     end
 
-    def delete(id)
+    def delete(job)
       QC.log_yield(:measure => 'queue.delete') do
-        conn_adapter.execute("DELETE FROM #{TABLE_NAME} where id = $1", id)
+        conn_adapter.execute("DELETE FROM #{TABLE_NAME} where id = $1", job[:id])
       end
     end
 

@@ -32,8 +32,8 @@ module QC
   FORK_WORKER = !ENV["QC_FORK_WORKER"].nil?
 
 
-  #Delete the queue from the table after completion
-  DELETE_QUEUE = ENV["DELETE_QUEUE"] || true
+  #queue fate after completion
+  SUCCESSFUL_FATE = :delete
 
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
