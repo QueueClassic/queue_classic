@@ -15,6 +15,10 @@ module QC
         QC.log(:at => "exec_sql", :sql => stmt.inspect)
         begin
           params = nil if params.empty?
+          if @connection.finished?
+            # this will only work if ActiveRecord is included
+            @connection = ActiveRecord::Base.connection.raw_connection
+          end
           r = @connection.exec(stmt, params)
           result = []
           r.each {|t| result << t}
