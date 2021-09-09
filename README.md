@@ -1,5 +1,10 @@
 # queue_classic
-A simple, efficient worker queue for Ruby & PostgreSQL
+A simple, efficient worker queue for Ruby & PostgreSQL.
+
+Why this over something like Resque. Two reasons:
+
+1. Your jobs can be equeued in the same transaction as other modifications to the database, and will only be processed when everything is commited. This is a hard pattern to develop around for queues done outside your database
+2. Less things to run, if you don't already have Redis or a dedicated queue in your stack.
 
 [![CircleCI](https://circleci.com/gh/QueueClassic/queue_classic/tree/master.svg?style=svg)](https://circleci.com/gh/QueueClassic/queue_classic/tree/master)
 
@@ -11,9 +16,15 @@ You can always find the latest and previous releases here:
 
 https://github.com/QueueClassic/queue_classic/releases
 
-## Alternative PostgreSQL adapter
+## Other related projects
 
-You may also be interested in [GoodJob](https://github.com/bensheldon/good_job), which is a recent release inspired by Queue Classic.
+If you're interested in this project, you might also want to checkout:
+
+ * [Que](https://github.com/que-rb/que)
+ * [GoodJob](https://github.com/bensheldon/good_job)
+ * [Delayed Job](https://github.com/collectiveidea/delayed_job)
+
+For a list of other queues (which may or may not be Postgres backed), checkout - https://edgeapi.rubyonrails.org/classes/ActiveJob/QueueAdapters.html
 
 ## What is queue_classic?
 
