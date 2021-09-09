@@ -11,6 +11,10 @@ You can always find the latest and previous releases here:
 
 https://github.com/QueueClassic/queue_classic/releases
 
+## Alternative PostgreSQL adapter
+
+You may also be interested in [GoodJob](https://github.com/bensheldon/good_job), which is a recent release inspired by Queue Classic.
+
 ## What is queue_classic?
 
 queue_classic provides a simple interface to a PostgreSQL-backed message queue. queue_classic specializes in concurrent locking and minimizing database load while providing a simple, intuitive developer experience. queue_classic assumes that you are already using PostgreSQL in your production environment and that adding another dependency (e.g. redis, beanstalkd, 0mq) is undesirable.
