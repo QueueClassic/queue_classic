@@ -111,7 +111,7 @@ module QC
       finished = false
       begin
         call(job).tap do
-          handle_success(job)
+          handle_success(queue, job)
           finished = true
         end
       rescue StandardError, ScriptError, NoMemoryError => e
@@ -139,7 +139,7 @@ module QC
       receiver.send(message, *args)
     end
 
-    def handle_success(job)
+    def handle_success(queue, job)
       queue.delete(job[:id])
     end
 
