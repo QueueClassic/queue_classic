@@ -107,7 +107,7 @@ module QC
       [
        host, # host or percent-encoded socket path
        url.port || 5432,
-       nil, '', #opts, tty
+       nil, nil, #opts, tty
        url.path.gsub("/",""), # database name
        url.user,
        url.password
