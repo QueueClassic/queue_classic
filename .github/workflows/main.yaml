@@ -1,0 +1,39 @@
+name: Test
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby_version: [2.6, 2.7, 3.0]
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+    - uses: actions/checkout@v2
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby_version }}
+        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+    - name: Install postgresql-client
+      run: |
+        sudo apt-get update
+        sudo apt-get install postgresql-client
+    - name: Run tests
+      run: bundle exec rake
+      env:
+        RAILS_ENV: test
+        RACK_ENV: test
+        POSTGRES_USER: root
+        PGHOST: postgres
+        DATABASE_URL: postgres://postgres@postgres/circle_test
+        QC_DATABASE_URL: postgres://postgres@postgres/circle_test
+        QC_BENCHMARK: true
+        QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
