@@ -4,8 +4,10 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      strategy:
+        fail-fast: false
       matrix:
-        ruby_version: [2.6, 2.7, 3.0, 3.1]
+        ruby_version: ['2.6', '2.7', '3.0', '3.1']
     services:
       postgres:
         image: postgres
@@ -18,14 +20,14 @@ jobs:
           --health-retries 5
     steps:
     - uses: actions/checkout@v3
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ${{ matrix.ruby_version }}
-        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
     - name: Install postgresql-client
       run: |
         sudo apt-get update
         sudo apt-get install postgresql-client
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: ${{ matrix.ruby_version }}
+        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
     - name: Run tests
       run: bundle exec rake
       env:
