@@ -4,8 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
-      strategy:
-        fail-fast: false
+      fail-fast: false
       matrix:
         ruby_version: ['2.6', '2.7', '3.0', '3.1']
     services:
