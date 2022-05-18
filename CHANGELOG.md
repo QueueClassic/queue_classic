@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.0] - 2022-05-17
+
+Updates:
+- [Allow overriding of job successes](https://github.com/QueueClassic/queue_classic/pull/338)
+- [Move to @github actions - @circleci ended up being slower. Test for Ruby 2.6, 2.7, 3.0 and 3.1. Require a more modern, but still old PG gem.](https://github.com/QueueClassic/queue_classic/pull/335)
+- [Setup some code analysis](https://github.com/QueueClassic/queue_classic/pull/337)
+
 ## [4.0.0-alpha1] - 2019-07-18
 
 Updates:
