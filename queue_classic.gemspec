@@ -20,6 +20,6 @@ Gem::Specification.new do |spec|
 
   spec.require_paths = %w[lib]
 
-  spec.add_dependency "pg", ">= 0.17", "< 2.0"
+  spec.add_dependency "pg", ">= 1.1", "< 2.0"
   spec.add_development_dependency "activerecord", ">= 5.0.0", "< 6.1"
 end
