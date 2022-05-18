@@ -34,6 +34,7 @@ jobs:
       env:
         RAILS_ENV: test
         RACK_ENV: test
+        QC_DATABASE_URL: postgres://postgres:postgres@localhost/postgres
         DATABASE_URL: postgres://postgres:postgres@localhost/postgres
         QC_BENCHMARK: true
         QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
