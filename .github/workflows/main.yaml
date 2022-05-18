@@ -1,36 +1,36 @@
 name: Test
 on: push
 jobs:
-  test_rails:
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-    steps:
-    - uses: actions/checkout@v3
-    - name: Install postgresql-client
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libpq-dev
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: "2.6"
-        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-    - name: Test clean install in Rails
-      env:
-        DATABASE_URL: postgres://postgres:postgres@localhost/qctest523
-      run: |
-        cd test/rails-tests/
-        sh rails523.sh
+  # test_rails:
+  #   runs-on: ubuntu-latest
+  #   services:
+  #     postgres:
+  #       image: postgres
+  #       env:
+  #         POSTGRES_PASSWORD: postgres
+  #       options: >-
+  #         --health-cmd pg_isready
+  #         --health-interval 10s
+  #         --health-timeout 5s
+  #         --health-retries 5
+  #       ports:
+  #         - 5432:5432
+  #   steps:
+  #   - uses: actions/checkout@v3
+  #   - name: Install postgresql-client
+  #     run: |
+  #       sudo apt-get update
+  #       sudo apt-get install -y libpq-dev
+  #   - uses: ruby/setup-ruby@v1
+  #     with:
+  #       ruby-version: "2.6"
+  #       bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+  #   - name: Test clean install in Rails
+  #     env:
+  #       DATABASE_URL: postgres://postgres:postgres@localhost/qctest523
+  #     run: |
+  #       cd test/rails-tests/
+  #       sh rails523.sh
   test:
     runs-on: ubuntu-latest
     strategy:
