@@ -13,7 +13,7 @@ echo "DATABASE URL: $DATABASE_URL"
 
 # get the db setup, run any default migrations
 bundle install
-bundle exec rails db:drop:all
+# bundle exec rails db:drop:all
 bundle exec rails db:create
 bundle exec rails db:migrate
 bundle exec rails db:setup
