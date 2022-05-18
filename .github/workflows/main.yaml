@@ -73,3 +73,4 @@ jobs:
         DATABASE_URL: postgres://postgres:postgres@localhost/postgres
         QC_BENCHMARK: true
         QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
+        QC_BENCHMARK_MAX_TIME_ENQUEUE: 10
