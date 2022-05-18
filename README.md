@@ -40,7 +40,6 @@ A major benefit is the ability to enqueue inside transactions, ensuring things a
 * Support for multiple queues with heterogeneous workers.
 * JSON data format.
 * Workers can work multiple queues.
-* ~~Forking workers.~~ (currently apparently broken https://github.com/QueueClassic/queue_classic/issues/207, a WIP fix exists but isn't merged tested yet https://github.com/QueueClassic/queue_classic/pull/216)
 
 ### Requirements
 For this version, the requirements are as follows:
@@ -117,21 +116,21 @@ require 'queue_classic/tasks'
 Start the worker via the Rakefile:
 
 ```bash
-$ bundle exec rake qc:work
+bundle exec rake qc:work
 ```
 
 ##### Work a single specific queue
 Setup a worker to work only a specific, non-default queue:
 
 ```bash
-$ QUEUE="priority_queue" bundle exec rake qc:work
+QUEUE="priority_queue" bundle exec rake qc:work
 ```
 
 ##### Work multiple queues
 In this scenario, on each iteration of the worker's loop, it will look for jobs in the first queue prior to looking at the second queue. This means that the first queue must be empty before the worker will look at the second queue.
 
 ```bash
-$ QUEUES="priority_queue,secondary_queue" bundle exec rake qc:work
+QUEUES="priority_queue,secondary_queue" bundle exec rake qc:work
 ```
 
 #### Custom Worker
@@ -215,19 +214,15 @@ bundle exec rake db:migrate
 #### Database connection
 Starting with with queue_classic 3.1, Rails is automatically detected and its connection is used. If you don't want to use the automatic database connection, set this environment variable to false: `export QC_RAILS_DATABASE=false`. 
 
-**Note:** If you do not share the connection, you cannot enqueue in the same transaction as whatever you're doing in Rails.
+> **Note:** If you do not share the connection, you cannot enqueue in the same transaction as whatever you're doing in Rails.
 
 **Note on using ActiveRecord migrations:** If you use the migration, and you wish to use commands that reset the database from the stored schema (e.g. `rake db:reset`), your application must be configured with `config.active_record.schema_format = :sql` in `config/application.rb`. If you don't do this, the PL/pgSQL function that queue_classic creates will be lost when you reset the database.
 
 #### Active Job
-
 If you use Rails 4.2+ and want to use Active Job, all you need to do is to set `config.active_job.queue_adapter = :queue_classic` in your `application.rb`. Everything else will be taken care for you. You can now use the Active Job functionality from now.
 
-Just for your information, queue_classic detects your database connection and uses it.
-
-
 ### Plain Ruby Setup
-If you're not using rails, you can use the Rake task to prepare your database:
+If you're not using Rails, you can use the Rake task to prepare your database:
 
 ```bash{:copy}
 # Creating the table and functions
@@ -253,6 +248,7 @@ bundle exec rake db:migrate
 
 ### Rake Task
 This rake task will update you to the latest version:
+
 ```bash{:copy}
 # Updating the table and functions
 bundle exec rake qc:update
