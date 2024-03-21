@@ -69,3 +69,4 @@ jobs:
         QC_BENCHMARK: true
         QC_BENCHMARK_MAX_TIME_DEQUEUE: 60
         QC_BENCHMARK_MAX_TIME_ENQUEUE: 10
+        RUBY_YJIT_ENABLE: true
