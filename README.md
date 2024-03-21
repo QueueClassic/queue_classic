@@ -133,6 +133,9 @@ In this scenario, on each iteration of the worker's loop, it will look for jobs 
 QUEUES="priority_queue,secondary_queue" bundle exec rake qc:work
 ```
 
+`rake qc:work` spawns a long running worker process waiting for jobs. You can
+use `rake qc:work_off` to process all the jobs currently in the queue and exit.
+
 #### Custom Worker
 This example is probably not production ready; however, it serves as an example of how to leverage the code in the Worker class to fit your non-default requirements.
 

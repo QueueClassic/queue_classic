@@ -10,20 +10,12 @@ end
 namespace :qc do
   desc "Start a new worker for the (default or $QUEUE / $QUEUES) queue"
   task :work  => :environment do
-    @worker = QC.default_worker_class.new
+    build_worker.start
+  end
 
-    trap('INT') do
-      $stderr.puts("Received INT. Shutting down.")      
-      abort("Worker has stopped running. Exit.") unless @worker.running
-      @worker.stop
-    end
-
-    trap('TERM') do
-      $stderr.puts("Received Term. Shutting down.")
-      @worker.stop
-    end
-
-    @worker.start
+  desc "Work off jobs in the (default or $QUEUE / $QUEUES) queue"
+  task :work_off  => :environment do
+    build_worker.work_off
   end
 
   desc "Returns the number of jobs in the (default or $QUEUE / $QUEUES) queue"
@@ -44,5 +36,22 @@ namespace :qc do
   desc "Update queue_classic tables and functions in database"
   task :update => :environment do
     QC::Setup.update
+  end
+
+  def build_worker
+    @worker = QC.default_worker_class.new
+
+    trap('INT') do
+      $stderr.puts("Received INT. Shutting down.")      
+      abort("Worker has stopped running. Exit.") unless @worker.running
+      @worker.stop
+    end
+
+    trap('TERM') do
+      $stderr.puts("Received Term. Shutting down.")
+      @worker.stop
+    end
+
+    @worker
   end
 end

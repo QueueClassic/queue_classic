@@ -60,6 +60,18 @@ module QC
       @running = false
     end
 
+    # Processes jobs until no jobs are left.
+    def work_off
+      while result = lock_job_no_wait
+        queue, job = result
+        if queue && job
+          QC.log_yield(:at => "work_off", :job => job[:id]) do
+            process(queue, job)
+          end
+        end
+      end
+    end
+
     # Calls Worker#work but after the current process is forked.
     # The parent process will wait on the child process to exit.
     def fork_and_work
@@ -90,13 +102,19 @@ module QC
       log(:at => "lock_job")
       job = nil
       while @running
-        @queues.each do |queue|
-          if job = queue.lock
-            return [queue, job]
-          end
-        end
+        result = lock_job_no_wait
+        return *result if result
         @conn_adapter.wait(@wait_interval, *@queues.map {|q| q.name})
       end
+    end
+
+    def lock_job_no_wait
+      @queues.each do |queue|
+        if job = queue.lock
+          return [queue, job]
+        end
+      end
+      nil
     end
 
     # A job is processed by evaluating the target code.
