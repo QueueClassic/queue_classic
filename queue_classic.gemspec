@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
     "source_code_uri"   => "https://github.com/QueueClassic/queue_classic",
   }
 
-  spec.required_ruby_version = ">= 2.6.0"
+  spec.required_ruby_version = ">= 3.0.0"
   spec.add_runtime_dependency "pg", ">= 1.1", "< 2.0"
   spec.add_development_dependency "activerecord", ">= 5.0.0", "< 6.1"
 end
