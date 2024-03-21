@@ -8,8 +8,8 @@ module QC
   class InstallGenerator < Rails::Generators::Base
     include Rails::Generators::Migration
 
-    namespace "queue_classic:install"
-    self.source_paths << File.join(File.dirname(__FILE__), 'templates')
+    namespace 'queue_classic:install'
+    source_paths << File.join(File.dirname(__FILE__), 'templates')
     desc 'Generates (but does not run) a migration to add a queue_classic table.'
 
     def self.next_migration_number(dirname)
@@ -34,9 +34,9 @@ module QC
         migration_template 'update_queue_classic_3_1_0.rb', 'db/migrate/update_queue_classic_3_1_0.rb'
       end
 
-      if self.class.migration_exists?('db/migrate', 'update_queue_classic_4_0_0').nil?
-        migration_template 'update_queue_classic_4_0_0.rb', 'db/migrate/update_queue_classic_4_0_0.rb'
-      end
+      return unless self.class.migration_exists?('db/migrate', 'update_queue_classic_4_0_0').nil?
+
+      migration_template 'update_queue_classic_4_0_0.rb', 'db/migrate/update_queue_classic_4_0_0.rb'
     end
   end
 end

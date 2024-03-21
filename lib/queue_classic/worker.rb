@@ -1,13 +1,13 @@
 # frozen_string_literal: true
 
 # -*- coding: utf-8 -*-
+
 require_relative 'queue'
 require_relative 'conn_adapter'
 
 module QC
   # A Worker object can process jobs from one or many queues.
   class Worker
-
     attr_accessor :queues, :running
 
     # Creates a new worker but does not start the worker. See Worker#start.
@@ -18,21 +18,21 @@ module QC
     # q_name:: Name of a single queue to process.
     # q_names:: Names of queues to process. Will process left to right.
     # top_bound:: Offset to the head of the queue. 1 == strict FIFO.
-    def initialize(args={})
+    def initialize(args = {})
       @fork_worker = args[:fork_worker] || QC.fork_worker?
       @wait_interval = args[:wait_interval] || QC.wait_time
 
-      if args[:connection]
-        @conn_adapter = ConnAdapter.new(connection: args[:connection])
-      else
-        @conn_adapter = QC.default_conn_adapter
-      end
+      @conn_adapter = if args[:connection]
+                        ConnAdapter.new(connection: args[:connection])
+                      else
+                        QC.default_conn_adapter
+                      end
 
       @queues = setup_queues(@conn_adapter,
-        (args[:q_name] || QC.queue),
-        (args[:q_names] || QC.queues),
-        (args[:top_bound] || QC.top_bound))
-      log(args.merge(:at => "worker_initialized"))
+                             (args[:q_name] || QC.queue),
+                             (args[:q_names] || QC.queues),
+                             (args[:top_bound] || QC.top_bound))
+      log(args.merge(at: 'worker_initialized'))
       @running = true
     end
 
@@ -44,9 +44,7 @@ module QC
     def start
       QC.unlock_jobs_of_dead_workers
 
-      while @running
-        @fork_worker ? fork_and_work : work
-      end
+      @fork_worker ? fork_and_work : work while @running
     end
 
     # Signals the worker to stop taking new work.
@@ -63,8 +61,11 @@ module QC
     # Calls Worker#work but after the current process is forked.
     # The parent process will wait on the child process to exit.
     def fork_and_work
-      cpid = fork {setup_child; work}
-      log(:at => :fork, :pid => cpid)
+      cpid = fork do
+        setup_child
+        work
+      end
+      log(at: :fork, pid: cpid)
       Process.wait(cpid)
     end
 
@@ -72,10 +73,10 @@ module QC
     # it will process the job.
     def work
       queue, job = lock_job
-      if queue && job
-        QC.log_yield(:at => "work", :job => job[:id]) do
-          process(queue, job)
-        end
+      return unless queue && job
+
+      QC.log_yield(at: 'work', job: job[:id]) do
+        process(queue, job)
       end
     end
 
@@ -87,7 +88,7 @@ module QC
     # job's row. It is the caller's responsibility to delete the job row
     # from the table when the job is complete.
     def lock_job
-      log(:at => "lock_job")
+      log(at: 'lock_job')
       job = nil
       while @running
         @queues.each do |queue|
@@ -95,7 +96,7 @@ module QC
             return [queue, job]
           end
         end
-        @conn_adapter.wait(@wait_interval, *@queues.map {|q| q.name})
+        @conn_adapter.wait(@wait_interval, *@queues.map { |q| q.name })
       end
     end
 
@@ -121,9 +122,7 @@ module QC
         handle_failure(job, e)
         finished = true
       ensure
-        if !finished
-          queue.unlock(job[:id])
-        end
+        queue.unlock(job[:id]) unless finished
         ttp = Integer((Time.now - start) * 1000)
         QC.measure("time-to-process=#{ttp} source=#{queue.name}")
       end
@@ -145,15 +144,15 @@ module QC
 
     # This method will be called when a StandardError, ScriptError or
     # NoMemoryError is raised during the execution of the job.
-    def handle_failure(job,e)
-      $stderr.puts("count#qc.job-error=1 job=#{job} error=#{e.inspect} at=#{e.backtrace.first}")
+    def handle_failure(job, e)
+      warn("count#qc.job-error=1 job=#{job} error=#{e.inspect} at=#{e.backtrace.first}")
     end
 
     # This method should be overriden if
     # your worker is forking and you need to
     # re-establish database connections
     def setup_child
-      log(:at => "setup_child")
+      log(at: 'setup_child')
     end
 
     def log(data)
@@ -170,6 +169,5 @@ module QC
         end
       end
     end
-
   end
 end

@@ -9,7 +9,7 @@ module QC
   class Queue
     attr_reader :name, :top_bound
 
-    def initialize(name, top_bound=nil)
+    def initialize(name, top_bound = nil)
       @name = name
       @top_bound = top_bound || QC.top_bound
     end
@@ -38,17 +38,15 @@ module QC
     # `'hello', 'world'`.
     # This method returns a hash with the id of the enqueued job.
     def enqueue(method, *args)
-      QC.log_yield(:measure => 'queue.enqueue') do
+      QC.log_yield(measure: 'queue.enqueue') do
         s = "INSERT INTO #{QC.table_name} (q_name, method, args) VALUES ($1, $2, $3) RETURNING id"
         begin
           retries ||= 0
           conn_adapter.execute(s, name, method, JSON.dump(args))
         rescue PG::Error
-          if (retries += 1) < 2
-            retry
-          else
-            raise
-          end
+          raise unless (retries += 1) < 2
+
+          retry
         end
       end
     end
@@ -71,7 +69,7 @@ module QC
     # method.
     # This method returns a hash with the id of the enqueued job.
     def enqueue_in(seconds, method, *args)
-      QC.log_yield(:measure => 'queue.enqueue') do
+      QC.log_yield(measure: 'queue.enqueue') do
         s = "INSERT INTO #{QC.table_name} (q_name, method, args, scheduled_at)
              VALUES ($1, $2, $3, now() + interval '#{seconds.to_i} seconds')
              RETURNING id"
@@ -79,17 +77,15 @@ module QC
           retries ||= 0
           conn_adapter.execute(s, name, method, JSON.dump(args))
         rescue PG::Error
-          if (retries += 1) < 2
-            retry
-          else
-            raise
-          end
+          raise unless (retries += 1) < 2
+
+          retry
         end
       end
     end
 
     def lock
-      QC.log_yield(:measure => 'queue.lock') do
+      QC.log_yield(measure: 'queue.lock') do
         s = <<~SQL
           WITH selected_job AS (
             SELECT id
@@ -112,12 +108,12 @@ module QC
 
         if r = conn_adapter.execute(s, name)
           {}.tap do |job|
-            job[:id] = r["id"]
-            job[:q_name] = r["q_name"]
-            job[:method] = r["method"]
-            job[:args] = JSON.parse(r["args"])
-            if r["scheduled_at"]
-              job[:scheduled_at] = r["scheduled_at"].kind_of?(Time) ? r["scheduled_at"] : Time.parse(r["scheduled_at"])
+            job[:id] = r['id']
+            job[:q_name] = r['q_name']
+            job[:method] = r['method']
+            job[:args] = JSON.parse(r['args'])
+            if r['scheduled_at']
+              job[:scheduled_at] = r['scheduled_at'].is_a?(Time) ? r['scheduled_at'] : Time.parse(r['scheduled_at'])
               ttl = Integer((Time.now - job[:scheduled_at]) * 1000)
               QC.measure("time-to-lock=#{ttl}ms source=#{name}")
             end
@@ -127,20 +123,20 @@ module QC
     end
 
     def unlock(id)
-      QC.log_yield(:measure => 'queue.unlock') do
+      QC.log_yield(measure: 'queue.unlock') do
         s = "UPDATE #{QC.table_name} SET locked_at = NULL WHERE id = $1"
         conn_adapter.execute(s, id)
       end
     end
 
     def delete(id)
-      QC.log_yield(:measure => 'queue.delete') do
+      QC.log_yield(measure: 'queue.delete') do
         conn_adapter.execute("DELETE FROM #{QC.table_name} WHERE id = $1", id)
       end
     end
 
     def delete_all
-      QC.log_yield(:measure => 'queue.delete_all') do
+      QC.log_yield(measure: 'queue.delete_all') do
         s = "DELETE FROM #{QC.table_name} WHERE q_name = $1"
         conn_adapter.execute(s, name)
       end
@@ -154,19 +150,22 @@ module QC
 
     # Count the number of jobs in a specific queue, except ones scheduled in the future
     def count_ready
-      _count('queue.count_scheduled', "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1 AND scheduled_at <= now()")
+      _count('queue.count_scheduled',
+             "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1 AND scheduled_at <= now()")
     end
 
     # Count the number of jobs in a specific queue scheduled in the future
     def count_scheduled
-      _count('queue.count_scheduled', "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1 AND scheduled_at > now()")
+      _count('queue.count_scheduled',
+             "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1 AND scheduled_at > now()")
     end
 
     private
+
     def _count(metric_name, sql)
       QC.log_yield(measure: metric_name) do
         r = conn_adapter.execute(sql, name)
-        r["count"].to_i
+        r['count'].to_i
       end
     end
   end

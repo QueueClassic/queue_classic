@@ -12,12 +12,12 @@ class ConfigTest < QCTest
   end
 
   def test_app_name_default
-    assert_equal "queue_classic", QC.app_name
+    assert_equal 'queue_classic', QC.app_name
   end
 
   def test_configure_app_name_with_env_var
-    with_env "QC_APP_NAME" => "zomg_qc" do
-      assert_equal "zomg_qc", QC.app_name
+    with_env 'QC_APP_NAME' => 'zomg_qc' do
+      assert_equal 'zomg_qc', QC.app_name
     end
   end
 
@@ -26,31 +26,31 @@ class ConfigTest < QCTest
   end
 
   def test_configure_wait_time_with_env_var
-    with_env "QC_LISTEN_TIME" => "7" do
+    with_env 'QC_LISTEN_TIME' => '7' do
       assert_equal 7, QC.wait_time
     end
   end
 
   def test_table_name_default
-    assert_equal "queue_classic_jobs", QC.table_name
+    assert_equal 'queue_classic_jobs', QC.table_name
   end
 
   def test_queue_default
-    assert_equal "default", QC.queue
-    assert_equal "default", QC.default_queue.name
+    assert_equal 'default', QC.queue
+    assert_equal 'default', QC.default_queue.name
   end
 
   def test_configure_queue_with_env_var
-    with_env "QUEUE" => "priority" do
-      assert_equal "priority", QC.queue
-      assert_equal "priority", QC.default_queue.name
+    with_env 'QUEUE' => 'priority' do
+      assert_equal 'priority', QC.queue
+      assert_equal 'priority', QC.default_queue.name
     end
   end
 
   def test_assign_default_queue
-    QC.default_queue = QC::Queue.new "dispensable"
-    assert_equal "default", QC.queue
-    assert_equal "dispensable", QC.default_queue.name
+    QC.default_queue = QC::Queue.new 'dispensable'
+    assert_equal 'default', QC.queue
+    assert_equal 'dispensable', QC.default_queue.name
   end
 
   def test_queues_default
@@ -58,14 +58,14 @@ class ConfigTest < QCTest
   end
 
   def test_configure_queues_with_env_var
-    with_env "QUEUES" => "first,second,third" do
-      assert_equal %w(first second third), QC.queues
+    with_env 'QUEUES' => 'first,second,third' do
+      assert_equal %w[first second third], QC.queues
     end
   end
 
   def test_configure_queues_with_whitespace
-    with_env "QUEUES" => " one, two, three " do
-      assert_equal %w(one two three), QC.queues
+    with_env 'QUEUES' => ' one, two, three ' do
+      assert_equal %w[one two three], QC.queues
     end
   end
 
@@ -74,7 +74,7 @@ class ConfigTest < QCTest
   end
 
   def test_configure_top_bound_with_env_var
-    with_env "QC_TOP_BOUND" => "5" do
+    with_env 'QC_TOP_BOUND' => '5' do
       assert_equal 5, QC.top_bound
     end
   end
@@ -84,7 +84,7 @@ class ConfigTest < QCTest
   end
 
   def test_configure_fork_worker_with_env_var
-    with_env "QC_FORK_WORKER" => "yo" do
+    with_env 'QC_FORK_WORKER' => 'yo' do
       assert QC.fork_worker?
     end
   end
@@ -93,8 +93,8 @@ class ConfigTest < QCTest
     warning = capture_stderr_output do
       QC::FORK_WORKER
     end
-    assert_match "QC::FORK_WORKER is deprecated", warning
-    assert_match "QC.fork_worker? instead", warning
+    assert_match 'QC::FORK_WORKER is deprecated', warning
+    assert_match 'QC.fork_worker? instead', warning
   end
 
   class TestWorker < QC::Worker; end
@@ -104,10 +104,7 @@ class ConfigTest < QCTest
   end
 
   def test_configure_default_worker_class_with_env_var
-    if RUBY_VERSION =~ /^1\.9\./
-        skip "Kernel.const_get in Ruby 1.9.x does not perform recursive lookups"
-    end
-    with_env "QC_DEFAULT_WORKER_CLASS" => "ConfigTest::TestWorker" do
+    with_env 'QC_DEFAULT_WORKER_CLASS' => 'ConfigTest::TestWorker' do
       assert_equal TestWorker, QC.default_worker_class
     end
   end

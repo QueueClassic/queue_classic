@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require File.expand_path("../../helper.rb", __FILE__)
+require File.expand_path('../helper.rb', __dir__)
 
 class QueueClassicRailsConnectionTest < QCTest
   def before_setup
@@ -30,6 +30,7 @@ class QueueClassicRailsConnectionTest < QCTest
   end
 
   private
+
   def get_connection
     connection = Minitest::Mock.new
     connection.expect(:raw_connection, QC::ConnAdapter.new(active_record_connection_share: true).connection)

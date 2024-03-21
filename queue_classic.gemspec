@@ -1,17 +1,16 @@
-# coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
+lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'queue_classic/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "queue_classic"
-  spec.email         = "r@32k.io"
+  spec.name          = 'queue_classic'
+  spec.email         = 'r@32k.io'
   spec.version       = QC::VERSION
-  spec.description   = "queue_classic is a queueing library for Ruby apps. (Rails, Sinatra, Etc...) queue_classic features asynchronous job polling, database maintained locks and no ridiculous dependencies. As a matter of fact, queue_classic only requires pg."
-  spec.summary       = "Simple, efficient worker queue for Ruby & PostgreSQL."
-  spec.authors       = ["Ryan Smith (♠ ace hacker)"]
-  spec.homepage      = "https://github.com/QueueClassic/queue_classic"
-  spec.license       = "MIT"
+  spec.description   = 'queue_classic is a queueing library for Ruby apps. (Rails, Sinatra, Etc...) queue_classic features asynchronous job polling, database maintained locks and no ridiculous dependencies. As a matter of fact, queue_classic only requires pg.'
+  spec.summary       = 'Simple, efficient worker queue for Ruby & PostgreSQL.'
+  spec.authors       = ['Ryan Smith (♠ ace hacker)']
+  spec.homepage      = 'https://github.com/QueueClassic/queue_classic'
+  spec.license       = 'MIT'
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
@@ -19,13 +18,13 @@ Gem::Specification.new do |spec|
   spec.require_paths = %w[lib]
 
   spec.metadata = {
-    "bug_tracker_uri"   => "https://github.com/QueueClassic/queue_classic/issues",
-    "changelog_uri"     => "https://github.com/QueueClassic/queue_classic/blob/master/CHANGELOG.md",
-    "source_code_uri"   => "https://github.com/QueueClassic/queue_classic",
+    'bug_tracker_uri' => 'https://github.com/QueueClassic/queue_classic/issues',
+    'changelog_uri' => 'https://github.com/QueueClassic/queue_classic/blob/master/CHANGELOG.md',
+    'source_code_uri' => 'https://github.com/QueueClassic/queue_classic'
   }
 
-  spec.required_ruby_version = ">= 3.0.0"
-  spec.add_runtime_dependency "pg", ">= 1.1", "< 2.0"
-  spec.add_development_dependency "activerecord", ">= 5.0.0", "< 6.1"
-  spec.add_development_dependency "rubocop"
+  spec.required_ruby_version = '>= 3.0.0'
+  spec.add_runtime_dependency 'pg', '>= 1.1', '< 2.0'
+  spec.add_development_dependency 'activerecord', '>= 5.0.0', '< 6.1'
+  spec.add_development_dependency 'rubocop'
 end
