@@ -51,15 +51,7 @@ Please use the method QC.#{config_method} instead.
   end
 
   def self.default_conn_adapter
-    t = Thread.current
-    return t[:qc_conn_adapter] if t[:qc_conn_adapter]
-    adapter = if rails_connection_sharing_enabled?
-      ConnAdapter.new(ActiveRecord::Base.connection.raw_connection)
-    else
-      ConnAdapter.new
-    end
-
-    t[:qc_conn_adapter] = adapter
+    Thread.current[:qc_conn_adapter] ||= ConnAdapter.new(active_record_connection_share: rails_connection_sharing_enabled?)
   end
 
   def self.default_conn_adapter=(conn)
@@ -102,8 +94,7 @@ Please use the method QC.#{config_method} instead.
   # This will unlock all jobs any postgres' PID that is not existing anymore
   # to prevent any infinitely locked jobs
   def self.unlock_jobs_of_dead_workers
-    pid_column = default_conn_adapter.server_version < 90200 ? "procpid" : "pid"
-    default_conn_adapter.execute("UPDATE #{QC.table_name} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT #{pid_column} FROM pg_stat_activity);")
+    default_conn_adapter.execute("UPDATE #{QC.table_name} SET locked_at = NULL, locked_by = NULL WHERE locked_by NOT IN (SELECT pid FROM pg_stat_activity);")
   end
 
   # private class methods

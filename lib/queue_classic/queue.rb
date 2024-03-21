@@ -90,15 +90,33 @@ module QC
 
     def lock
       QC.log_yield(:measure => 'queue.lock') do
-        s = "SELECT * FROM lock_head($1, $2)"
-        if r = conn_adapter.execute(s, name, top_bound)
+        s = <<~SQL
+          WITH selected_job AS (
+            SELECT id
+            FROM #{QC.table_name}
+            WHERE locked_at IS NULL
+              AND q_name = $1
+              AND scheduled_at <= now()
+            LIMIT 1
+            FOR NO KEY UPDATE SKIP LOCKED
+          )
+          UPDATE #{QC.table_name}
+          SET
+            locked_at = now(),
+            locked_by = pg_backend_pid()
+          FROM selected_job
+          WHERE #{QC.table_name}.id = selected_job.id
+          RETURNING *
+        SQL
+
+        if r = conn_adapter.execute(s, name)
           {}.tap do |job|
             job[:id] = r["id"]
             job[:q_name] = r["q_name"]
             job[:method] = r["method"]
             job[:args] = JSON.parse(r["args"])
             if r["scheduled_at"]
-              job[:scheduled_at] = Time.parse(r["scheduled_at"])
+              job[:scheduled_at] = r["scheduled_at"].kind_of?(Time) ? r["scheduled_at"] : Time.parse(r["scheduled_at"])
               ttl = Integer((Time.now - job[:scheduled_at]) * 1000)
               QC.measure("time-to-lock=#{ttl}ms source=#{name}")
             end
@@ -127,10 +145,26 @@ module QC
       end
     end
 
+    # Count the number of jobs in a specific queue. This returns all
+    # jobs, including ones that are scheduled in the future.
     def count
-      QC.log_yield(:measure => 'queue.count') do
-        s = "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1"
-        r = conn_adapter.execute(s, name)
+      _count('queue.count', "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1")
+    end
+
+    # Count the number of jobs in a specific queue, except ones scheduled in the future
+    def count_ready
+      _count('queue.count_scheduled', "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1 AND scheduled_at <= now()")
+    end
+
+    # Count the number of jobs in a specific queue scheduled in the future
+    def count_scheduled
+      _count('queue.count_scheduled', "SELECT COUNT(*) FROM #{QC.table_name} WHERE q_name = $1 AND scheduled_at > now()")
+    end
+
+    private
+    def _count(metric_name, sql)
+      QC.log_yield(measure: metric_name) do
+        r = conn_adapter.execute(sql, name)
         r["count"].to_i
       end
     end

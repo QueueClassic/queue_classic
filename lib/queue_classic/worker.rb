@@ -23,7 +23,7 @@ module QC
       @wait_interval = args[:wait_interval] || QC.wait_time
 
       if args[:connection]
-        @conn_adapter = ConnAdapter.new(args[:connection])
+        @conn_adapter = ConnAdapter.new(connection: args[:connection])
       else
         @conn_adapter = QC.default_conn_adapter
       end
@@ -129,7 +129,7 @@ module QC
       finished = false
       begin
         call(job).tap do
-          queue.delete(job[:id])
+          handle_success(queue, job)
           finished = true
         end
       rescue StandardError, ScriptError, NoMemoryError => e
@@ -155,6 +155,10 @@ module QC
       receiver_str, _, message = job[:method].rpartition('.')
       receiver = eval(receiver_str)
       receiver.send(message, *args)
+    end
+
+    def handle_success(queue, job)
+      queue.delete(job[:id])
     end
 
     # This method will be called when a StandardError, ScriptError or
