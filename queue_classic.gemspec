@@ -18,7 +18,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = %w[lib]
 
-  s.metadata = {
+  spec.metadata = {
     "bug_tracker_uri"   => "https://github.com/QueueClassic/queue_classic/issues",
     "changelog_uri"     => "https://github.com/QueueClassic/queue_classic/blob/master/CHANGELOG.md",
     "source_code_uri"   => "https://github.com/QueueClassic/queue_classic",
