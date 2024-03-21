@@ -7,7 +7,12 @@ class QueueClassicTest < QCTest
     e = assert_raises(NoMethodError) do
       QC.probably_not
     end
-    assert_match "undefined method `probably_not' for QC:Module", e.message
+
+    if RUBY_VERSION >= "3.3.0"
+      assert_equal "undefined method `probably_not' for module QC", e.message
+    else
+      assert_equal "undefined method `probably_not' for QC", e.message
+    end
   end
 
   def test_default_conn_adapter_default_value
