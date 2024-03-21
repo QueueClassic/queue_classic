@@ -8,11 +8,8 @@ class QueueClassicTest < QCTest
       QC.probably_not
     end
 
-    if RUBY_VERSION >= "3.3.0"
-      assert_equal "undefined method `probably_not' for module QC", e.message
-    else
-      assert_equal "undefined method `probably_not' for QC", e.message
-    end
+    assert_match /probably_not/, e.message
+    assert_match /undefined method/, e.message
   end
 
   def test_default_conn_adapter_default_value
