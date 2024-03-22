@@ -131,16 +131,9 @@ module QC
     # the object and pass the args.
     def call(job)
       args = job[:args]
-      method_chain = job[:method].split('.')
-
-      # Start with the base receiver, which should be a constant 🤞
-      base_receiver_str = method_chain.shift
-      base_receiver = base_receiver_str.split('::').inject(Object) { |acc, val| acc.const_get(val) }
-
-      # run through the chain of methods 🚀
-      method_chain.reduce(base_receiver) do |receiver, method|
-        method == method_chain.last ? receiver.send(method, *args) : receiver.send(method)
-      end
+      receiver_str, _, message = job[:method].rpartition('.')
+      receiver = eval(receiver_str) # rubocop:disable Security/Eval
+      receiver.send(message, *args)
     end
 
     def handle_success(queue, job)
