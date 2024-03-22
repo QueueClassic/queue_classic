@@ -1,24 +1,23 @@
 # frozen_string_literal: true
 
-require "bundler"
-require "minitest/reporters"
+require 'bundler'
+require 'minitest/reporters'
 
 Bundler.setup :default, :test
 
-if ENV['CIRCLECI'] == "true"
+if ENV['CIRCLECI'] == 'true'
   Minitest::Reporters.use! Minitest::Reporters::JUnitReporter.new
 else
   Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 end
 
-ENV["DATABASE_URL"] ||= "postgres:///queue_classic_test"
+ENV['DATABASE_URL'] ||= 'postgres:///queue_classic_test'
 
 require_relative '../lib/queue_classic'
-require "stringio"
-require "minitest/autorun"
+require 'stringio'
+require 'minitest/autorun'
 
 class QCTest < Minitest::Test
-
   def setup
     init_db
   end
@@ -46,10 +45,10 @@ class QCTest < Minitest::Test
   end
 
   def capture_debug_output
-    original_debug = ENV['DEBUG']
+    original_debug = ENV.fetch('DEBUG', nil)
     original_stdout = $stdout
 
-    ENV['DEBUG'] = "true"
+    ENV['DEBUG'] = 'true'
     $stdout = StringIO.new
     yield
     $stdout.string
@@ -61,7 +60,7 @@ class QCTest < Minitest::Test
   def with_env(temporary_environment)
     original_environment = {}
     temporary_environment.each do |name, value|
-      original_environment[name] = ENV[name]
+      original_environment[name] = ENV.fetch(name, nil)
       ENV[name] = value
     end
     yield
@@ -84,7 +83,7 @@ class QCTest < Minitest::Test
     else
       message = "#{class_name} does not have method #{method_name}."
       message << "\nAvailable methods: #{class_name.instance_methods(false)}"
-      raise ArgumentError.new message
+      raise ArgumentError, message
     end
   ensure
     if method_present

@@ -1,0 +1,19 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.0
+  Exclude:
+  - 'vendor/**/*'
+Layout/LineLength:
+  Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Naming/MethodParameterName:
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
+Naming/VariableNumber:
+  Enabled: false

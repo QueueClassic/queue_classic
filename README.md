@@ -43,7 +43,7 @@ A major benefit is the ability to enqueue inside transactions, ensuring things a
 
 ### Requirements
 For this version, the requirements are as follows:
-* Ruby 2.6, 2.7, 3.0, 3.1 - i.e. currently supported Ruby versions
+* Ruby 3.0, 3.1, 3.2, 3.3 - i.e. currently supported non-EOL Ruby versions
 * Postgres ~> 9.6
 * Rubygem: pg ~> 1.1
 
@@ -212,7 +212,7 @@ bundle exec rake db:migrate
 ```
 
 #### Database connection
-Starting with with queue_classic 3.1, Rails is automatically detected and its connection is used. If you don't want to use the automatic database connection, set this environment variable to false: `export QC_RAILS_DATABASE=false`. 
+Starting with with queue_classic 3.1, Rails is automatically detected and its connection is used. If you don't want to use the automatic database connection, set this environment variable to false: `export QC_RAILS_DATABASE=false`.
 
 > **Note:** If you do not share the connection, you cannot enqueue in the same transaction as whatever you're doing in Rails.
 

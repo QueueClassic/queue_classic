@@ -1,13 +1,15 @@
 # frozen_string_literal: true
 
-require File.expand_path("../../helper.rb", __FILE__)
+require File.expand_path('../helper.rb', __dir__)
 
 class QueueClassicTest < QCTest
   def test_only_delegate_calls_to_queue_it_understands
     e = assert_raises(NoMethodError) do
       QC.probably_not
     end
-    assert_match "undefined method `probably_not' for QC:Module", e.message
+
+    assert_match(/probably_not/, e.message)
+    assert_match(/undefined method/, e.message)
   end
 
   def test_default_conn_adapter_default_value
