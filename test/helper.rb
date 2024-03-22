@@ -45,7 +45,7 @@ class QCTest < Minitest::Test
   end
 
   def capture_debug_output
-    original_debug = ENV['DEBUG']
+    original_debug = ENV.fetch('DEBUG', nil)
     original_stdout = $stdout
 
     ENV['DEBUG'] = 'true'
@@ -60,7 +60,7 @@ class QCTest < Minitest::Test
   def with_env(temporary_environment)
     original_environment = {}
     temporary_environment.each do |name, value|
-      original_environment[name] = ENV[name]
+      original_environment[name] = ENV.fetch(name, nil)
       ENV[name] = value
     end
     yield
@@ -83,7 +83,7 @@ class QCTest < Minitest::Test
     else
       message = "#{class_name} does not have method #{method_name}."
       message << "\nAvailable methods: #{class_name.instance_methods(false)}"
-      raise ArgumentError.new message
+      raise ArgumentError, message
     end
   ensure
     if method_present

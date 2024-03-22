@@ -57,9 +57,9 @@ module QC
     # and args argument must be in the form described in the documentation for
     # the #enqueue method.
     # This method returns a hash with the id of the enqueued job.
-    def enqueue_at(timestamp, method, *args)
+    def enqueue_at(timestamp, method, *)
       offset = Time.at(timestamp).to_i - Time.now.to_i
-      enqueue_in(offset, method, *args)
+      enqueue_in(offset, method, *)
     end
 
     # enqueue_in(t,m,a) inserts a row into the jobs table representing a job
@@ -105,7 +105,7 @@ module QC
           RETURNING *
         SQL
 
-        if r = conn_adapter.execute(s, name)
+        if (r = conn_adapter.execute(s, name))
           {}.tap do |job|
             job[:id] = r['id']
             job[:q_name] = r['q_name']

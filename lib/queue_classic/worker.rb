@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-# -*- coding: utf-8 -*-
-
 require_relative 'queue'
 require_relative 'conn_adapter'
 
@@ -92,11 +90,11 @@ module QC
       job = nil
       while @running
         @queues.each do |queue|
-          if job = queue.lock
+          if (job = queue.lock)
             return [queue, job]
           end
         end
-        @conn_adapter.wait(@wait_interval, *@queues.map { |q| q.name })
+        @conn_adapter.wait(@wait_interval, *@queues.map(&:name))
       end
     end
 
@@ -162,7 +160,7 @@ module QC
     private
 
     def setup_queues(adapter, queue, queues, top_bound)
-      names = queues.length > 0 ? queues : [queue]
+      names = queues.length.positive? ? queues : [queue]
       names.map do |name|
         QC::Queue.new(name, top_bound).tap do |q|
           q.conn_adapter = adapter

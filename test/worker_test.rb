@@ -3,11 +3,12 @@
 require_relative 'helper'
 
 module TestObject
-  extend self
+  module_function
+
   def no_args = nil
   def one_arg(a) = a
   def two_args(a, b) = [a, b]
-  def forty_two = OpenStruct.new(number: 42)
+  def forty_two = Struct.new(:number).new(42)
 end
 
 # This not only allows me to test what happens
@@ -56,7 +57,7 @@ class WorkerTest < QCTest
   def test_log_yield
     output = capture_debug_output do
       QC.log_yield(action: 'test') do
-        0 == 1
+        1.zero?
       end
     end
     expected_output = /lib=queue-classic action=test elapsed=\d*/
@@ -179,7 +180,7 @@ class WorkerTest < QCTest
   end
 
   def test_init_worker_with_database_url
-    with_database ENV['DATABASE_URL'] || ENV['QC_DATABASE_URL'] do
+    with_database ENV['DATABASE_URL'] || ENV.fetch('QC_DATABASE_URL', nil) do
       worker = QC::Worker.new
       QC.enqueue('TestObject.no_args')
       worker.lock_job
@@ -210,8 +211,7 @@ class WorkerTest < QCTest
     end
 
     stub_any_instance(QC::Queue, :unlock, fake_unlock) do
-      worker.work
-    rescue SignalException
+      assert_raises(SignalException) { worker.work }
     ensure
       assert unlocked, 'SignalException failed to unlock the job in the queue.'
     end
@@ -229,8 +229,7 @@ class WorkerTest < QCTest
     end
 
     stub_any_instance(QC::Queue, :unlock, fake_unlock) do
-      worker.work
-    rescue SystemExit
+      assert_raises(SystemExit) { worker.work }
     ensure
       assert unlocked, 'SystemExit failed to unlock the job in the queue.'
     end
@@ -306,8 +305,8 @@ class WorkerTest < QCTest
 
   def with_database(url)
     original_conn_adapter = QC.default_conn_adapter
-    original_database_url = ENV['DATABASE_URL']
-    original_qc_database_url = ENV['QC_DATABASE_URL']
+    original_database_url = ENV.fetch('DATABASE_URL', nil)
+    original_qc_database_url = ENV.fetch('QC_DATABASE_URL', nil)
 
     ENV['DATABASE_URL'] = ENV['QC_DATABASE_URL'] = url
     QC.default_conn_adapter = nil

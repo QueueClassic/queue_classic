@@ -13,6 +13,8 @@ class HardCodingTest < Minitest::Test
     #
     #
     #
-    assert_equal `grep queue_classic_jobs lib -R`.split("\n").sort, ['lib/queue_classic/config.rb:      @table_name ||= "queue_classic_jobs"', 'lib/queue_classic/setup.rb:      conn.execute("DROP TABLE IF EXISTS queue_classic_jobs CASCADE")'].sort
+    assert_equal `grep queue_classic_jobs lib -R`.split("\n").sort,
+                 ['lib/queue_classic/config.rb:      @table_name ||= \'queue_classic_jobs\'',
+                  'lib/queue_classic/setup.rb:      conn.execute(\'DROP TABLE IF EXISTS queue_classic_jobs CASCADE\')'].sort
   end
 end

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'queue_classic/version'
@@ -14,17 +16,15 @@ Gem::Specification.new do |spec|
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
-  spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = %w[lib]
 
   spec.metadata = {
     'bug_tracker_uri' => 'https://github.com/QueueClassic/queue_classic/issues',
     'changelog_uri' => 'https://github.com/QueueClassic/queue_classic/blob/master/CHANGELOG.md',
-    'source_code_uri' => 'https://github.com/QueueClassic/queue_classic'
+    'source_code_uri' => 'https://github.com/QueueClassic/queue_classic',
+    'rubygems_mfa_required' => 'true'
   }
 
   spec.required_ruby_version = '>= 3.0.0'
   spec.add_runtime_dependency 'pg', '>= 1.1', '< 2.0'
-  spec.add_development_dependency 'activerecord', '>= 5.0.0', '< 6.1'
-  spec.add_development_dependency 'rubocop'
 end

@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module QC
+  # Setup is a module that provides methods to create, update and drop the queue_classic tables
   module Setup
     Root = File.expand_path('../..', File.dirname(__FILE__))
     SqlFunctions = File.join(Root, '/sql/ddl.sql')
