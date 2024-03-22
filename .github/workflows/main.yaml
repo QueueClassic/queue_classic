@@ -1,4 +1,4 @@
-name: Test
+name: Lint & Test
 on: push
 jobs:
   # test_rails:
@@ -31,8 +31,21 @@ jobs:
   #     run: |
   #       cd test/rails-tests/
   #       sh rails523.sh
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.3'
+        bundler-cache: true
+    - name: Run rubocop
+      run: bundle exec rubocop
+      env:
+        RUBY_YJIT_ENABLE: true
   test:
     runs-on: ubuntu-latest
+    needs: lint
     strategy:
       fail-fast: false
       matrix:
@@ -58,7 +71,7 @@ jobs:
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ matrix.ruby_version }}
-        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+        bundler-cache: true
     - name: Run tests
       run: bundle exec rake
       env:
