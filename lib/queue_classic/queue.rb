@@ -14,12 +14,10 @@ module QC
       @top_bound = top_bound || QC.top_bound
     end
 
-    def conn_adapter=(a)
-      @adapter = a
-    end
+    attr_writer :conn_adapter
 
     def conn_adapter
-      @adapter ||= QC.default_conn_adapter
+      @conn_adapter ||= QC.default_conn_adapter
     end
 
     # enqueue(m,a) inserts a row into the jobs table and trigger a notification.
@@ -57,9 +55,9 @@ module QC
     # and args argument must be in the form described in the documentation for
     # the #enqueue method.
     # This method returns a hash with the id of the enqueued job.
-    def enqueue_at(timestamp, method, *)
+    def enqueue_at(timestamp, method, *args)
       offset = Time.at(timestamp).to_i - Time.now.to_i
-      enqueue_in(offset, method, *)
+      enqueue_in(offset, method, *args)
     end
 
     # enqueue_in(t,m,a) inserts a row into the jobs table representing a job

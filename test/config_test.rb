@@ -100,10 +100,24 @@ class ConfigTest < QCTest
   class TestWorker < QC::Worker; end
 
   def test_default_worker_class
+    QC.default_worker_class = nil
+    with_env 'QC_DEFAULT_WORKER_CLASS' => nil do
+      assert_equal QC::Worker, QC.default_worker_class
+    end
+
+    QC.default_worker_class = nil
     assert_equal QC::Worker, QC.default_worker_class
   end
 
+  def test_invite_worker_class
+    QC.default_worker_class = nil
+    with_env 'QC_DEFAULT_WORKER_CLASS' => 'Hopefully::Does::Not::Exist' do
+      assert_equal QC::Worker, QC.default_worker_class
+    end
+  end
+
   def test_configure_default_worker_class_with_env_var
+    QC.default_worker_class = nil
     with_env 'QC_DEFAULT_WORKER_CLASS' => 'ConfigTest::TestWorker' do
       assert_equal TestWorker, QC.default_worker_class
     end

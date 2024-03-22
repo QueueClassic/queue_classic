@@ -4,10 +4,11 @@ require 'uri'
 require 'pg'
 
 module QC
+  # This class is responsible for managing the connection to the database.
   class ConnAdapter
     def initialize(args = {})
       @active_record_connection_share = args[:active_record_connection_share]
-      @_connection = args[:connection]
+      @connection = args[:connection]
       @mutex = Mutex.new
     end
 
@@ -15,7 +16,7 @@ module QC
       if @active_record_connection_share && Object.const_defined?('ActiveRecord')
         ActiveRecord::Base.connection.raw_connection
       else
-        @_connection ||= establish_new
+        @connection ||= establish_new
       end
     end
 
@@ -38,10 +39,10 @@ module QC
 
     def wait(time, *channels)
       @mutex.synchronize do
-        listen_cmds = channels.map { |c| 'LISTEN "' + c.to_s + '"' }
+        listen_cmds = channels.map { |c| "LISTEN \"#{c}\"" }
         connection.exec(listen_cmds.join(';'))
         wait_for_notify(time)
-        unlisten_cmds = channels.map { |c| 'UNLISTEN "' + c.to_s + '"' }
+        unlisten_cmds = channels.map { |c| "UNLISTEN \"#{c}\"" }
         connection.exec(unlisten_cmds.join(';'))
         drain_notify
       end
@@ -58,7 +59,7 @@ module QC
     def server_version
       @server_version ||= begin
         version = execute('SHOW server_version_num;')['server_version_num']
-        version && version.to_i
+        version&.to_i
       end
     end
 
@@ -86,9 +87,7 @@ module QC
       conn = PG.connect(*normalize_db_url(db_url))
       QC.log(error: conn.error) if conn.status != PG::CONNECTION_OK
 
-      if conn.server_version < 90_600
-        raise "This version of Queue Classic does not support Postgres older than 9.6 (90600). This version is #{conn.server_version}. If you need that support, please use an older version."
-      end
+      raise "This version of Queue Classic does not support Postgres older than 9.6 (90600). This version is #{conn.server_version}. If you need that support, please use an older version." if conn.server_version < 90_600
 
       conn.exec("SET application_name = '#{QC.app_name}'")
       conn

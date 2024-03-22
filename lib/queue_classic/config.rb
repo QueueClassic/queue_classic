@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module QC
+  # QC Configuration
   module Config
     # You can use the APP_NAME to query for
     # postgres related process information in the
@@ -40,7 +41,7 @@ module QC
     # notes the queue. You can point your workers
     # at different queues.
     def queues
-      @queues ||= (ENV['QUEUES'] && ENV['QUEUES'].split(',').map(&:strip)) || []
+      @queues ||= (ENV.fetch('QUEUES', nil) && ENV['QUEUES'].split(',').map(&:strip)) || []
     end
 
     # Set this to 1 for strict FIFO.
@@ -60,12 +61,16 @@ module QC
 
     # The worker class instantiated by QC's rake tasks.
     def default_worker_class
-      @worker_class ||= ENV['QC_DEFAULT_WORKER_CLASS'] && Kernel.const_get(ENV['QC_DEFAULT_WORKER_CLASS']) ||
-                        QC::Worker
+      @default_worker_class ||= begin
+        class_name = ENV.fetch('QC_DEFAULT_WORKER_CLASS', nil)
+        class_name ? Kernel.const_get(class_name) : QC::Worker
+      rescue NameError
+        QC::Worker
+      end
     end
 
     def default_worker_class=(worker_class)
-      @worker_class = worker_class
+      @default_worker_class = worker_class
     end
 
     # reset memoized configuration

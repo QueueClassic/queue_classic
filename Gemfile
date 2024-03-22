@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# this, is dumb, but stops errors
+source 'https://rubygems.org'
+
 source 'https://rubygems.org' do
   gem 'rake'
 

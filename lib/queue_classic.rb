@@ -2,6 +2,7 @@
 
 require_relative 'queue_classic/config'
 
+# QC
 module QC
   extend QC::Config
 
@@ -16,7 +17,7 @@ module QC
     QUEUES: :queues,
     TOP_BOUND: :top_bound,
     FORK_WORKER: :fork_worker?
-  }
+  }.freeze
 
   def self.const_missing(const_name)
     if DEPRECATED_CONSTANTS.key? const_name
@@ -33,9 +34,9 @@ module QC
 
   # Defer method calls on the QC module to the
   # default queue. This facilitates QC.enqueue()
-  def self.method_missing(sym, *args, &block)
+  def self.method_missing(sym, ...)
     if default_queue.respond_to? sym
-      default_queue.public_send(sym, *args, &block)
+      default_queue.public_send(sym, ...)
     else
       super
     end
@@ -46,7 +47,7 @@ module QC
     default_queue.respond_to?(method_name)
   end
 
-  def self.has_connection?
+  def self.has_connection? # rubocop:disable Naming/PredicateName
     !default_conn_adapter.nil?
   end
 
