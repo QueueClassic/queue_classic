@@ -9,6 +9,16 @@ module TestObject
   def one_arg(a) = a
   def two_args(a, b) = [a, b]
   def forty_two = Struct.new(:number).new(42)
+
+  def fail_on_args(a = nil)
+    raise "fail on args called with #{a}" unless a.nil?
+
+    Class.new do
+      def number(n)
+        n * 2
+      end
+    end.new
+  end
 end
 
 # This not only allows me to test what happens
@@ -78,6 +88,18 @@ class WorkerTest < QCTest
     r = worker.work
     assert_nil(r)
     assert_equal(0, worker.failed_count)
+  end
+
+  def test_passes_arg_to_last_method
+    assert_equal(TestObject.fail_on_args.number(2), 4)
+    assert_raises(RuntimeError) { TestObject.fail_on_args(1).number(2) }
+
+    QC.enqueue('TestObject.fail_on_args.number', 'aa')
+    worker = TestWorker.new
+
+    r = worker.work
+    assert_equal(0, worker.failed_count)
+    assert_equal('aaaa', r)
   end
 
   def test_work_with_one_arg
